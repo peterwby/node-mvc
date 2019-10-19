@@ -13,7 +13,7 @@ const Http = {
       let result = await axios.get(url, config)
       return {
         fail: false,
-        msg: 'success',
+        msg: '成功',
         data: result.data,
       }
     } catch (err) {

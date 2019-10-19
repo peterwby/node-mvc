@@ -1,7 +1,7 @@
 'use strict'
 
 const Http = require('../Lib/Http')
-const Util = require('../Lib/Util')
+const U = require('../Lib/Util')
 
 const Database = use('Database')
 const log = use('Logger')
@@ -14,30 +14,34 @@ class TestService {
   async httpGet() {
     try {
       const url = 'http://api.m.taobao.com/rest/api.do?api=mtop.common.getTimestamp'
-      const result = await Http.get(url, { aa: '1234' }, { timeout: 50 }) //timeout ??
-      if (result.fail) {
-        throw new Error(JSON.stringify(result))
-      }
-      return result
-    } catch (err) {
-      log.notice('kj230rj09293j')
-      log.error(err)
-      return err
-    }
-  }
-
-  async httpPost() {
-    try {
-      //let url = 'http://127.0.0.1:3333/test2'
-      let url = 'https://media.mz4s.com/mp/port-msg-box'
-      let result = await Http.post(url, { account: '123467', error_msg: 'dd' })
+      const result = await Http.get(url, { aa: '1234' }, { timeout: 5000 }) //timeout ??
       if (result.fail) {
         throw new Error(result.msg)
       }
       return result
     } catch (err) {
-      log.error(err.message)
-      return null
+      log.notice('kj230rj09293j')
+      return {
+        fail: true,
+        msg: err.message,
+      }
+    }
+  }
+
+  async httpPost() {
+    try {
+      const url = 'https://media.mz4s.com/mp/port-msg-box'
+      const result = await Http.post(url, { account: '123467', error_msg: 'dd' }, { timeout: 5000 })
+      if (result.fail) {
+        throw new Error(result.msg)
+      }
+      return result
+    } catch (err) {
+      log.notice('98457t9f49f')
+      return {
+        fail: true,
+        msg: err.message,
+      }
     }
   }
 }
