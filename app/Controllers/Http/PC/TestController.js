@@ -9,6 +9,10 @@ class TestController {
   //测试
   async test1(ctx) {
     try {
+      //是否在这里注入一个requestId，用来追踪整个链路
+      //ctx.requestId = new Date().getTime();log.notice(ctx.requestId)，传递给service层
+      //前端出错时，提供这个id，后端到日志里面追踪这个id，就能快速找到问题日志
+
       //校验输入的参数
       const resultValid = await validTest(ctx)
       if (resultValid.fail) {
@@ -16,10 +20,13 @@ class TestController {
       }
       //调用业务逻辑
       const result = await testSrv.httpGet()
-      //组装数据
+      //组装数据，把json返回前端
+      if (result.fail) {
+        throw new Error('业务逻辑出错')
+      }
       return {
         fail: false,
-        msg: '成功',
+        msg: 'success',
         data: result.data.data.t,
       }
     } catch (err) {
@@ -28,7 +35,7 @@ class TestController {
       return {
         fail: true,
         msg: '出现错误',
-        code: '934792389',
+        track: '934792389',
       }
     }
   }
@@ -61,6 +68,7 @@ const validTest = async ctx => {
     }
     return {
       fail: false,
+      msg: 'success',
     }
   } catch (err) {
     return {

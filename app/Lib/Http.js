@@ -2,65 +2,57 @@
 
 const axios = require('axios')
 const log = use('Logger')
+const Util = require('../Lib/Util')
 
 const Http = {
-  async get(url, data = null, more = {}) {
+  async get(url, params = {}, more = {}) {
     try {
       let { ...config } = more
-      if (!!data) {
-        config.params = data
-      }
+      config.params = params
       let result = await axios.get(url, config)
-      return {
-        fail: false,
-        msg: '成功',
+      return Util.success({
         data: result.data,
-      }
-    } catch (err) {
-      log.error(err)
-      let msg = ''
-      if (!!err.response) {
-        msg = `接收响应出错: ${url}`
-      } else if (!!err.request) {
-        if (err.message.includes('timeout')) {
-          msg = `请求超时： ${url}`
-        } else {
-          msg = `发送请求出错: ${url}`
-        }
-      } else {
-        //其他错误
-        msg = err.message
-      }
-      return {
-        fail: true,
-        msg: msg,
-      }
-    }
-  },
-
-  async post(url, data = {}, more = {}) {
-    try {
-      let { ...config } = more
-      let result = await axios.post(url, data, config)
-      return {
-        fail: false,
-        msg: 'success',
-        data: result.data,
-      }
+      })
     } catch (err) {
       let msg = ''
       if (!!err.response) {
         msg = `接收响应出错: ${url}`
       } else if (!!err.request) {
         msg = `发送请求出错: ${url}`
+      } else if (err.message.includes('timeout')) {
+        msg = `请求超时： ${url}`
       } else {
-        //其他错误
         msg = err.message
       }
-      return {
-        fail: true,
+      return Util.error({
         msg: msg,
+        track: '209jf9034',
+      })
+    }
+  },
+
+  async post(url, params = {}, more = {}) {
+    try {
+      let { ...config } = more
+      let result = await axios.post(url, params, config)
+      return Util.success({
+        data: result.data,
+      })
+    } catch (err) {
+      let msg = ''
+      if (!!err.response) {
+        msg = `接收响应出错: ${url}`
+      } else if (!!err.request) {
+        msg = `发送请求出错: ${url}`
+      } else if (err.message.includes('timeout')) {
+        msg = `请求超时： ${url}`
+      } else {
+        msg = err.message
       }
+      return Util.error({
+        msg: msg,
+        track: 'j28f2930',
+      })
     }
   },
 }

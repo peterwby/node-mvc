@@ -1,7 +1,7 @@
 'use strict'
 
 const Http = require('../Lib/Http')
-const U = require('../Lib/Util')
+const Util = require('../Lib/Util')
 
 const Database = use('Database')
 const log = use('Logger')
@@ -16,15 +16,15 @@ class TestService {
       const url = 'http://api.m.taobao.com/rest/api.do?api=mtop.common.getTimestamp'
       const result = await Http.get(url, { aa: '1234' }, { timeout: 5000 }) //timeout ??
       if (result.fail) {
-        throw new Error(result.msg)
+        throw new Error('访问http出错')
       }
-      return result
+      let data = result //组装数据
+      return Util.success(data)
     } catch (err) {
-      log.notice('kj230rj09293j')
-      return {
-        fail: true,
+      return Util.error({
         msg: err.message,
-      }
+        track: '94jf902',
+      })
     }
   }
 
@@ -35,13 +35,11 @@ class TestService {
       if (result.fail) {
         throw new Error(result.msg)
       }
-      return result
+      return Util.success(result)
     } catch (err) {
-      log.notice('98457t9f49f')
-      return {
-        fail: true,
+      return Util.error({
         msg: err.message,
-      }
+      })
     }
   }
 }

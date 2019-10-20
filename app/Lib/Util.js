@@ -3,7 +3,62 @@
 日期：2019年6月12日
 ****************************************************************************/
 
+const log = use('Logger')
+
 const Util = {
+  /************************************************************************
+   * 封装返回值
+   ************************************************************************/
+
+  /**
+   * 操作成功
+   *
+   * success({msg:'', data:{}, track:'随机值'})
+   */
+  success: obj => {
+    if (Object.prototype.toString.call(obj) !== '[object Object]') {
+      //不是object
+      return {
+        //返回一个缺省值
+        fail: false,
+        msg: 'success',
+      }
+    }
+    obj.fail = false
+    obj.msg = !!obj.msg ? obj.msg : 'success'
+    if (!obj.data || Object.prototype.toString.call(obj.data) !== '[object Object]') {
+      obj.data = {}
+    }
+    return obj
+  },
+
+  /**
+   * 操作失败
+   *
+   * error({msg:'', data:{}, track:'随机值'})
+   */
+  error: obj => {
+    if (Object.prototype.toString.call(obj) !== '[object Object]') {
+      //不是object
+      log.notice('error')
+      return {
+        //返回一个缺省值
+        fail: true,
+        msg: 'error',
+        track: '',
+      }
+    }
+    obj.fail = true
+    obj.msg = !!obj.msg ? obj.msg : 'error'
+    if (!obj.data || Object.prototype.toString.call(obj.data) !== '[object Object]') {
+      obj.data = {}
+    }
+    obj.track = !!obj.track ? obj.track : ''
+    log.notice(`track:${obj.track}`)
+    log.error(obj.msg)
+    return obj
+  },
+
   /************************************************************************
    * Arrays
    ************************************************************************/

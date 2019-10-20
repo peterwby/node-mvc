@@ -15,7 +15,7 @@
 
 /** @type {typeof import('@adonisjs/framework/src/Route/Manager')} */
 const Route = use('Route')
-const Logger = use('Logger')
+const log = use('Logger')
 
 //需验证
 Route.group(() => {
@@ -86,7 +86,7 @@ Route.group(() => {
     //查看图片缩略图
     Route.get('show-images/:type/:file', 'DownloadController.showImages')
   } catch (err) {
-    Logger.err(err)
+    log.err(err)
     return {
       code: 9999,
       msg: '服务端无此路由',
@@ -103,7 +103,7 @@ Route.group(() => {
     Route.post('login-member', 'MemberController.login')
     Route.post('create-member', 'MemberController.create')
   } catch (err) {
-    Logger.err(err)
+    log.err(err)
     return {
       code: 9999,
       msg: '服务端无此路由',
@@ -114,8 +114,6 @@ Route.group(() => {
 
 //以下为测试路由，可删除===================
 Route.get('/test1', 'PC/TestController.test1')
-
-Route.get('/test2/:type/:file', 'TestController.test2')
 
 //如果匹配不到路由，则转到404页面
 //Route.any('*', ({ view }) => view.render('404'))
