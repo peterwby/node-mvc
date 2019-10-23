@@ -1,62 +1,132 @@
 /****************************************************************************
 名称：常用工具函数集合
-日期：2019年6月12日
+日期：2019年10月22日
 ****************************************************************************/
 
 const log = use('Logger')
 
 const Util = {
   /************************************************************************
-   * 封装返回值
+   * 业务
    ************************************************************************/
-
   /**
    * 操作成功
    *
-   * success({msg:'', data:{}, track:'随机值'})
+   * success({msg:'', data:{}})
    */
   success: obj => {
+    //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      //不是object
+      //返回一个缺省值
       return {
-        //返回一个缺省值
         fail: false,
         msg: 'success',
       }
     }
     obj.fail = false
-    obj.msg = !!obj.msg ? obj.msg : 'success'
-    if (!obj.data || Object.prototype.toString.call(obj.data) !== '[object Object]') {
-      obj.data = {}
-    }
+    obj.msg = obj.msg || 'success'
+    obj.data = obj.data || {}
     return obj
   },
 
   /**
    * 操作失败
    *
-   * error({msg:'', data:{}, track:'随机值'})
+   * error({msg:'', track:'随机值'})
    */
   error: obj => {
+    //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      //不是object
       log.notice('error')
+      //返回一个缺省值
       return {
-        //返回一个缺省值
         fail: true,
         msg: 'error',
         track: '',
       }
     }
     obj.fail = true
-    obj.msg = !!obj.msg ? obj.msg : 'error'
-    if (!obj.data || Object.prototype.toString.call(obj.data) !== '[object Object]') {
-      obj.data = {}
+    obj.msg = obj.msg || 'error'
+    obj.data = obj.data || {}
+    obj.track = obj.track || ''
+
+    log.notice(obj.track)
+    if (JSON.stringify(obj.data) !== '{}') {
+      log.error(obj.data)
     }
-    obj.track = !!obj.track ? obj.track : ''
-    log.notice(`track:${obj.track}`)
     log.error(obj.msg)
     return obj
+  },
+
+  /**
+   * 发给前端的成功信息
+   *
+   * success2front({msg:'', data:{}, code: 0})
+   */
+  success2front: obj => {
+    //不是object
+    if (Object.prototype.toString.call(obj) !== '[object Object]') {
+      //返回一个缺省值
+      return {
+        fail: false,
+        msg: '操作成功',
+        data: {},
+        code: 0,
+      }
+    }
+    obj.fail = false
+    obj.msg = obj.msg || '操作成功'
+    obj.data = obj.data || {}
+    obj.code = obj.code || 0
+    return obj
+  },
+
+  /**
+   * 发给前端的失败信息
+   *
+   * error2front({msg:'', code: 9999, track:'随机值'})
+   */
+  error2front: obj => {
+    //不是object
+    if (Object.prototype.toString.call(obj) !== '[object Object]') {
+      log.notice('出现错误')
+      //返回一个缺省值
+      return {
+        fail: true,
+        msg: '出现错误',
+        data: {},
+        code: 9999,
+        track: '',
+      }
+    }
+    log.notice(obj.track)
+    log.error(obj.msg)
+
+    obj.fail = true
+    obj.msg = '出现错误'
+    obj.data = obj.data || {}
+    obj.code = obj.code || 9999
+    obj.track = obj.track || ''
+
+    if (JSON.stringify(obj.data) !== '{}') {
+      log.error(obj.data)
+    }
+
+    return obj
+  },
+
+  /**
+   * 对象里只保留期望的键
+   *
+   * filterKey({name:''}, {name:'xx', aa:1 }) : {name: 'xx'}
+   */
+  filterKey: (expectObj, rawObj) => {
+    for (let k in rawObj) {
+      if (expectObj.hasOwnProperty(k)) {
+        expectObj[k] = rawObj[k]
+      }
+    }
+    return expectObj
   },
 
   /************************************************************************
@@ -96,30 +166,30 @@ const Util = {
 
   /**
    * 计算数组中某个元素值的出现次数
-   * arrCount(['a', 'a', 'b'], 'a'): 2
+   * arrItemCount(['a', 'a', 'b'], 'a'): 2
    */
-  arrCount: (arr, value) => arr.reduce((a, v) => (v === value ? a + 1 : a + 0), 0),
+  arrItemCount: (arr, value) => arr.reduce((a, v) => (v === value ? a + 1 : a + 0), 0),
 
   /**
    * 返回去重后的数组
-   * arrDistinct([1,2,2,3]): [1,2,3]
+   * arrRemoveDuplicate([1,2,2,3]): [1,2,3]
    */
-  arrDistinct: arr => [...new Set(arr)],
+  arrRemoveDuplicate: arr => [...new Set(arr)],
 
   /**
-   * 返回两个数组中相同的元素（注：不去重）
-   * arrBothHas([1,2],[2,3]): [2]
+   * 返回两个数组中相同的元素（注：不去重，大小写敏感）
+   * arrRemoveDuplicateDoubleCase([1,2],[2,3]): [2]
    */
-  arrBothHas: (a, b) => {
+  arrRemoveDuplicateDoubleCase: (a, b) => {
     const s = new Set(b)
     return a.filter(x => s.has(x))
   },
 
   /**
    * 返回两个数组中相同的元素（注：不去重，大小写不敏感）
-   * arrBothHas(['A','b','C'], ['c']): ['c']
+   * arrRemoveDuplicateDouble(['A','b','C'], ['c']): ['c']
    */
-  arrBothHas2: (a, b) => {
+  arrRemoveDuplicateDouble: (a, b) => {
     let a1 = [],
       b1 = []
     for (let i of b) {
@@ -134,9 +204,9 @@ const Util = {
 
   /**
    * 删除2个数组同时存在的元素，返回一个合并后的新数组
-   * arrDeleteBothUnion([1,2],[2,3]): [1,3]
+   * arrDeleteDoubleAndUnion([1,2],[2,3]): [1,3]
    */
-  arrDeleteBothUnion: (a, b) => {
+  arrDeleteDoubleAndUnion: (a, b) => {
     const sA = new Set(a),
       sB = new Set(b)
     return [...a.filter(x => !sB.has(x)), ...b.filter(x => !sA.has(x))]
@@ -144,18 +214,18 @@ const Util = {
 
   /**
    * 从A数组中删除AB数组同时存在的元素，返回一个新数组
-   * arrDeleteBoth([1,2],[2,3]): [1]
+   * arrDeleteDouble([1,2],[2,3]): [1]
    */
-  arrDeleteBoth: (a, b) => {
+  arrDeleteDouble: (a, b) => {
     const s = new Set(b)
     return a.filter(x => !s.has(x))
   },
 
   /**
    * 2数组先去重，返回一个合并后的新数组
-   * arrUnion([1,2],[2,3]): [1,2,3]
+   * arrUnionDouble([1,2],[2,3]): [1,2,3]
    */
-  arrUnion: (a, b) => Array.from(new Set([...a, ...b])),
+  arrUnionDouble: (a, b) => Array.from(new Set([...a, ...b])),
 
   /**
    * 返回数组中的所有元素, 除第一个
@@ -198,10 +268,10 @@ const Util = {
   },
 
   /**
-   * 检查给定数组中是否包含某值（不支持复杂元素的检查）
-   * arrIsContains([1,2],3): false
+   * 检查给定数组中是否包含某值（大小写敏感）
+   * arrIncludesCase([1,2],3): false
    */
-  arrIsContains: function(arr, val) {
+  arrIncludesCase: function(arr, val) {
     var i = arr.length
     while (i--) {
       if (arr[i] === val) {
@@ -213,9 +283,9 @@ const Util = {
 
   /**
    * 检查给定数组中是否包含某值（大小写不敏感）
-   * arrIsContains2([1,2],3): false
+   * arrIncludes([1,2],3): false
    */
-  arrIsContains2: function(arr, val) {
+  arrIncludes: function(arr, val) {
     var i = arr.length
     while (i--) {
       if (arr[i].toLowerCase() == val.toLowerCase()) {
@@ -348,6 +418,7 @@ const Util = {
 
     */
   dateHelp: () => {},
+
   /************************************************************************
    * 函数类
    ************************************************************************/
@@ -366,14 +437,13 @@ const Util = {
   to: promise => {
     if (!promise || !Promise.prototype.isPrototypeOf(promise)) {
       return new Promise((resolve, reject) => {
-        reject(new Error('to要求参数是promise类型的函数'))
+        reject(new Error('to要求参数是promise类型'))
       }).catch(err => {
         return [err, null]
       })
     }
     return promise
       .then(function() {
-        //console.log(arguments,'arguments')
         return [null, ...arguments]
       })
       .catch(err => {
@@ -451,17 +521,12 @@ const Util = {
     return Math.abs(x * y) / gcd(x, y)
   },
 
-  /**
-   * 返回一个uuid
-   */
-  uuid: () => ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c => (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)),
-
   /************************************************************************
    * 对象类
    ************************************************************************/
 
   /**
-   * 是否有某个属性/键
+   * 是否有某个属性/键（大小写敏感）
    * jsonHas({aa:1}, 'aa'): true
    */
   jsonHas: function(obj, key) {
@@ -479,66 +544,80 @@ const Util = {
     name.replace(/\_(\w)/g, function(all, letter) {
       return letter.toUpperCase()
     }),
-  /**
-   * json对象：驼峰转为连字符
-   */
-  json2Line: obj => {
-    let newObj = {}
-    for (let key in obj) {
-      newObj[str2Line(key)] = obj[key]
-    }
-    return newObj
-  },
-  /**
-   * json对象：连字符转为驼峰
-   */
-  json2Camel: obj => {
-    let newObj = {}
-    for (let key in obj) {
-      newObj[str2Camel(key)] = obj[key]
-    }
-    return newObj
-  },
 
-  // cleanObj: 移除从 JSON 对象指定的属性之外的任何特性
-  // 使用Object.keys()方法可以遍历给定的 json 对象并删除在给定数组中不是included 的键。另外, 如果给它一个特殊的键 (childIndicator), 它将在里面深入搜索, 并将函数应用于内部对象
-  cleanObj: (obj, keysToKeep = [], childIndicator) => {
-    let o = obj,
-      k = keysToKeep,
-      c = childIndicator
-    _cleanObj = (_obj, _keysToKeep = [], _childIndicator) => {
-      Object.keys(_obj).forEach(key => {
-        if (key === _childIndicator) {
-          _cleanObj(_obj[key], _keysToKeep, _childIndicator)
-        } else if (!_keysToKeep.includes(key)) {
-          delete _obj[key]
+  /**
+   * 驼峰转为连字符
+   */
+  toLine: data => {
+    let newData = null
+    if (Util.isObj(data)) {
+      newData = {}
+      for (let key in data) {
+        newData[Util.str2Line(key)] = data[key]
+      }
+    } else if (Util.isArray(data)) {
+      if (Util.isString(data[0])) {
+        newData = []
+        for (let key of data) {
+          newData.push(Util.str2Line(key))
         }
-      })
+      } else if (Util.isObj(data[0])) {
+        newData = []
+        for (let a of data) {
+          let newObj = {}
+          for (let k in a) {
+            newObj[Util.str2Line(k)] = a[k]
+          }
+          newData.push(newObj)
+        }
+      } else {
+        newData = data
+      }
+    } else {
+      newData = data
     }
-    return _cleanObj(o, k, c)
+
+    return newData
   },
 
-  // objectFromParis: 从给定的键值对创建对象
-  // 使用Array.reduce()创建和组合键值对
-  objectFromPairs: arr => arr.reduce((a, v) => ((a[v[0]] = v[1]), a), {}),
+  /**
+   * 连字符转为驼峰
+   */
+  toCamel: data => {
+    let newData = null
+    if (Util.isObj(data)) {
+      newData = {}
+      for (let key in data) {
+        newData[Util.str2Camel(key)] = data[key]
+      }
+    } else if (Util.isArray(data)) {
+      if (Util.isString(data[0])) {
+        newData = []
+        for (let key of data) {
+          newData.push(Util.str2Camel(key))
+        }
+      } else if (Util.isObj(data[0])) {
+        newData = []
+        for (let a of data) {
+          let newObj = {}
+          for (let k in a) {
+            newObj[Util.str2Camel(k)] = a[k]
+          }
+          newData.push(newObj)
+        }
+      } else {
+        newData = data
+      }
+    } else {
+      newData = data
+    }
 
-  // objectToPairs: 从对象创建键值对数组
-  // 使用Object.keys()和Array.map()循环访问对象的键并生成具有键值对的数组
-  objectToPairs: obj => Object.keys(obj).map(k => [k, obj[k]]),
-
-  // shallowClone: 创建对象的浅复制
-  // 使用Object.assign()和一个空对象 ({}) 创建原始的浅克隆
-  shallowClone: obj => Object.assign({}, obj),
-
-  // truthCheckCollection: 检查谓词 (第二个参数) 是否 truthy 集合的所有元素 (第一个参数)
-  // 使用Array.every()检查每个传递的对象是否具有指定的属性, 以及是否返回 truthy值
-  truthCheckCollection: (collection, pre) => collection.every(obj => obj[pre]),
+    return newData
+  },
 
   /************************************************************************
    * 字符串类
    ************************************************************************/
-
-  //返回字符串第n次出现的位置
 
   /**
    * 返回字符串第n次出现的下标位置
@@ -611,12 +690,6 @@ const Util = {
   },
 
   /**
-   * 转义要在正则表达式中使用的字符串
-   * @param {*} str
-   */
-  strEscapeRegExp: str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-
-  /**
    * 反转字符串
    */
   strReverse: str => [...str].reverse().join(''),
@@ -629,36 +702,6 @@ const Util = {
       .split('')
       .sort((a, b) => a.localeCompare(b))
       .join(''),
-
-  // 只返回字符串a-z字符
-  onlyLetters: function(str) {
-    return str.toLowerCase().replace(/[^a-z]/g, '')
-  },
-
-  // 只返回字符串中a-z和数字
-  onlyLettersNums: function(str) {
-    return str.toLowerCase().replace(/[^a-z,0-9]/g, '')
-  },
-
-  // capitalize: 将字符串的第一个字母大写
-  // 使用 destructuring 和toUpperCase()可将第一个字母、...rest用于获取第一个字母之后的字符数组, 然后是Array.join('')以使其成为字符串。省略lowerRest参数以保持字符串的其余部分不变, 或将其设置为true以转换为小写
-  capitalize: ([first, ...rest], lowerRest = false) => first.toUpperCase() + (lowerRest ? rest.join('').toLowerCase() : rest.join('')),
-
-  // capitalizeEveryWord: 将字符串中每个单词的首字母大写
-  // 使用replace()匹配每个单词和toUpperCase()的第一个字符以将其大写
-  capitalizeEveryWord: str => str.replace(/\b[a-z]/g, char => char.toUpperCase()),
-
-  // fromCamelCase: 从驼峰表示法转换为字符串形式
-  // 使用replace()可删除下划线、连字符和空格, 并将单词转换为匹配。省略第二个参数以使用默认分隔符_
-  fromCamelCase: (str, separator = '_') =>
-    str
-      .replace(/([a-z\d])([A-Z])/g, '$1' + separator + '$2')
-      .replace(/([A-Z]+)([A-Z][a-z\d]+)/g, '$1' + separator + '$2')
-      .toLowerCase(),
-
-  // toCamelCase: 字符串转换为驼峰模式
-  // 使用replace()可删除下划线、连字符和空格, 并将单词转换为驼峰模式
-  toCamelCase: str => str.replace(/^([A-Z])|[\s-_]+(\w)/g, (match, p1, p2, offset) => (p2 ? p2.toUpperCase() : p1.toLowerCase())),
 
   /************************************************************************
    * 类型检测与转换
@@ -723,7 +766,7 @@ const Util = {
 
   /**
    * 把null或'null'或'undefined'转为''
-   * @param {*} obj
+   * null2empty(data, '')
    */
   null2empty: function(data, empty) {
     if (!data) {
@@ -739,17 +782,17 @@ const Util = {
 
   /**
    * 是否是空的json对象：{}
-   * @param {*} obj
+   *
    */
-  isJsonEmpty: function(obj) {
+  isObjEmpty: function(obj) {
     return Object.keys(obj).length === 0 && obj.constructor === Object
   },
 
   /**
    * 是否是json对象
-   * @param {*} obj
+   *
    */
-  isJson: function(obj) {
+  isObj: function(obj) {
     return Object.prototype.toString.call(obj) == '[object Object]'
   },
 
@@ -767,8 +810,6 @@ const Util = {
   isArray: function(value) {
     return Object.prototype.toString.call(value) == '[object Array]'
   },
-  // 或
-  // isArray: val => !!val && Array.isArray(val),
 
   /**
    * 是否是函数
@@ -776,35 +817,16 @@ const Util = {
   isFunction: function(value) {
     return Object.prototype.toString.call(value) == '[object Function]'
   },
-  // 或
-  // isFunction: val => val && typeof val === "function",
-
-  /**
-   * 是否是正则表达式
-   * @param {*} value
-   */
-  isRegExp: function(value) {
-    return Object.prototype.toString.call(value) == '[object RegExp]'
-  },
 
   /**
    * 是否是字符串
    */
   isString: str => Object.prototype.toString.call(str) == '[object String]',
-  // 或
-  // isString: val => typeof val === "string",
 
   /**
    * 是否是布尔值
    */
   isBoolean: val => Object.prototype.toString.call(val) == '[object Boolean]',
-  // 或
-  // isBoolean: val => typeof val === "boolean",
-
-  // 判断是否为Symbol
-  isSymbol: val => Object.prototype.toString.call(val) == '[object Symbol]',
-  // 或
-  // isSymbol: val => typeof val === "symbol",
 }
 
 module.exports = Util
