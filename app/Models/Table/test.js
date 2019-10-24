@@ -9,11 +9,12 @@ const Database = use('Database')
  */
 class TestTable extends BaseTable {
   /**
-   * 是否存在姓名(返回boolean)
-   *
+   * @desc 是否存在姓名
+   * @example
    * isExistByName({
-   *            userName: 'x',
-   *  })
+   *  userName: 'xx',
+   * })
+   * @returns boolean
    */
   async isExistByName(obj) {
     try {

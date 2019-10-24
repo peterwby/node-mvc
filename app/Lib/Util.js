@@ -9,30 +9,64 @@ const Util = {
   /************************************************************************
    * 业务
    ************************************************************************/
+
   /**
-   * 操作成功
-   *
+   * @desc 操作成功完成，达到预期目的
+   * @example
    * success({msg:'', data:{}})
+   * @returns object
    */
   success: obj => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
       //返回一个缺省值
       return {
-        fail: false,
-        msg: 'success',
+        error: false,
+        reject: false,
+        success: true,
+        msg: '操作成功',
+        data: {},
       }
     }
-    obj.fail = false
+    obj.error = false
+    obj.reject = false
+    obj.success = true
+    obj.msg = obj.msg || '操作成功'
+    obj.data = obj.data || {}
+    return obj
+  },
+
+  /**
+   * @desc 由于某个条件没达到要求，操作被拒绝
+   * @example
+   * reject({msg:'xxx'})
+   * @returns object
+   */
+  reject: obj => {
+    //不是object
+    if (Object.prototype.toString.call(obj) !== '[object Object]') {
+      //返回一个缺省值
+      return {
+        error: false,
+        reject: true,
+        success: false,
+        msg: '操作被拒绝',
+        data: {},
+      }
+    }
+    obj.error = false
+    obj.reject = true
+    obj.success = false
     obj.msg = obj.msg || 'success'
     obj.data = obj.data || {}
     return obj
   },
 
   /**
-   * 操作失败
-   *
+   * @desc 程序抛出异常错误，导致操作失败
+   * @example
    * error({msg:'', track:'随机值'})
+   * @returns object
    */
   error: obj => {
     //不是object
@@ -40,12 +74,17 @@ const Util = {
       log.notice('error')
       //返回一个缺省值
       return {
-        fail: true,
+        error: true,
+        reject: false,
+        success: false,
         msg: 'error',
+        data: {},
         track: '',
       }
     }
-    obj.fail = true
+    obj.error = true
+    obj.reject = false
+    obj.success = false
     obj.msg = obj.msg || 'error'
     obj.data = obj.data || {}
     obj.track = obj.track || ''
@@ -59,22 +98,22 @@ const Util = {
   },
 
   /**
-   * 发给前端的成功信息
-   *
+   * @desc 发给前端的信息：操作成功
+   * @example
    * success2front({msg:'', data:{}, code: 0})
+   * @returns object
    */
   success2front: obj => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
       //返回一个缺省值
       return {
-        fail: false,
         msg: '操作成功',
         data: {},
         code: 0,
       }
     }
-    obj.fail = false
+    obj.error = false
     obj.msg = obj.msg || '操作成功'
     obj.data = obj.data || {}
     obj.code = obj.code || 0
@@ -82,9 +121,33 @@ const Util = {
   },
 
   /**
-   * 发给前端的失败信息
-   *
+   * @desc 发给前端的信息：操作被拒绝
+   * @example
+   * reject2front({msg:'', code: 201})
+   * @returns object
+   */
+  reject2front: obj => {
+    //不是object
+    if (Object.prototype.toString.call(obj) !== '[object Object]') {
+      //返回一个缺省值
+      return {
+        error: false,
+        msg: '操作被拒绝',
+        data: {},
+        code: 0,
+      }
+    }
+    obj.msg = obj.msg || '操作被拒绝'
+    obj.data = obj.data || {}
+    obj.code = obj.code || 0
+    return obj
+  },
+
+  /**
+   * @desc 发给前端的信息：出现异常
+   * @example
    * error2front({msg:'', code: 9999, track:'随机值'})
+   * @returns object
    */
   error2front: obj => {
     //不是object
@@ -92,7 +155,6 @@ const Util = {
       log.notice('出现错误')
       //返回一个缺省值
       return {
-        fail: true,
         msg: '出现错误',
         data: {},
         code: 9999,
@@ -101,8 +163,7 @@ const Util = {
     }
     log.notice(obj.track)
     log.error(obj.msg)
-
-    obj.fail = true
+    //对前端屏蔽真实错误
     obj.msg = '出现错误'
     obj.data = obj.data || {}
     obj.code = obj.code || 9999
@@ -116,11 +177,12 @@ const Util = {
   },
 
   /**
-   * 对象里只保留期望的键
-   *
-   * filterKey({name:''}, {name:'xx', aa:1 }) : {name: 'xx'}
+   * @desc 复制并过滤：第二个参数覆盖第一个参数，且第二个参数多余的key不理睬
+   * @example
+   * assignFilter({name:''}, {name:'xx', aa:1 }) : {name: 'xx'}
+   * @returns object
    */
-  filterKey: (expectObj, rawObj) => {
+  assignFilter: (expectObj, rawObj) => {
     for (let k in rawObj) {
       if (expectObj.hasOwnProperty(k)) {
         expectObj[k] = rawObj[k]
@@ -546,7 +608,10 @@ const Util = {
     }),
 
   /**
-   * 驼峰转为连字符
+   * @desc 驼峰转为连字符
+   * @example
+   * toLine({ userName: 1 }) : {user_name: 1}
+   * @returns object
    */
   toLine: data => {
     let newData = null
@@ -581,7 +646,10 @@ const Util = {
   },
 
   /**
-   * 连字符转为驼峰
+   * @desc 连字符转为驼峰
+   * @example
+   * toCamel({ user_name: 1 }) : {userName: 1}
+   * @returns object
    */
   toCamel: data => {
     let newData = null

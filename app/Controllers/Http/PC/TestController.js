@@ -7,30 +7,33 @@ const TestService = require(`../../../Services/TestService`)
 const testService = new TestService()
 
 class TestController {
-  //测试
-  async test1(ctx) {
+  /**
+   * @desc 测试
+   * @example
+   * test(ctx)
+   * @returns object
+   */
+  async test(ctx) {
     try {
       //校验权限和参数
       const resultValid = await testValid(ctx)
-      if (resultValid.fail) {
+      if (resultValid.error) {
         throw new Error(resultValid.msg)
       }
       //调用业务逻辑
-      const result = await testService.findDb(ctx)
-      if (result.fail) {
+      const result = await testService.updateDb(ctx)
+      if (result.error) {
         throw new Error(result.msg)
       }
       //组装数据，返回json给前端
       return Util.success2front({
-        msg: '操作成功',
+        msg: result.msg,
         data: result.data,
-        code: 0,
       })
     } catch (err) {
-      //对前端屏蔽真实错误
       return Util.error2front({
         msg: err.message,
-        code: 9999,
+        code: 9000,
         track: '023j0f93j89',
       })
     }
@@ -38,15 +41,17 @@ class TestController {
 }
 
 /**
- *
- * 校验权限和参数
+ * @desc 校验权限和参数
+ * @example
+ * testValid(ctx)
+ * @returns object
  */
 async function testValid(ctx) {
   try {
     //校验身份权限
     await authValid()
-    //组装参数
-    await paramsTrans()
+    //组装处理参数
+    await paramsHandle()
     //校验请求参数合法性
     await paramsValid()
 
@@ -54,7 +59,7 @@ async function testValid(ctx) {
 
     async function authValid() {}
 
-    /*async function paramsTrans() {
+    async function paramsHandle() {
       let bodyRaw = ctx.request.all()
       let body = {
         id: 0,
@@ -73,9 +78,9 @@ async function testValid(ctx) {
         }
       }
       ctx.body = body
-    }*/
+    }
 
-    async function paramsTrans() {
+    /*async function paramsHandle() {
       let bodyRaw = ctx.request.all()
       let body = {
         id: 0,
@@ -90,7 +95,7 @@ async function testValid(ctx) {
         }
       }
       ctx.body = body
-    }
+    }*/
 
     async function paramsValid() {
       const rules = {

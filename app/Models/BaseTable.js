@@ -3,20 +3,18 @@
 const Util = require('../Lib/Util')
 const Database = use('Database')
 
-/**
- * 基类表
- */
 class BaseTable {
   constructor(tabelName) {
     this.tabelName = tabelName
   }
 
   /**
-   * 通过主键id查询记录是否存在(返回boolean)
-   *
+   * @desc 通过主键id查询记录是否存在
+   * @example
    * isExistById({
-   *            id: 1,
-   *  })
+   *  id: 1,
+   * }
+   * @returns boolean
    */
   async isExistById(obj) {
     try {
@@ -32,12 +30,13 @@ class BaseTable {
   }
 
   /**
-   * 创建一条记录
-   *
+   * @desc 创建一条记录
+   * @example
    * create(trx,  {
-   *    name: 'xx',
-   *    status: 0
+   *  name: 'xx',
+   *  status: 0
    * })
+   * @returns object
    */
   async create(trx, obj) {
     try {
@@ -59,14 +58,15 @@ class BaseTable {
   }
 
   /**
-   * 查询主键id，更新一条记录
-   *
+   * @desc 根据主键id更新一条记录
+   * @example
    * updateById(trx, {
-   *        id: 10,
-   *        set: {
-   *            status: 0
-   *        }
+   *  id: 10,
+   *  set: {
+   *    status: 0
+   *  }
    * })
+   * @returns object
    */
   async updateById(trx, obj) {
     try {
@@ -90,11 +90,12 @@ class BaseTable {
   }
 
   /**
-   * 通过主键id数组，批量删除
-   *
-   *  deleteBatchById(trx, {
-   *            ids: [1,2,3]
+   * @desc 通过主键id数组，批量删除
+   * @example
+   * deleteBatchById(trx, {
+   *  ids: [1,2,3]
    * })
+   * @returns object
    */
   async deleteBatchById(trx, obj) {
     try {
@@ -116,11 +117,12 @@ class BaseTable {
   }
 
   /**
-   * 通过主键id删除一条记录
-   *
+   * @desc 通过主键id删除一条记录
+   * @example
    * deleteById(trx, {
-   *            id: 1
+   *  id: 1
    * })
+   * @returns object
    */
   async deleteById(trx, obj) {
     try {
@@ -142,12 +144,13 @@ class BaseTable {
   }
 
   /**
-   * 通过主键id查询一条记录
-   *
+   * @desc 通过主键id查询一条记录
+   * @example
    * findById({
-   *            id: 1,
-   *            cols: ['name', 'status']
-   *  })
+   *  id: 1,
+   *  cols: ['name', 'status']
+   * })
+   * @returns object
    */
   async findById(obj) {
     try {
@@ -168,6 +171,37 @@ class BaseTable {
         msg: err.message,
         data: { table: this.tabelName },
         track: '465u654',
+      })
+    }
+  }
+
+  /**
+   * @desc 无条件查询所有记录（limit 9999以防止查询太多）
+   * @example
+   * findAll({
+   *  cols: ['name', 'status']
+   * })
+   * @returns object
+   */
+  async findAll(obj) {
+    try {
+      let cols = obj.cols
+      cols = Util.toLine(cols)
+      const table = Database.clone()
+      const result = await table
+        .select(...cols)
+        .from(this.tabelName)
+        .limit(9999)
+
+      let data = Util.toCamel(result)
+      return Util.success({
+        data: data,
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        data: { table: this.tabelName },
+        track: '905j03j0',
       })
     }
   }

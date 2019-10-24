@@ -113,7 +113,7 @@ Route.group(() => {
 }).prefix('api/v1')
 
 //以下为测试路由，可删除===================
-Route.get('/test1', 'PC/TestController.test1')
+Route.get('/test', 'PC/TestController.test')
 
 //如果匹配不到路由，则转到404页面
 //Route.any('*', ({ view }) => view.render('404'))
