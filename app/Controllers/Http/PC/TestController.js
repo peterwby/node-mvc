@@ -8,7 +8,7 @@ const testService = new TestService()
 
 class TestController {
   /**
-   * @desc 测试
+   * 测试
    * @example
    * test(ctx)
    * @returns object
@@ -18,7 +18,12 @@ class TestController {
       //校验权限和参数
       const resultValid = await testValid(ctx)
       if (resultValid.error) {
-        throw new Error(resultValid.msg)
+        return Util.error2front({
+          isShowMsg: true,
+          msg: resultValid.msg,
+          code: 9000,
+          track: '9834jld6',
+        })
       }
       //调用业务逻辑
       const result = await testService.updateDb(ctx)
@@ -32,6 +37,7 @@ class TestController {
       })
     } catch (err) {
       return Util.error2front({
+        //isShowMsg: true,
         msg: err.message,
         code: 9000,
         track: '023j0f93j89',
@@ -41,7 +47,7 @@ class TestController {
 }
 
 /**
- * @desc 校验权限和参数
+ * 校验权限和参数
  * @example
  * testValid(ctx)
  * @returns object
@@ -55,7 +61,7 @@ async function testValid(ctx) {
     //校验请求参数合法性
     await paramsValid()
 
-    return Util.success()
+    return Util.end({})
 
     async function authValid() {}
 
@@ -99,7 +105,7 @@ async function testValid(ctx) {
 
     async function paramsValid() {
       const rules = {
-        userName: 'alpha_numeric',
+        userName: 'required|alpha_numeric',
         beginDate: 'date|after:2019-10-01',
         age: 'number|above:10',
         data: 'json', //data={"a":"1"},data的值能被JSON.parse(data)
@@ -109,7 +115,7 @@ async function testValid(ctx) {
         rePassword: 'same:password',
       }
       const messages = {
-        //'userName.required': '用户名为必填项',
+        'userName.required': '用户名为必填项',
         'userName.alpha_numeric': '用户名应为字母和数字',
         'age.above': '年龄应为大于等于20的数字',
         'sex.in': '性别只能是1或2',
@@ -117,11 +123,11 @@ async function testValid(ctx) {
         'password.max': '密码最大10位数',
         'rePassword.same': '两次密码不一致',
       }
-      const validation = await validate(ctx.body.cols, rules, messages)
+      const validation = await validate(ctx.body.set, rules, messages)
       if (validation.fails()) {
         throw new Error(validation.messages()[0].message)
       }
-      if (isNaN(ctx.body.id)) {
+      if (Number(ctx.body.id) <= 0) {
         throw new Error('id应为数字')
       }
     }

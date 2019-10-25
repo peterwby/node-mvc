@@ -9,7 +9,7 @@ class BaseTable {
   }
 
   /**
-   * @desc 通过主键id查询记录是否存在
+   * 通过主键id查询记录是否存在
    * @example
    * isExistById({
    *  id: 1,
@@ -30,7 +30,7 @@ class BaseTable {
   }
 
   /**
-   * @desc 创建一条记录
+   * 创建一条记录
    * @example
    * create(trx,  {
    *  name: 'xx',
@@ -42,7 +42,7 @@ class BaseTable {
     try {
       let columns = Util.toLine(obj)
       const result = await trx.table(this.tabelName).insert(columns)
-      return Util.success({
+      return Util.end({
         msg: '创建成功',
         data: {
           newId: result[0],
@@ -51,14 +51,14 @@ class BaseTable {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName },
+        data: { table: this.tabelName, req: obj },
         track: '9034jf938',
       })
     }
   }
 
   /**
-   * @desc 根据主键id更新一条记录
+   * 根据主键id更新一条记录
    * @example
    * updateById(trx, {
    *  id: 10,
@@ -76,21 +76,21 @@ class BaseTable {
         .table(this.tabelName)
         .where('id', obj.id)
         .update(columns)
-      return Util.success({
+      return Util.end({
         msg: '更新成功',
         data: { rows },
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName },
+        data: { table: this.tabelName, req: obj },
         track: 'lkjg04590',
       })
     }
   }
 
   /**
-   * @desc 通过主键id数组，批量删除
+   * 通过主键id数组，批量删除
    * @example
    * deleteBatchById(trx, {
    *  ids: [1,2,3]
@@ -103,21 +103,21 @@ class BaseTable {
         .table(this.tabelName)
         .whereIn('id', obj.ids)
         .delete()
-      return Util.success({
+      return Util.end({
         msg: '删除成功',
         data: { rows },
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName },
+        data: { table: this.tabelName, req: obj },
         track: 'h98h9h8',
       })
     }
   }
 
   /**
-   * @desc 通过主键id删除一条记录
+   * 通过主键id删除一条记录
    * @example
    * deleteById(trx, {
    *  id: 1
@@ -130,21 +130,21 @@ class BaseTable {
         .table(this.tabelName)
         .where('id', obj.id)
         .delete()
-      return Util.success({
+      return Util.end({
         msg: '删除成功',
         data: { rows },
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName },
+        data: { table: this.tabelName, req: obj },
         track: 'ulkj4309',
       })
     }
   }
 
   /**
-   * @desc 通过主键id查询一条记录
+   * 通过主键id查询一条记录
    * @example
    * findById({
    *  id: 1,
@@ -163,20 +163,20 @@ class BaseTable {
         .where('id', obj.id)
 
       let data = Util.toCamel(result)
-      return Util.success({
+      return Util.end({
         data: data,
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName },
+        data: { table: this.tabelName, req: obj },
         track: '465u654',
       })
     }
   }
 
   /**
-   * @desc 无条件查询所有记录（limit 9999以防止查询太多）
+   * 无条件查询所有记录（limit 9999以防止查询太多）
    * @example
    * findAll({
    *  cols: ['name', 'status']
@@ -194,13 +194,13 @@ class BaseTable {
         .limit(9999)
 
       let data = Util.toCamel(result)
-      return Util.success({
+      return Util.end({
         data: data,
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName },
+        data: { table: this.tabelName, req: obj },
         track: '905j03j0',
       })
     }

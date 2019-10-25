@@ -9,7 +9,7 @@ const Database = use('Database')
  */
 class TestTable extends BaseTable {
   /**
-   * @desc 是否存在姓名
+   * 是否存在姓名
    * @example
    * isExistByName({
    *  userName: 'xx',

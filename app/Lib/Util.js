@@ -11,59 +11,30 @@ const Util = {
    ************************************************************************/
 
   /**
-   * @desc 操作成功完成，达到预期目的
+   * 正常结束，返回操作结果
+   * @description status的值，<0: 异常，=0：不符条件被拒绝，>0：成功
    * @example
-   * success({msg:'', data:{}})
+   * end({msg:'', status: 1, data:{}})
    * @returns object
    */
-  success: obj => {
+  end: obj => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      //返回一个缺省值
-      return {
-        error: false,
-        reject: false,
-        success: true,
-        msg: '操作成功',
-        data: {},
-      }
+      throw new Error('end(obj)的obj应该是个对象')
+    }
+    if (obj.error) {
+      //之前出现了异常，则继续抛出
+      throw new Error(obj.msg)
     }
     obj.error = false
-    obj.reject = false
-    obj.success = true
-    obj.msg = obj.msg || '操作成功'
+    obj.status = obj.status || 1 //status的值，<0: 异常，=0：正常但操作被拒绝，>0：成功
+    obj.msg = obj.msg || '操作已完成'
     obj.data = obj.data || {}
     return obj
   },
 
   /**
-   * @desc 由于某个条件没达到要求，操作被拒绝
-   * @example
-   * reject({msg:'xxx'})
-   * @returns object
-   */
-  reject: obj => {
-    //不是object
-    if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      //返回一个缺省值
-      return {
-        error: false,
-        reject: true,
-        success: false,
-        msg: '操作被拒绝',
-        data: {},
-      }
-    }
-    obj.error = false
-    obj.reject = true
-    obj.success = false
-    obj.msg = obj.msg || 'success'
-    obj.data = obj.data || {}
-    return obj
-  },
-
-  /**
-   * @desc 程序抛出异常错误，导致操作失败
+   * 程序抛出异常错误，导致操作失败
    * @example
    * error({msg:'', track:'随机值'})
    * @returns object
@@ -71,21 +42,11 @@ const Util = {
   error: obj => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      log.notice('error')
-      //返回一个缺省值
-      return {
-        error: true,
-        reject: false,
-        success: false,
-        msg: 'error',
-        data: {},
-        track: '',
-      }
+      throw new Error('end(obj)的obj应该是个对象')
     }
     obj.error = true
-    obj.reject = false
-    obj.success = false
-    obj.msg = obj.msg || 'error'
+    obj.status = obj.status || -1
+    obj.msg = obj.msg || '出现错误'
     obj.data = obj.data || {}
     obj.track = obj.track || ''
 
@@ -98,7 +59,7 @@ const Util = {
   },
 
   /**
-   * @desc 发给前端的信息：操作成功
+   * 发给前端的信息：操作成功
    * @example
    * success2front({msg:'', data:{}, code: 0})
    * @returns object
@@ -106,12 +67,7 @@ const Util = {
   success2front: obj => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      //返回一个缺省值
-      return {
-        msg: '操作成功',
-        data: {},
-        code: 0,
-      }
+      throw new Error('end(obj)的obj应该是个对象')
     }
     obj.error = false
     obj.msg = obj.msg || '操作成功'
@@ -121,7 +77,7 @@ const Util = {
   },
 
   /**
-   * @desc 发给前端的信息：操作被拒绝
+   * 发给前端的信息：操作被拒绝
    * @example
    * reject2front({msg:'', code: 201})
    * @returns object
@@ -129,22 +85,17 @@ const Util = {
   reject2front: obj => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      //返回一个缺省值
-      return {
-        error: false,
-        msg: '操作被拒绝',
-        data: {},
-        code: 0,
-      }
+      throw new Error('end(obj)的obj应该是个对象')
     }
     obj.msg = obj.msg || '操作被拒绝'
     obj.data = obj.data || {}
-    obj.code = obj.code || 0
+    obj.code = obj.code || 1000
     return obj
   },
 
   /**
-   * @desc 发给前端的信息：出现异常
+   * 发给前端的信息：出现异常
+   * @description 如果要向前端显示真实错误，则{ isShowMsg: true }
    * @example
    * error2front({msg:'', code: 9999, track:'随机值'})
    * @returns object
@@ -152,19 +103,12 @@ const Util = {
   error2front: obj => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      log.notice('出现错误')
-      //返回一个缺省值
-      return {
-        msg: '出现错误',
-        data: {},
-        code: 9999,
-        track: '',
-      }
+      throw new Error('end(obj)的obj应该是个对象')
     }
     log.notice(obj.track)
     log.error(obj.msg)
     //对前端屏蔽真实错误
-    obj.msg = '出现错误'
+    obj.msg = obj.isShowMsg ? obj.msg : '出现错误'
     obj.data = obj.data || {}
     obj.code = obj.code || 9999
     obj.track = obj.track || ''
@@ -177,7 +121,7 @@ const Util = {
   },
 
   /**
-   * @desc 复制并过滤：第二个参数覆盖第一个参数，且第二个参数多余的key不理睬
+   * 复制并过滤：第二个参数覆盖第一个参数，且第二个参数多余的key不理睬
    * @example
    * assignFilter({name:''}, {name:'xx', aa:1 }) : {name: 'xx'}
    * @returns object
@@ -608,7 +552,7 @@ const Util = {
     }),
 
   /**
-   * @desc 驼峰转为连字符
+   * 驼峰转为连字符
    * @example
    * toLine({ userName: 1 }) : {user_name: 1}
    * @returns object
@@ -646,7 +590,7 @@ const Util = {
   },
 
   /**
-   * @desc 连字符转为驼峰
+   * 连字符转为驼峰
    * @example
    * toCamel({ user_name: 1 }) : {userName: 1}
    * @returns object

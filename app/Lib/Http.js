@@ -10,7 +10,7 @@ const Http = {
       let { ...config } = more
       config.params = params
       let result = await axios.get(url, config)
-      return Util.success({
+      return Util.end({
         data: result.data,
       })
     } catch (err) {
@@ -35,7 +35,7 @@ const Http = {
     try {
       let { ...config } = more
       let result = await axios.post(url, params, config)
-      return Util.success({
+      return Util.end({
         data: result.data,
       })
     } catch (err) {

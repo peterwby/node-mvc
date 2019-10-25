@@ -11,7 +11,7 @@ class TestService {
   }
 
   /**
-   * @desc 创建
+   * 创建
    * @example
    * createDb(ctx)
    * @returns object
@@ -27,14 +27,15 @@ class TestService {
         //是否已存在
         let isExistUserName = await testTable.isExistByName({ username: data.userName })
         if (isExistUserName) {
-          return Util.reject({
+          return Util.end({
             msg: '已存在此名字',
+            status: 0,
           })
         }
         //创建一条记录
         result = await testTable.create(trx, data)
       })
-      return Util.success(result)
+      return Util.end(result)
     } catch (err) {
       return Util.error({
         msg: '创建失败',
@@ -56,7 +57,7 @@ class TestService {
         let data = { id, set }
         result = await testTable.updateById(trx, data)
       })
-      return Util.success(result)
+      return Util.end(result)
     } catch (err) {
       return Util.error({
         msg: '更新失败',
@@ -76,7 +77,7 @@ class TestService {
       let data = { id, cols }
       result = await testTable.findById(data)
 
-      return Util.success(result)
+      return Util.end(result)
     } catch (err) {
       return Util.error({
         msg: '查询失败',
@@ -95,7 +96,7 @@ class TestService {
       let data = result
       //组装数据
 
-      return Util.success(data)
+      return Util.end(data)
     } catch (err) {
       return Util.error({
         msg: err.message,
@@ -111,7 +112,7 @@ class TestService {
       if (result.error) {
         throw new Error(result.msg)
       }
-      return Util.success(result)
+      return Util.end(result)
     } catch (err) {
       return Util.error({
         msg: err.message,
