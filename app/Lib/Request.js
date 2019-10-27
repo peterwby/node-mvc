@@ -2,9 +2,9 @@
 
 const axios = require('axios')
 const log = use('Logger')
-const Util = require('../Lib/Util')
+const Util = require('./Util')
 
-const Http = {
+const Request = {
   async get(url, params = {}, more = {}) {
     try {
       let { ...config } = more
@@ -57,4 +57,4 @@ const Http = {
   },
 }
 
-module.exports = Http
+module.exports = Request

@@ -59,37 +59,20 @@ const Util = {
   },
 
   /**
-   * 发给前端的信息：操作成功
+   * 发给前端的信息：正常结束，返回操作结果
    * @example
-   * success2front({msg:'', data:{}, code: 0})
+   * end2front({msg:'', data:{}, code: 0})
    * @returns object
    */
-  success2front: obj => {
+  end2front: obj => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
       throw new Error('end(obj)的obj应该是个对象')
     }
     obj.error = false
-    obj.msg = obj.msg || '操作成功'
+    obj.msg = obj.msg || '操作已完成'
     obj.data = obj.data || {}
     obj.code = obj.code || 0
-    return obj
-  },
-
-  /**
-   * 发给前端的信息：操作被拒绝
-   * @example
-   * reject2front({msg:'', code: 201})
-   * @returns object
-   */
-  reject2front: obj => {
-    //不是object
-    if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      throw new Error('end(obj)的obj应该是个对象')
-    }
-    obj.msg = obj.msg || '操作被拒绝'
-    obj.data = obj.data || {}
-    obj.code = obj.code || 1000
     return obj
   },
 

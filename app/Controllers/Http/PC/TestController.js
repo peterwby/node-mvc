@@ -31,9 +31,10 @@ class TestController {
         throw new Error(result.msg)
       }
       //组装数据，返回json给前端
-      return Util.success2front({
+      return Util.end2front({
         msg: result.msg,
         data: result.data,
+        code: result.status > 0 ? 0 : 1000,
       })
     } catch (err) {
       return Util.error2front({

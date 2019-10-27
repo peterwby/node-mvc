@@ -1,6 +1,6 @@
 'use strict'
 
-const Http = require('../Lib/Http')
+const Request = require('../Lib/Request')
 const Util = require('../Lib/Util')
 const Database = use('Database')
 const log = use('Logger')
@@ -89,7 +89,7 @@ class TestService {
   async httpGet() {
     try {
       const url = 'http://api.m.taobao.com/rest/api.do?api=mtop.common.getTimestamp'
-      const result = await Http.get(url, { aa: '1234' }, { timeout: 5000 }) //timeout ??
+      const result = await Request.get(url, { aa: '1234' }, { timeout: 5000 }) //timeout ??
       if (result.error) {
         throw new Error('访问http出错')
       }
@@ -108,7 +108,7 @@ class TestService {
   async httpPost() {
     try {
       const url = 'https://media.mz4s.com/mp/port-msg-box'
-      const result = await Http.post(url, { account: '123467', error_msg: 'dd' }, { timeout: 5000 })
+      const result = await Request.post(url, { account: '123467', error_msg: 'dd' }, { timeout: 5000 })
       if (result.error) {
         throw new Error(result.msg)
       }
