@@ -1,6 +1,7 @@
 'use strict'
 
 const Util = require('../Lib/Util')
+const log = use('Logger')
 const Database = use('Database')
 
 class BaseTable {

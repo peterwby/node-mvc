@@ -1,9 +1,10 @@
 'use strict'
 
-const Request = require('../Lib/Request')
-const Util = require('../Lib/Util')
 const Database = use('Database')
 const log = use('Logger')
+const Request = require('../Lib/Request')
+const Util = require('../Lib/Util')
+const Tables = require('../Models/Tables')
 
 class TestService {
   async test1(ctx) {
@@ -18,14 +19,12 @@ class TestService {
    */
   async createDb(ctx) {
     try {
-      const TestTable = require('../Models/Table/test')
-      const testTable = new TestTable('test')
       let result = {}
       //执行事务
       await Database.transaction(async trx => {
         let data = ctx.body
         //是否已存在
-        let isExistUserName = await testTable.isExistByName({ username: data.userName })
+        let isExistUserName = await Tables.test.isExistByName({ username: data.userName })
         if (isExistUserName) {
           return Util.end({
             msg: '已存在此名字',
@@ -33,12 +32,12 @@ class TestService {
           })
         }
         //创建一条记录
-        result = await testTable.create(trx, data)
+        result = await Tables.test.create(trx, data)
       })
       return Util.end(result)
     } catch (err) {
       return Util.error({
-        msg: '创建失败',
+        msg: err.message,
         track: '8093j4gj',
       })
     }
@@ -46,8 +45,6 @@ class TestService {
 
   async updateDb(ctx) {
     try {
-      const TestTable = require('../Models/Table/test')
-      const testTable = new TestTable('test')
       let result = {}
       //执行事务
       await Database.transaction(async trx => {
@@ -55,12 +52,12 @@ class TestService {
         let set = ctx.body.set
         let id = ctx.body.id
         let data = { id, set }
-        result = await testTable.updateById(trx, data)
+        result = await Tables.test.updateById(trx, data)
       })
       return Util.end(result)
     } catch (err) {
       return Util.error({
-        msg: '更新失败',
+        msg: err.message,
         track: 'kajdf09gj34',
       })
     }
@@ -68,19 +65,17 @@ class TestService {
 
   async findDb(ctx) {
     try {
-      const TestTable = require('../Models/Table/test')
-      const testTable = new TestTable('test')
       let result = {}
 
       let cols = ['userName', 'status']
       let id = ctx.body.id
       let data = { id, cols }
-      result = await testTable.findById(data)
+      result = await Tables.test.findById(data)
 
       return Util.end(result)
     } catch (err) {
       return Util.error({
-        msg: '查询失败',
+        msg: err.message,
         track: '324jkl32',
       })
     }
