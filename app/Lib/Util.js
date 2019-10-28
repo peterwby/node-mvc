@@ -12,10 +12,11 @@ const Util = {
 
   /**
    * 正常结束，返回操作结果
-   * @description status的值，<0: 异常，=0：不符条件被拒绝，>0：成功
    * @example
    * end({msg:'', status: 1, data:{}})
-   * @returns object
+   * @description
+   * （可选）{ status }，<0: 异常，=0：不符条件被拒绝，>0：成功
+   * @returns { error, status, msg, data }
    */
   end: obj => {
     //不是object
@@ -37,7 +38,7 @@ const Util = {
    * 程序抛出异常错误，导致操作失败
    * @example
    * error({msg:'', track:'随机值'})
-   * @returns object
+   * @returns { error, status, msg, data, track }
    */
   error: obj => {
     //不是object
@@ -116,6 +117,22 @@ const Util = {
       }
     }
     return expectObj
+  },
+
+  /**
+   * 检验Service层身份是否合法
+   * @description
+   * 把业务逻辑Service（A端）和数据库处理Model（B端）独立分离，由不同人开发。
+   * A端通过api调用B端，B端接到后在Controller层调用此函数，判断A端的身份是否合法
+   * @example
+   * await Util.isServiceAuthValid(ctx)
+   * @returns boolean
+   */
+  isServiceAuthValid: async ctx => {
+    const body = ctx.request.all()
+    let params = await Redis.get(body.r)
+    await Redis.del(body.r) //阅后即焚
+    return !!params
   },
 
   /************************************************************************

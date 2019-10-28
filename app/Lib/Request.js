@@ -3,8 +3,21 @@
 const axios = require('axios')
 const log = use('Logger')
 const Util = require('./Util')
+const uuidv4 = require('uuid/v4')
+const Redis = use('Redis')
+const Env = use('Env')
 
 const Request = {
+  /**
+   * get方式访问远程url，并返回结果
+   * @example
+   * await Request.get('http://xxx',{ id:1 })
+   * await Request.get('http://xxx',{ id:1 }, {
+   *  header: {'键': '值'},
+   *  timeout: 5000
+   * })
+   * @returns object
+   */
   async get(url, params = {}, more = {}) {
     try {
       let { ...config } = more
@@ -31,6 +44,16 @@ const Request = {
     }
   },
 
+  /**
+   * post方式访问远程url，并返回结果
+   * @example
+   * await Request.post('http://xxx',{ id:1 })
+   * await Request.post('http://xxx',{ id:1 }, {
+   *  header: {'键': '值'},
+   *  timeout: 5000
+   * })
+   * @returns object
+   */
   async post(url, params = {}, more = {}) {
     try {
       let { ...config } = more
@@ -46,6 +69,51 @@ const Request = {
         msg = `发送请求出错: ${url}`
       } else if (err.message.includes('timeout')) {
         msg = `请求超时： ${url}`
+      } else {
+        msg = err.message
+      }
+      return Util.error({
+        msg: msg,
+        track: 'j28f2930',
+      })
+    }
+  },
+
+  /**
+   * 调用远程函数，执行数据库处理，并返回结果。用于Service调用Model。
+   * @example
+   * await Request.db('createUser',{ name:'wu' })
+   * await Request.db('createUser',{ name:'wu' }, {
+   *  header: {'键': '值'},
+   *  timeout: 5000
+   * })
+   * @param redisKey 可选，用来把对象存到redis中，供远端使用
+   * @returns object
+   */
+  async db(url, params = {}, more = {}, redisKey = {}) {
+    try {
+      const rndKey = uuidv4()
+      await Redis.set(rndKey, JSON.stringify(redisKey))
+      params.r = rndKey
+      let { ...config } = more
+      let result = await axios.post(Env.get('Model_URL') + url, params, config)
+      return Util.end({
+        data: result.data,
+      })
+    } catch (err) {
+      let msg = ''
+      if (!!err.response) {
+        msg = `接收响应出错: ${url}
+        status: ${err.response.status}
+        statusText: ${err.response.statusText}`
+      } else if (!!err.request) {
+        msg = `发送请求出错: ${url}
+        status: ${err.response.status}
+        statusText: ${err.response.statusText}`
+      } else if (err.message.includes('timeout')) {
+        msg = `请求超时： ${url}
+        status: ${err.response.status}
+        statusText: ${err.response.statusText}`
       } else {
         msg = err.message
       }
