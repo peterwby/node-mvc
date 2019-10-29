@@ -11,21 +11,30 @@ class TestTable extends BaseTable {
   /**
    * 是否存在姓名
    * @example
-   * isExistByName({
+   * checkExistByName({
    *  userName: 'xx',
    * })
-   * @returns boolean
+   * @returns object
    */
-  async isExistByName(obj) {
+  async checkExistByName(obj) {
     try {
       const result = await Database.select('id')
         .from(this.tabelName)
         .where('user_name', obj.userName)
 
-      return !!result[0]
+      return Util.end({
+        data: {
+          isExist: !!result[0],
+        },
+      })
     } catch (err) {
-      log.error(err.message)
-      return false
+      return Util.error({
+        msg: err.message,
+        data: {
+          isExist: false,
+        },
+        track: 'joipo090',
+      })
     }
   }
 }

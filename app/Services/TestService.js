@@ -7,8 +7,17 @@ const Util = require('../Lib/Util')
 const Tables = require('../Models/Tables')
 
 class TestService {
-  async test1(ctx) {
-    return 'abc'
+  async fetchProd(ctx) {
+    const cheerio = require('cheerio')
+    const superagent = require('superagent')
+    log.info('11111111')
+    let res = await superagent.get('https://www.baidu.com').timeout(30000)
+    let $ = cheerio.load(res.text)
+
+    log.info('2222222222')
+    return Util.end({
+      msg: '任务结束了',
+    })
   }
 
   /**
@@ -24,8 +33,11 @@ class TestService {
       await Database.transaction(async trx => {
         let data = ctx.body
         //是否已存在
-        let isExistUserName = await Tables.test.isExistByName({ username: data.userName })
-        if (isExistUserName) {
+        result = await Tables.test.checkExistByName({ username: data.userName })
+        if (result.error) {
+          throw new Errror(result.msg)
+        }
+        if (result.data.isExist) {
           return Util.end({
             msg: '已存在此名字',
             status: 0,

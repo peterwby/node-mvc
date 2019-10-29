@@ -119,22 +119,6 @@ const Util = {
     return expectObj
   },
 
-  /**
-   * 检验Service层身份是否合法
-   * @description
-   * 把业务逻辑Service（A端）和数据库处理Model（B端）独立分离，由不同人开发。
-   * A端通过api调用B端，B端接到后在Controller层调用此函数，判断A端的身份是否合法
-   * @example
-   * await Util.isServiceAuthValid(ctx)
-   * @returns boolean
-   */
-  isServiceAuthValid: async ctx => {
-    const body = ctx.request.all()
-    let params = await Redis.get(body.r)
-    await Redis.del(body.r) //阅后即焚
-    return !!params
-  },
-
   /************************************************************************
    * Arrays
    ************************************************************************/

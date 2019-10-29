@@ -9,6 +9,23 @@ const TestRemoteService = require(`../../../Services/TestRemoteService`)
 const testRemoteService = new TestRemoteService()
 
 class TestController {
+  async fetchProd(ctx) {
+    try {
+      //调用业务逻辑，无需await，立即返回响应，避免父进程的等待
+      testService.fetchProd(ctx)
+      //组装数据，返回json给前端
+      return Util.end2front({
+        msg: '任务已接到',
+      })
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: '任务已接到但未执行，发生错误，：' + err.message,
+        code: 9000,
+        track: '5455fdg',
+      })
+    }
+  }
   async test2(ctx) {
     try {
       //调用业务逻辑

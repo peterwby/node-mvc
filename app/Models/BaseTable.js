@@ -12,21 +12,30 @@ class BaseTable {
   /**
    * 通过主键id查询记录是否存在
    * @example
-   * isExistById({
+   * checkExistById({
    *  id: 1,
    * }
-   * @returns boolean
+   * @returns object
    */
-  async isExistById(obj) {
+  async checkExistById(obj) {
     try {
       const result = await Database.select('id')
         .from(this.tabelName)
         .where('id', obj.id)
 
-      return !!result[0]
+      return Util.end({
+        data: {
+          isExist: !!result[0],
+        },
+      })
     } catch (err) {
-      log.error(err.message)
-      return false
+      return Util.error({
+        msg: err.message,
+        data: {
+          isExist: false,
+        },
+        track: '895893745',
+      })
     }
   }
 

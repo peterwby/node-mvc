@@ -34,7 +34,6 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
     "mysql": "^2.17.1",
-    "require-all": "^3.0.0",
     "uuid": "^3.3.3"
   },
   "devDependencies": {},

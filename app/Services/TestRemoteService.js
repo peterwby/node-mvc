@@ -16,7 +16,7 @@ class TestRemoteService {
    */
   async createDb(ctx) {
     try {
-      let result = await Request.db('createUser', { status: 1 })
+      let result = await Request.call('http://xxxx/xxx', { status: 1 })
 
       return Util.end(result)
     } catch (err) {

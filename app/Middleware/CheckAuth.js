@@ -3,11 +3,6 @@
 const log = use('log')
 
 class CheckAuth {
-  /**
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Function} next
-   */
   async handle(ctx, next) {
     try {
       const session = ctx.session

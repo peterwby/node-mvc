@@ -5,12 +5,10 @@ const log = use('Logger')
 
 class Scheduler extends Task {
   static get schedule() {
-    return '*/30 * * * * *'
+    return '* * * * 1 *'
   }
 
   async handle() {
-    //这里可以先判断子服务器上的任务是否完成，如果未完成则退出
-
     log.info('test cron')
     //this.notice({ b: 2 })
   }
