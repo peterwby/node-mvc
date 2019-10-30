@@ -6,8 +6,9 @@ const log = use('Logger')
 const Request = require('../Lib/Request')
 const Util = require('../Lib/Util')
 const Tables = require('../Models/Tables')
+const BaseService = require('./BaseService')
 
-class TestRemoteService {
+class TestRemoteService extends BaseService {
   /**
    * 创建
    * @example

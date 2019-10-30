@@ -9,45 +9,6 @@ const TestRemoteService = require(`../../../Services/TestRemoteService`)
 const testRemoteService = new TestRemoteService()
 
 class TestController {
-  async fetchProd(ctx) {
-    try {
-      //调用业务逻辑，无需await，立即返回响应，避免父进程的等待
-      testService.fetchProd(ctx)
-      //组装数据，返回json给前端
-      return Util.end2front({
-        msg: '任务已接到',
-      })
-    } catch (err) {
-      return Util.error2front({
-        //isShowMsg: true,
-        msg: '任务已接到但未执行，发生错误，：' + err.message,
-        code: 9000,
-        track: '5455fdg',
-      })
-    }
-  }
-  async test2(ctx) {
-    try {
-      //调用业务逻辑
-      const result = await testRemoteService.createDb(ctx)
-      if (result.error) {
-        throw new Error(result.msg)
-      }
-      //组装数据，返回json给前端
-      return Util.end2front({
-        msg: result.msg,
-        data: result.data,
-        code: result.status > 0 ? 0 : 1000,
-      })
-    } catch (err) {
-      return Util.error2front({
-        //isShowMsg: true,
-        msg: err.message,
-        code: 9000,
-        track: '23r234234',
-      })
-    }
-  }
   /**
    * 测试
    * @example
@@ -83,6 +44,29 @@ class TestController {
         msg: err.message,
         code: 9000,
         track: '023j0f93j89',
+      })
+    }
+  }
+
+  async test2(ctx) {
+    try {
+      //调用业务逻辑
+      const result = await testRemoteService.createDb(ctx)
+      if (result.error) {
+        throw new Error(result.msg)
+      }
+      //组装数据，返回json给前端
+      return Util.end2front({
+        msg: result.msg,
+        data: result.data,
+        code: result.status > 0 ? 0 : 1000,
+      })
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        code: 9000,
+        track: '23r234234',
       })
     }
   }

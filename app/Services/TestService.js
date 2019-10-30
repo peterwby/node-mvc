@@ -4,9 +4,10 @@ const Database = use('Database')
 const log = use('Logger')
 const Request = require('../Lib/Request')
 const Util = require('../Lib/Util')
+const BaseService = require('./BaseService')
 const Tables = require('../Models/Tables')
 
-class TestService {
+class TestService extends BaseService {
   async fetchProd(ctx) {
     const cheerio = require('cheerio')
     const superagent = require('superagent')
