@@ -127,13 +127,6 @@ const Util = {
         数组深拷贝
         var arr = [1,2,3,4,5]
         var [ ...arr2 ] = arr
-        ------------------------------------
-        对象的深拷贝
-        var obj = {
-            name: 'FungLeo',
-            sex: 'man',
-        }
-        var { ...obj2 } = obj
     */
 
   /**
@@ -412,6 +405,48 @@ const Util = {
   /************************************************************************
    * 函数类
    ************************************************************************/
+
+  /**
+   * 防抖：只在一次触发后又delay秒内没再触发，才执行一次
+   * @example
+   * debounce(fn, 500)
+   * @returns function
+   */
+  debounce: function(fn, delay = 1000) {
+    let timer = null
+    return function() {
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
+        fn.apply(this, arguments)
+        timer = null
+      }, delay)
+    }
+  },
+
+  /**
+   * 节流：持续触发时，保证每delay秒内只执行一次
+   * @example
+   * throttle(fn, 1000)
+   * @returns function
+   */
+  throttle: function(func, delay) {
+    var timer = null
+    var startTime = Date.now()
+    return function() {
+      var curTime = Date.now()
+      var remaining = delay - (curTime - startTime)
+      var context = this
+      var args = arguments
+      clearTimeout(timer)
+      if (remaining <= 0) {
+        func.apply(context, args)
+        startTime = Date.now()
+      } else {
+        timer = setTimeout(func, remaining)
+      }
+    }
+  },
+
   /**
    * await sleep(1000)
    */
@@ -514,6 +549,82 @@ const Util = {
   /************************************************************************
    * 对象类
    ************************************************************************/
+
+  /* 对象拷贝
+        var obj = {
+            name: 'FungLeo',
+            sex: 'man',
+        }
+        var { ...obj2 } = obj//浅拷贝
+        var obj2 = JSON.parse(JSON.stringify(obj))//基本类型的深拷贝
+   */
+
+  /**
+   * 对象深拷贝
+   * @example
+   * deepClone(obj)
+   * @returns object
+   */
+  deepClone: function(obj) {
+    if (obj === null) return null
+    if (typeof obj === 'function') {
+      var s = obj.toString()
+      var argsStr = getArgStr(s)
+      var body = getFuncBody(s)
+      return eval('new Function(' + argsStr + '"' + body + '");')
+    }
+    if (typeof obj !== 'object') return obj
+    if (obj.cunstructor === Date) return new Date(obj)
+    if (obj.constructor === RegExp) return new RegExp(obj)
+    var newObj = new obj.constructor() //保持继承链
+    for (var key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        //不遍历其原型链上的属性
+        var val = obj[key]
+        newObj[key] = typeof val === 'object' || typeof val === 'function' ? arguments.callee(val) : val //使用arguments.callee解除与函数名的耦合
+      }
+    }
+    return newObj
+
+    //根据函数字符串获取参数列表字符串
+    function getArgStr(s) {
+      var args = s
+        .split('(')[1]
+        .split(')')[0]
+        .split(',')
+      var argsStr = ''
+      if (args[0] != '') {
+        for (var i in args) {
+          if (args[i].indexOf("'") != -1) {
+            args[i] = args[i].replace(/'/g, "\\'")
+          }
+          if (args[i].indexOf('"') != -1) {
+            args[i] = args[i].replace('"', '\\"')
+          }
+          argsStr += "'" + args[i] + "',"
+        }
+      }
+      return argsStr
+    }
+
+    //根据函数字符串获取函数体字符串
+    function getFuncBody(s) {
+      var body = s
+        .split('{')[1]
+        .split('}')[0]
+        .split('\n')
+        .join(';')
+        .replace(/[\r\n]/g, '')
+      var temp = body.split('')
+      for (var i in temp) {
+        if (temp[i] === "'" || temp[i] === '"') {
+          temp[i] = '\\' + temp[i]
+        }
+      }
+      body = temp.join('')
+      return body
+    }
+  },
 
   /**
    * 是否有某个属性/键（大小写敏感）

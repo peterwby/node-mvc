@@ -109,7 +109,7 @@ async function testValid(ctx) {
             break
         }
       }
-      ctx.body = body
+      ctx.body = Util.deepClone(body)
     }
 
     /*async function paramsHandle() {
@@ -126,7 +126,7 @@ async function testValid(ctx) {
             break
         }
       }
-      ctx.body = body
+      ctx.body = Util.deepClone(body)
     }*/
 
     async function paramsValid() {
