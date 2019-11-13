@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "debug": "node --inspect-brk=5858 server.js",
-    "test": "node ace test"
+    "test": "node ace test",
+    "dev": "nodemon server.js"
   },
   "keywords": [
     "chanshon"

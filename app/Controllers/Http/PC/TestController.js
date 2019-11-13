@@ -5,8 +5,6 @@ const log = use('Logger')
 const Util = require('../../../Lib/Util')
 const TestService = require(`../../../Services/TestService`)
 const testService = new TestService()
-const TestRemoteService = require(`../../../Services/TestRemoteService`)
-const testRemoteService = new TestRemoteService()
 
 class TestController {
   /**
@@ -44,29 +42,6 @@ class TestController {
         msg: err.message,
         code: 9000,
         track: '023j0f93j89',
-      })
-    }
-  }
-
-  async test2(ctx) {
-    try {
-      //调用业务逻辑
-      const result = await testRemoteService.createDb(ctx)
-      if (result.error) {
-        throw new Error(result.msg)
-      }
-      //组装数据，返回json给前端
-      return Util.end2front({
-        msg: result.msg,
-        data: result.data,
-        code: result.status > 0 ? 0 : 1000,
-      })
-    } catch (err) {
-      return Util.error2front({
-        //isShowMsg: true,
-        msg: err.message,
-        code: 9000,
-        track: '23r234234',
       })
     }
   }

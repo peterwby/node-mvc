@@ -65,7 +65,6 @@ Route.group(() => {
 
 //以下为测试路由，可删除===================
 Route.get('/test', 'PC/TestController.test')
-Route.get('/test2', 'PC/TestController.test2')
 
 //如果匹配不到路由，则转到404页面
 //Route.any('*', ({ view }) => view.render('404'))
