@@ -76,14 +76,14 @@ class TestService extends BaseService {
     }
   }
 
-  async findDb(ctx) {
+  async fetchDb(ctx) {
     try {
       let result = {}
 
       let cols = ['userName', 'status']
       let id = ctx.body.id
       let data = { id, cols }
-      result = await Tables.test.findById(data)
+      result = await Tables.test.fetchById(data)
 
       return Util.end(result)
     } catch (err) {

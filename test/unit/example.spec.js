@@ -17,11 +17,11 @@ test('update user name by id', async ({ client }) => {
   })
 })
 //单元测试，测试某个函数的结果是否正确
-test('findDb', async ({ assert }) => {
+test('fetchDb', async ({ assert }) => {
   const TestService = require('../../app/Services/TestService')
   const testService = new TestService()
 
-  assert.deepInclude(await testService.findDb({ body: { id: 3 } }), {
+  assert.deepInclude(await testService.fetchDb({ body: { id: 3 } }), {
     data: [
       {
         userName: 'eee',

@@ -156,13 +156,13 @@ class BaseTable {
   /**
    * 通过主键id查询一条记录
    * @example
-   * findById({
+   * fetchById({
    *  id: 1,
    *  cols: ['name', 'status']
    * })
    * @returns object
    */
-  async findById(obj) {
+  async fetchById(obj) {
     try {
       let cols = obj.cols
       cols = Util.toLine(cols)
@@ -188,12 +188,12 @@ class BaseTable {
   /**
    * 无条件查询所有记录（limit 9999以防止查询太多）
    * @example
-   * findAll({
+   * fetchAll({
    *  cols: ['name', 'status']
    * })
    * @returns object
    */
-  async findAll(obj) {
+  async fetchAll(obj) {
     try {
       let cols = obj.cols
       cols = Util.toLine(cols)
