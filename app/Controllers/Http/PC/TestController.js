@@ -7,6 +7,17 @@ const TestService = require(`../../../Services/TestService`)
 const testService = new TestService()
 
 class TestController {
+  async test2(ctx) {
+    //ctx是一个上下文对象，跟koa里的ctx有点像，ctx包含好几个对象
+    //比如session、request、response等对象
+    const result = await testService.test2(ctx)
+
+    return Util.end2front({
+      msg: result.msg,
+      data: result.data,
+    })
+  }
+
   /**
    * 测试
    * @example

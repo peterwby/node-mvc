@@ -36,8 +36,7 @@ Route.group(() => {
 //无需验证
 Route.group(() => {
   try {
-    Route.post('login-member', 'MemberController.login')
-    Route.post('create-member', 'MemberController.create')
+    Route.get('test2', 'PC/TestController.test2')
   } catch (err) {
     log.err(err)
     return {

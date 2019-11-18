@@ -43,7 +43,7 @@ const Util = {
   error: obj => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      throw new Error('end(obj)的obj应该是个对象')
+      throw new Error('error(obj)的obj应该是个对象')
     }
     obj.error = true
     obj.status = obj.status || -1
@@ -68,7 +68,7 @@ const Util = {
   end2front: obj => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      throw new Error('end(obj)的obj应该是个对象')
+      throw new Error('end2front(obj)的obj应该是个对象')
     }
     obj.error = false
     obj.msg = obj.msg || '操作已完成'
@@ -87,7 +87,7 @@ const Util = {
   error2front: obj => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      throw new Error('end(obj)的obj应该是个对象')
+      throw new Error('error2front(obj)的obj应该是个对象')
     }
     log.notice(obj.track)
     log.error(obj.msg)

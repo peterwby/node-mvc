@@ -8,14 +8,25 @@ const BaseService = require('./BaseService')
 const Tables = require('../Models/Tables')
 
 class TestService extends BaseService {
+  async test2(ctx) {
+    const body = ctx.request.all() //获取包括get、post方式在内的所有传递进来的参数
+    let msg = `你好，${body.uname}`
+    return Util.end({
+      msg,
+      data: {
+        age: 18,
+        sex: `男`,
+      },
+    })
+  }
+
   async fetchProd(ctx) {
     const cheerio = require('cheerio')
     const superagent = require('superagent')
-    log.info('11111111')
+
     let res = await superagent.get('https://www.baidu.com').timeout(30000)
     let $ = cheerio.load(res.text)
 
-    log.info('2222222222')
     return Util.end({
       msg: '任务结束了',
     })
