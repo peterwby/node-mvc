@@ -1,19 +1,19 @@
 {
-  "name": "manage-system",
-  "version": "0.1.0",
+  "name": "@chanson/node-server",
+  "version": "1.0.0",
   "adonis-version": "4.1.0",
-  "description": "Common Manage System",
-  "main": "index.js",
+  "description": "Node.js MVC Framework",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "debug": "node --inspect-brk=5858 server.js",
     "test": "node ace test",
-    "dev": "nodemon server.js"
+    "dev": "adonis serve --dev"
   },
   "keywords": [
     "chanshon"
   ],
-  "author": "",
+  "author": "chanshon",
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
@@ -38,8 +38,5 @@
     "mysql2": "^2.0.1",
     "uuid": "^3.3.3"
   },
-  "devDependencies": {},
-  "autoload": {
-    "App": "./app"
-  }
+  "devDependencies": {}
 }

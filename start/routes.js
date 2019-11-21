@@ -47,6 +47,7 @@ Route.group(() => {
   }
 }).prefix('api/v1')
 
+//传递redis参数来验证
 Route.group(() => {
   try {
     Route.post('fetch-prod', 'PC/TestController.fetchProd')
