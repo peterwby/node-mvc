@@ -7,7 +7,8 @@ https://gitee.com/sh-chanson/common-system-server.git
 
 ## 准备工作
 
-安装 node.js（选择 LTS 版本）https://nodejs.org/en/
+- 安装 node.js（选择 LTS 版本）https://nodejs.org/en/
+- 安装 git
 
 ###### 在命令行输入以下命令
 
