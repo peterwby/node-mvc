@@ -30,4 +30,4 @@ database/development.sqlite
 .history
 .idea
 
-node_modules/@adonisjs/session/src/Session/index.js
+!node_modules/@adonisjs/session/src/Session/index.js
