@@ -5,6 +5,7 @@
   "description": "Node.js MVC Framework",
   "main": "server.js",
   "scripts": {
+    "new": "bash init.sh",
     "start": "node server.js",
     "debug": "node --inspect-brk=5858 server.js",
     "test": "node ace test",

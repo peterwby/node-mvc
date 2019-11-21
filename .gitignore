@@ -29,5 +29,3 @@ database/development.sqlite
 # VSCode & Webstorm history directories
 .history
 .idea
-
-!node_modules/@adonisjs/session/src/Session/index.js
