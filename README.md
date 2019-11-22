@@ -28,7 +28,7 @@
 - 其他全局包
   sudo npm i -g live-server nodemon @adonisjs/cli
 
-## 安装
+## 项目安装
 
 ###### git clone 项目后，在根目录下：
 
@@ -105,5 +105,3 @@ npm run dev
 - 运行失败？
   - 根目录下是否有.env 文件
   - 端口被占用
-- log.info(obj)
-  - log 会封装 obj，改变 obj 对象的内容，擅自增加 level 等键
