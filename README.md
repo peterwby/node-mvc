@@ -66,10 +66,11 @@ npm run dev
 ## 如何使用
 
 - 可以开始测试了，默认准备了由浅入深的 3 个例子
-- 打开浏览器，输入
-  http://127.0.0.1:3201/test1
-  http://127.0.0.1:3201/test2
-  http://127.0.0.1:3201/test3
+- 打开浏览器，分别输入：
+
+  - http://127.0.0.1:3201/test1
+  - http://127.0.0.1:3201/test2
+  - http://127.0.0.1:3201/test3
 
 - 打开/start/routes.js ，一步一步跟踪下去，看每一步怎么实现。完整顺序是 Router->Controllers->Services->Models
 
@@ -80,13 +81,13 @@ npm run dev
   ctx.session.get('user')
   ctx.session.put('user', 'wu')
   ```
-- Util.end()
+- Util.end()：
   函数正常结束时调用。用途：规范函数的返回值，使得返回值具有相同结构
-- Util.error()
+- Util.error()：
   函数内部抛出异常时，在 catch 里调用本函数，使得返回值具有相同结构
-- Util.end2front()
+- Util.end2front()：
   Controller 里的函数正常结束时调用。规定要返回给前端的信息
-- Util.error2front()
+- Util.error2front()：
   Controller 里的函数内部抛出异常时，在 catch 里调用本函数，规定要返回给前端的信息
 - 打印信息到控制台
   ```
@@ -95,9 +96,9 @@ npm run dev
   log.notice('引起注意')
   log.error('错误信息')
   ```
-- Util.toCamel(obj)
+- Util.toCamel(obj)：
   把变量名从下划线转为驼峰式
-- Util.toLine(obj)
+- Util.toLine(obj)：
   把变量名从驼峰式转为下划线
 
 ## 常见问题
