@@ -12,7 +12,7 @@ class BaseTable {
   /**
    * 通过主键id查询记录是否存在
    * @example
-   * checkExistById({
+   * await checkExistById({
    *  id: 1,
    * }
    * @returns object
@@ -36,13 +36,15 @@ class BaseTable {
         },
         track: '895893745',
       })
+    } finally {
+      await Database.close()
     }
   }
 
   /**
    * 创建一条记录
    * @example
-   * create(trx,  {
+   * await create(trx,  {
    *  name: 'xx',
    *  status: 0
    * })
@@ -53,7 +55,7 @@ class BaseTable {
       let columns = Util.toLine(obj)
       const result = await trx.table(this.tabelName).insert(columns)
       return Util.end({
-        msg: '创建成功',
+        msg: '新增成功',
         data: {
           newId: result[0],
         },
@@ -62,8 +64,10 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tabelName, req: obj },
-        track: '9034jf938',
+        track: 'hhjhfhf35',
       })
+    } finally {
+      await Database.close()
     }
   }
 
@@ -80,8 +84,7 @@ class BaseTable {
    */
   async updateById(trx, obj) {
     try {
-      let columns = obj.set
-      columns = Util.toLine(columns)
+      let columns = Util.toLine(obj.set)
       const rows = await trx
         .table(this.tabelName)
         .where('id', obj.id)
@@ -94,8 +97,10 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tabelName, req: obj },
-        track: 'lkjg04590',
+        track: 'lkjfffg04590',
       })
+    } finally {
+      await Database.close()
     }
   }
 
@@ -121,8 +126,10 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tabelName, req: obj },
-        track: 'h98h9h8',
+        track: 'h98aaah9h8',
       })
+    } finally {
+      await Database.close()
     }
   }
 
@@ -148,8 +155,10 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tabelName, req: obj },
-        track: 'ulkj4309',
+        track: 'ff23f23f23fss',
       })
+    } finally {
+      await Database.close()
     }
   }
 
@@ -158,17 +167,17 @@ class BaseTable {
    * @example
    * fetchById({
    *  id: 1,
-   *  cols: ['name', 'status']
+   *  column: ['name', 'status']
    * })
    * @returns object
    */
+  //TODO:select的字段由自己决定，不要...column这种写法
   async fetchById(obj) {
     try {
-      let cols = obj.cols
-      cols = Util.toLine(cols)
+      let column = Util.toLine(obj.column)
       const table = Database.clone()
       const result = await table
-        .select(...cols)
+        .select(...column)
         .from(this.tabelName)
         .where('id', obj.id)
 
@@ -180,8 +189,10 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tabelName, req: obj },
-        track: '465u654',
+        track: '3i4rf0fasd8',
       })
+    } finally {
+      await Database.close()
     }
   }
 
@@ -189,17 +200,16 @@ class BaseTable {
    * 无条件查询所有记录（limit 9999以防止查询太多）
    * @example
    * fetchAll({
-   *  cols: ['name', 'status']
+   *  column: ['name', 'status']
    * })
    * @returns object
    */
   async fetchAll(obj) {
     try {
-      let cols = obj.cols
-      cols = Util.toLine(cols)
+      let column = Util.toLine(obj.column)
       const table = Database.clone()
       const result = await table
-        .select(...cols)
+        .select(...column)
         .from(this.tabelName)
         .limit(9999)
 
@@ -211,8 +221,10 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tabelName, req: obj },
-        track: '905j03j0',
+        track: '90sdfsd5j03j0',
       })
+    } finally {
+      await Database.close()
     }
   }
 }

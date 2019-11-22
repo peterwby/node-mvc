@@ -5,21 +5,79 @@ const log = use('Logger')
 const Request = require('../Lib/Request')
 const Util = require('../Lib/Util')
 const BaseService = require('./BaseService')
-const Tables = require('../Models/Tables')
 
 class TestService extends BaseService {
-  async test2(ctx) {
-    const body = ctx.request.all() //获取包括get、post方式在内的所有传递进来的参数
-    let msg = `你好，${body.uname}`
-    return Util.end({
-      msg,
-      data: {
-        age: 18,
-        sex: `男`,
-      },
-    })
+  /**
+   * 返回hello world，并打印到控制台
+   * @example
+   * await test1(ctx)
+   * @returns object
+   */
+  async test1(ctx) {
+    let msg = `hello world`
+    log.info(msg)
+    return Util.end({ msg: msg })
   }
 
+  /**
+   * 新建一条记录
+   * @example
+   * await test2(ctx)
+   * @description
+   * 说明：“增、改、删”都需在事务内进行。这样，当事务内部抛出错误时，会回滚对数据库的操作。
+   * @returns object
+   */
+  async test2(ctx) {
+    try {
+      //引用Model里的类并初始化
+      const testTable = new (require('../Models/Table/test'))('test')
+
+      let result = {}
+      //使用事务
+      await Database.transaction(async trx => {
+        //调用models层，插入一条记录到数据库
+        //ctx.body：为“前端的请求”经过检验、组装后的对象
+        //test表本身没有实现create方法，但它的基类BaseTable实现了此方法，故可直接使用
+        result = await testTable.create(trx, ctx.body)
+        if (result.error) {
+          throw new Error(result.msg)
+        }
+      })
+      return Util.end(result)
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        track: 'kj203jf903',
+      })
+    }
+  }
+
+  /**
+   * 从数据库中读取一些记录
+   * @example
+   * await test3(ctx)
+   * @returns object
+   */
+  async test3(ctx) {
+    try {
+      //引用Model里的类并初始化
+      const joinTable = new (require('../Models/Join'))()
+      let result = {}
+      result = await joinTable.fetchBy(ctx.body)
+      if (result.error) {
+        throw new Error(result.msg)
+      }
+      return Util.end(result)
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        track: '3490fjjakjkd',
+      })
+    }
+  }
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  // XXXX       以下还在修改中                    XXXX
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   async fetchProd(ctx) {
     const cheerio = require('cheerio')
     const superagent = require('superagent')
@@ -62,7 +120,7 @@ class TestService extends BaseService {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: '8093j4gj',
+        track: 'sdkfj903j490j',
       })
     }
   }
@@ -73,9 +131,10 @@ class TestService extends BaseService {
       //执行事务
       await Database.transaction(async trx => {
         //更新一条记录
-        let set = ctx.body.set
-        let id = ctx.body.id
-        let data = { id, set }
+        let data = {
+          id: ctx.body.id,
+          set: ctx.body.set,
+        }
         result = await Tables.test.updateById(trx, data)
       })
       return Util.end(result)

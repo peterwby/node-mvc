@@ -11,15 +11,15 @@ const Util = {
    ************************************************************************/
 
   /**
-   * 正常结束，返回操作结果
+   * 每个函数正常结束时调用本函数
    * @example
-   * end({msg:'', status: 1, data:{}})
+   * return Util.end({msg:'', status: 1, data:{}})
    * @description
-   * （可选）{ status }，<0: 异常，=0：不符条件被拒绝，>0：成功
+   * 用途：规范函数的返回值，使得返回值具有相同结构
+   * （可选参数status）<0: 异常，=0：不符条件被拒绝，>0：操作成功
    * @returns { error, status, msg, data }
    */
   end: obj => {
-    //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
       throw new Error('end(obj)的obj应该是个对象')
     }
@@ -35,9 +35,12 @@ const Util = {
   },
 
   /**
-   * 程序抛出异常错误，导致操作失败
+   * 函数内部抛出异常时，在catch里调用本函数
    * @example
-   * error({msg:'', track:'随机值'})
+   * return Util.error({msg:'', track:'随机值'})
+   * @description
+   * 用途：规范函数的返回值，使得返回值具有相同结构
+   * track的作用是跟踪错误，可以随机输入一串乱码
    * @returns { error, status, msg, data, track }
    */
   error: obj => {
@@ -51,7 +54,7 @@ const Util = {
     obj.data = obj.data || {}
     obj.track = obj.track || ''
 
-    log.notice(obj.track)
+    log.notice(obj.track) //TODO:检查log会不会影响对象内容
     if (JSON.stringify(obj.data) !== '{}') {
       log.error(obj.data)
     }
@@ -60,13 +63,14 @@ const Util = {
   },
 
   /**
-   * 发给前端的信息：正常结束，返回操作结果
+   * 正常结束时，返回给前端的信息
    * @example
    * end2front({msg:'', data:{}, code: 0})
+   * @description
+   * 根据前端的要求，返回相应的数据结构
    * @returns object
    */
   end2front: obj => {
-    //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
       throw new Error('end2front(obj)的obj应该是个对象')
     }
@@ -78,10 +82,11 @@ const Util = {
   },
 
   /**
-   * 发给前端的信息：出现异常
-   * @description 如果要向前端显示真实错误，则{ isShowMsg: true }
+   * 捕捉到异常时，返回给前端的信息
    * @example
    * error2front({msg:'', code: 9999, track:'随机值'})
+   * @description
+   * 如果要向前端显示真实错误，则{ isShowMsg: true }
    * @returns object
    */
   error2front: obj => {
@@ -92,7 +97,7 @@ const Util = {
     log.notice(obj.track)
     log.error(obj.msg)
     //对前端屏蔽真实错误
-    obj.msg = obj.isShowMsg ? obj.msg : '出现错误'
+    obj.msg = obj.isShowMsg ? obj.msg : '执行出错'
     obj.data = obj.data || {}
     obj.code = obj.code || 9999
     obj.track = obj.track || ''
@@ -107,7 +112,7 @@ const Util = {
   /**
    * 复制并过滤：第二个参数覆盖第一个参数，且第二个参数多余的key不理睬
    * @example
-   * assignFilter({name:''}, {name:'xx', aa:1 }) : {name: 'xx'}
+   * assignFilter({name}, {name:'xx', aa:1 }) : {name: 'xx'}
    * @returns object
    */
   assignFilter: (expectObj, rawObj) => {
@@ -360,7 +365,7 @@ const Util = {
   },
   /**
      格式化日期
-     moment().format("YYYY-MM-DD HH:mm:ss")
+     moment('2019-1-1').format("YYYY-MM-DD HH:mm:ss")
       
      是否是合法日期
      moment('2019-13-02').isValid()
@@ -650,8 +655,11 @@ const Util = {
    * 驼峰转为连字符
    * @example
    * toLine({ userName: 1 }) : {user_name: 1}
+   * @description
+   * 通常在操作数据库之前调用本函数，把变量转换成表的真实字段
    * @returns object
    */
+  //TODO:目前缺点，只能处理一层结构
   toLine: data => {
     let newData = null
     if (Util.isObj(data)) {
@@ -677,10 +685,11 @@ const Util = {
       } else {
         newData = data
       }
+    } else if (Util.isString(data)) {
+      newData = Util.str2Line(data)
     } else {
       newData = data
     }
-
     return newData
   },
 
@@ -688,8 +697,11 @@ const Util = {
    * 连字符转为驼峰
    * @example
    * toCamel({ user_name: 1 }) : {userName: 1}
+   * @description
+   * 通常在获取数据库数据之后调用本函数，把变量转换成js常用的驼峰写法
    * @returns object
    */
+  //TODO:目前缺点，只能处理一层结构
   toCamel: data => {
     let newData = null
     if (Util.isObj(data)) {
@@ -715,6 +727,8 @@ const Util = {
       } else {
         newData = data
       }
+    } else if (Util.isString(data)) {
+      newData = Util.str2Camel(data)
     } else {
       newData = data
     }

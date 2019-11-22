@@ -2,22 +2,118 @@
 
 const { validate } = use('Validator')
 const log = use('Logger')
+const moment = require('moment') //日期格式化插件
+moment.locale('zh-cn') //设为北京时区
 const Util = require('../../../Lib/Util')
-const TestService = require(`../../../Services/TestService`)
-const testService = new TestService()
+//引用Service里的类并初始化
+const testService = new (require(`../../../Services/TestService`))()
 
 class TestController {
-  async test2(ctx) {
-    //ctx是一个上下文对象，跟koa里的ctx有点像，ctx包含好几个对象
-    //比如session、request、response等对象
-    const result = await testService.test2(ctx)
+  //---------------------------------------------
+  //async 方法名(ctx)，固定格式，其中ctx是一个对象，表示请求的上下文，ctx = { request, response, session }
+  //每个Controller的方法return时，都需通过return Util.end2front()，使得返回的对象的格式具有一致性
+  //---------------------------------------------
 
+  /**
+   * 返回一个包含hello world文本的对象
+   * @returns object
+   */
+  async test1(ctx) {
+    //调用service层来处理业务逻辑
+    const result = await testService.test1(ctx)
+    //返回结果给前端
     return Util.end2front({
       msg: result.msg,
-      data: result.data,
     })
   }
 
+  /**
+   * 在数据库中插入一条记录
+   * @returns object
+   */
+  async test2(ctx) {
+    try {
+      //获取前端get和post方式传递过来的所有参数
+      let requestAll = ctx.request.all()
+
+      //这里对参数进行组装。比如，前端传递的参数是uname，但数据库表的字段是user_name，就需要进行转换组装
+      //注：js默认格式是驼峰式，mysql默认是下划线，将在model层进行转换。这里只需写成userName，而不是user_name
+      let body = {
+        userName: requestAll.uname,
+        status: requestAll.status,
+      }
+      //约定：把组装后的对象传给ctx.body，供service层调用
+      ctx.body = body
+
+      //调用service层来处理业务逻辑
+      const result = await testService.test2(ctx)
+      if (result.error) {
+        throw new Error(result.msg)
+      }
+      //返回结果给前端
+      return Util.end2front({
+        msg: result.msg,
+      })
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        code: 9000,
+        track: '023j0f93j89',
+      })
+    }
+  }
+
+  /**
+   * 从数据库中获取数据
+   * @returns object
+   */
+  async test3(ctx) {
+    try {
+      //获取前端get和post方式传递过来的所有参数
+      let requestAll = ctx.request.all()
+
+      //对前端请求参数进行组装
+      let body = {
+        filter: {
+          //要过滤的条件
+          fromDate: moment(requestAll.fromDate).format('YYYY-MM-DD'),
+          toDate: moment(requestAll.toDate).format('YYYY-MM-DD'),
+          status: requestAll.status,
+          keyword: requestAll.keyword,
+          page: requestAll.page,
+          limit: requestAll.limit,
+        },
+      }
+      //约定：把组装后的请求参数赋值给ctx.body，供service层调用
+      ctx.body = body
+      //调用service层来处理业务逻辑
+      const result = await testService.test3(ctx)
+      if (result.error) {
+        throw new Error(result.msg)
+      }
+      //组装获取到的数据。比如service获取到了10个字段，但前端只需用到4个，就在这里进行组装
+      let data = []
+      for (let item of result.data) {
+        data.push({ userName: item.userName, ctime: moment(item.ctime).format('YYYY-MM-DD'), authName: item.authName })
+      }
+      //返回结果给前端
+      return Util.end2front({
+        msg: '查询完成',
+        data: data,
+      })
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        code: 9000,
+        track: 'kljsdf09j2903j',
+      })
+    }
+  }
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  // XXXX       以下还在修改中                    XXXX
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   /**
    * 测试
    * @example
