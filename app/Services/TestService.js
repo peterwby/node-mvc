@@ -4,7 +4,7 @@ const Database = use('Database')
 const log = use('Logger')
 const Request = require('../Lib/Request')
 const Util = require('../Lib/Util')
-const BaseService = require('./BaseService')
+const BaseService = require('../BaseClass/BaseService')
 
 class TestService extends BaseService {
   /**

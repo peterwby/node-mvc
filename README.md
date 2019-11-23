@@ -3,13 +3,12 @@
 ## 简介
 
 - 本项目的 git 地址：https://gitee.com/sh-chanson/node-server.git
-- 基于 Adonis.js 框架，可以包办 web 后端的几乎所有功能
+- 基于 Adonis.js 框架，其官方文档地址：https://adonisjs.com/docs/4.1/folder-structure
 - 由于整体项目一般采用前后端分离设计，View 交给前端处理，所以 MVC 架构有所变形：Router->Controllers->Services->Models
-- 开发环境下，支持热更新，即修改完文件保存后立即生效
 
 ## 须具备知识
 
-- node.js（最好用过类似 express、koa、egg 等框架）
+- node.js（最好用过类似 express、koa、egg.js 等框架）
 - 熟悉 es6 语法
 - 熟悉 sql 语法
 
@@ -65,11 +64,11 @@ npm run dev
 
 ## 如何使用
 
-- 可以开始测试了，默认准备了由浅入深的 3 个例子
+- 可以开始测试了，默认准备了 3 个由浅入深的例子
 - 打开浏览器，分别输入：
 
   - http://127.0.0.1:3201/test1
-  - http://127.0.0.1:3201/test2?uname=peter
+  - http://127.0.0.1:3201/test2?uname=peter&status=1
   - http://127.0.0.1:3201/test3?fromDate=2019-03-22&toDate=2019-04-25&status=1&page=1&limit=3
 
 - 打开/start/routes.js ，一步一步跟踪下去，看每一步怎么实现。完整顺序是 Router->Controllers->Services->Models

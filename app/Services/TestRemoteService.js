@@ -6,7 +6,7 @@ const log = use('Logger')
 const Request = require('../Lib/Request')
 const Util = require('../Lib/Util')
 const Tables = require('../Models/Tables')
-const BaseService = require('./BaseService')
+const BaseService = require('../BaseClass/BaseService')
 
 class TestRemoteService extends BaseService {
   /**
