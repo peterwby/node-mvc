@@ -61,6 +61,8 @@ npm run dev
 - /app/Models/Table/xxx.js：所有的表文件都放在这里，文件名应跟数据库上真实表文件名相同，且都继承于 BaseTable 基类
 - /config/xxx.js：可以对不同模块分别进行配置（一般按默认配置即可）
 - /.env：项目根目录下应该有此文件，用来设置全局配置信息。（重要）
+- /app/Lib/Util.js：常用工具库，包含对数组、对象、字符串、时间等处理的函数
+- /app/Lib/Request.js：通过 http 的 get 或 post 方式访问外部链接
 
 ## 如何使用
 
@@ -75,33 +77,59 @@ npm run dev
 
 ## 常用操作
 
+- 获取前端 get 和 post 方法传递过来的参数
+
+  ```
+  ctx.request.all()
+  ```
+
 - session 的操作
   ```
   ctx.session.get('user')
   ctx.session.put('user', 'wu')
   ```
-- Util.end()：
-  函数正常结束时调用。用途：规范函数的返回值，使得返回值具有相同结构
-- Util.error()：
-  函数内部抛出异常时，在 catch 里调用本函数，使得返回值具有相同结构
-- Util.end2front()：
-  Controller 里的函数正常结束时调用。规定要返回给前端的信息
-- Util.error2front()：
-  Controller 里的函数内部抛出异常时，在 catch 里调用本函数，规定要返回给前端的信息
+- 函数正常结束时调用。用途：规范函数的返回值，使得返回值具有相同结构
+
+  ```
+  Util.end()
+  ```
+
+- 函数内部抛出异常时，在 catch 里调用本函数，使得返回值具有相同结构
+  ```
+  Util.error()
+  ```
+- Controller 里的函数正常结束时调用。规定要返回给前端的信息
+  ```
+  Util.end2front()
+  ```
+- Controller 里的函数内部抛出异常时，在 catch 里调用本函数，规定要返回给前端的信息
+  ```
+  Util.error2front()
+  ```
 - 打印信息到控制台
+
   ```
   log.debug('调试时建议用这个')
   log.info('普通信息')
   log.notice('引起注意')
   log.error('错误信息')
   ```
-- Util.toCamel(obj)：
-  把变量名从下划线转为驼峰式
-- Util.toLine(obj)：
-  把变量名从驼峰式转为下划线
+
+- 把变量名从下划线转为驼峰式
+  ```
+  Util.toCamel(obj)
+  ```
+- 把变量名从驼峰式转为下划线
+  ```
+  Util.toLine(obj)
+  ```
 
 ## 常见问题
 
 - 运行失败？
-  - 根目录下是否有.env 文件
-  - 端口被占用
+- 根目录下是否有.env 文件
+- 端口被占用
+
+```
+
+```

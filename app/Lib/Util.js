@@ -11,12 +11,12 @@ const Util = {
    ************************************************************************/
 
   /**
-   * 每个函数正常结束时调用本函数
+   * 每个函数正常结束时，都须调用此函数
    * @example
    * return Util.end({msg:'', status: 1, data:{}})
    * @description
    * 用途：规范函数的返回值，使得返回值具有相同结构
-   * （可选参数status）<0: 异常，=0：不符条件被拒绝，>0：操作成功
+   * （可选参数status）<0: 操作异常，=0：不符合业务条件被拒绝，>0：操作成功
    * @returns { error, status, msg, data }
    */
   end: obj => {
@@ -35,7 +35,7 @@ const Util = {
   },
 
   /**
-   * 函数内部抛出异常时，在catch里调用本函数
+   * 函数内部抛出异常时，须在catch里调用本函数
    * @example
    * return Util.error({msg:'', track:'随机值'})
    * @description
@@ -109,21 +109,6 @@ const Util = {
     return obj
   },
 
-  /**
-   * 复制并过滤：第二个参数覆盖第一个参数，且第二个参数多余的key不理睬
-   * @example
-   * assignFilter({name}, {name:'xx', aa:1 }) : {name: 'xx'}
-   * @returns object
-   */
-  assignFilter: (expectObj, rawObj) => {
-    for (let k in rawObj) {
-      if (expectObj.hasOwnProperty(k)) {
-        expectObj[k] = rawObj[k]
-      }
-    }
-    return expectObj
-  },
-
   /************************************************************************
    * Arrays
    ************************************************************************/
@@ -136,48 +121,48 @@ const Util = {
 
   /**
    * 返回数组中的最大值
-   * arrMax([1,2,3]): 3
+   * arrMax([1,2,3]) 返回 3
    */
   arrMax: arr => Math.max(...arr),
 
   /**
    * 返回数组中的最小值
-   *  arrMin([1,2,3]): 1
+   *  arrMin([1,2,3]) 返回 1
    */
   arrMin: arr => Math.min(...arr),
 
   /**
    * 将数组块平均拆分为指定大小的较小数组，返回一个二维数组。
-   * arrSplit([1,2,3,4,5],2): [[1,2],[3,4],[5]]
+   * arrSplit([1,2,3,4,5],2) 返回 [[1,2],[3,4],[5]]
    */
   arrSplit: (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size)),
 
   /**
-   * 计算数组中某个元素值的出现次数
-   * arrItemCount(['a', 'a', 'b'], 'a'): 2
+   * 计算数组中某个元素值的出现次数（大小写敏感）
+   * arrItemCount(['a', 'a', 'b'], 'a') 返回 2
    */
   arrItemCount: (arr, value) => arr.reduce((a, v) => (v === value ? a + 1 : a + 0), 0),
 
   /**
    * 返回去重后的数组
-   * arrRemoveDuplicate([1,2,2,3]): [1,2,3]
+   * arrNoDouble([1,2,2,3]) 返回 [1,2,3]
    */
-  arrRemoveDuplicate: arr => [...new Set(arr)],
+  arrNoDouble: arr => [...new Set(arr)],
 
   /**
    * 返回两个数组中相同的元素（注：不去重，大小写敏感）
-   * arrRemoveDuplicateDoubleCase([1,2],[2,3]): [2]
+   * arrRetainDoubleCase([1,2],[2,3]) 返回 [2]
    */
-  arrRemoveDuplicateDoubleCase: (a, b) => {
+  arrRetainDoubleCase: (a, b) => {
     const s = new Set(b)
     return a.filter(x => s.has(x))
   },
 
   /**
    * 返回两个数组中相同的元素（注：不去重，大小写不敏感）
-   * arrRemoveDuplicateDouble(['A','b','C'], ['c']): ['c']
+   * arrRetainDouble(['A','b','C'], ['c']) 返回 ['c']
    */
-  arrRemoveDuplicateDouble: (a, b) => {
+  arrRetainDouble: (a, b) => {
     let a1 = [],
       b1 = []
     for (let i of b) {
@@ -192,7 +177,7 @@ const Util = {
 
   /**
    * 删除2个数组同时存在的元素，返回一个合并后的新数组
-   * arrDeleteDoubleAndUnion([1,2],[2,3]): [1,3]
+   * arrDeleteDoubleAndUnion([1,2],[2,3]) 返回 [1,3]
    */
   arrDeleteDoubleAndUnion: (a, b) => {
     const sA = new Set(a),
@@ -202,7 +187,7 @@ const Util = {
 
   /**
    * 从A数组中删除AB数组同时存在的元素，返回一个新数组
-   * arrDeleteDouble([1,2],[2,3]): [1]
+   * arrDeleteDouble([1,2],[2,3]) 返回 [1]
    */
   arrDeleteDouble: (a, b) => {
     const s = new Set(b)
@@ -210,38 +195,38 @@ const Util = {
   },
 
   /**
-   * 2数组先去重，返回一个合并后的新数组
-   * arrUnionDouble([1,2],[2,3]): [1,2,3]
+   * 2个数组合并、去重、返回一个新数组
+   * arrNoDoubleUnion([1,2],[2,3]) 返回 [1,2,3]
    */
-  arrUnionDouble: (a, b) => Array.from(new Set([...a, ...b])),
+  arrNoDoubleUnion: (a, b) => Array.from(new Set([...a, ...b])),
 
   /**
    * 返回数组中的所有元素, 除第一个
-   * arrNotFirst([1,2,3]): [2,3]
+   * arrDeleteFirst([1,2,3]) 返回 [2,3]
    */
-  arrNotFirst: arr => (arr.length > 1 ? arr.slice(1) : arr),
+  arrDeleteFirst: arr => (arr.length > 1 ? arr.slice(1) : arr),
 
   /**
    * 返回数组中的所有元素, 除最后一个
-   * arrNotLast([1,2,3]): [1,2]
+   * arrDeleteLast([1,2,3]) 返回 [1,2]
    */
-  arrNotLast: arr => arr.slice(0, -1),
+  arrDeleteLast: arr => arr.slice(0, -1),
 
   /**
-   * 返回从右边开始数，第n个元素位置的数组
-   * arrSliceLast([1,2,3],2): [2,3]
+   * 返回从右边开始数，第n个位置开始的数组
+   * arrSliceLast([1,2,3],2) 返回 [2,3]
    */
   arrSliceLast: (arr, n = 1) => arr.slice(arr.length - n, arr.length),
 
   /**
-   * 删除指定元素值（可多个），返回一个新数组
-   * arrDelete([1,2,3,4,5],3,5): [1,2,4]
+   * 删除指定位置的元素值（可多个），返回一个新数组
+   * arrDelete([1,2,3,4,5],3,5) 返回 [1,2,4]
    */
   arrDelete: (arr, ...args) => arr.filter(v => !args.includes(v)),
 
   /**
    * 删除指定元素值，返回原数组，原数组改变
-   * arrDeleteRaw([1,2,3,4,5],3): [1,2,4,5]
+   * arrDeleteRaw([1,2,3,4,5],3) 返回 [1,2,4,5]
    */
   arrDeleteRaw: function(arr, val) {
     var i = 0
@@ -257,7 +242,8 @@ const Util = {
 
   /**
    * 检查给定数组中是否包含某值（大小写敏感）
-   * arrIncludesCase([1,2],3): false
+   * arrIncludesCase([1,2],3) 返回 false
+   * 等同于js原生[1,2].includes(3)
    */
   arrIncludesCase: function(arr, val) {
     var i = arr.length
@@ -271,7 +257,7 @@ const Util = {
 
   /**
    * 检查给定数组中是否包含某值（大小写不敏感）
-   * arrIncludes([1,2],3): false
+   * arrIncludes([1,2],3) 返回 false
    */
   arrIncludes: function(arr, val) {
     var i = arr.length
@@ -335,8 +321,8 @@ const Util = {
    * 日期类
    ************************************************************************/
   /**
-   * 把秒数换算成天、时、分、秒的json
-   * @param {*} value
+   * 把秒数换算成天、时、分、秒组成的json
+   * number2timeJson(10000) 返回 {second: 40, minute: 46, hour: 2, day: 0}
    */
   number2timeJson: function(value) {
     var theTime = parseInt(value) // 秒
@@ -367,9 +353,6 @@ const Util = {
      格式化日期
      moment('2019-1-1').format("YYYY-MM-DD HH:mm:ss")
       
-     是否是合法日期
-     moment('2019-13-02').isValid()
-
      日期减去10分钟
      moment('2019-01-01 00:00:00').subtract(10, "minutes")
      
@@ -378,6 +361,9 @@ const Util = {
      
      2个日期相差多少间隔 a.diff(b, 'days')  ==  a - b
      moment('2019-01-01 00:00:00').diff(moment('2019-01-01 01:00:00'),'minutes') = -60;
+
+     是否是合法日期
+     moment('2019-13-02').isValid()
     
      日期转时间戳
      moment('2019-06-12 12:30:10').valueOf()//毫秒
@@ -412,7 +398,8 @@ const Util = {
    ************************************************************************/
 
   /**
-   * 防抖：只在一次触发后又delay秒内没再触发，才执行一次
+   * 防抖：比如只在一次触发后，delay秒内没再触发，才执行一次。
+   * 即点击完，等delay秒才会执行
    * @example
    * debounce(fn, 500)
    * @returns function
@@ -453,12 +440,13 @@ const Util = {
   },
 
   /**
+   * 让程序暂停 n 毫秒
    * await sleep(1000)
    */
   sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
 
   /**
-     * 避免调用await函数是大量使用try{func()}catch(e){}结构，用to函数使得页面整洁
+     * 避免调用await函数时大量使用try{func()}catch(e){}结构，用to函数使得页面整洁
      * [err, result] = await to(func());
        if (err) {
          return console.log(err)
@@ -484,7 +472,7 @@ const Util = {
   /**
    * 在控制台打印函数执行时间，并返回函数结果
    * function aa(){}
-   * let result = funcTime(aa): xxxx ms
+   * let result = funcTime(aa) 返回 xxxx ms
    */
   funcTime: callback => {
     console.time('耗费时间')
@@ -504,7 +492,7 @@ const Util = {
 
   /**
    * 两个参数之间的随机整数
-   * mathRandomDuration(5,7): 5 <= x <= 7
+   * mathRandomDuration(5,7) 返回随机数：5 <= x <= 7
    */
   mathRandomInt: (lowerValue, upperValue) => {
     var chioces = upperValue - lowerValue + 1
@@ -513,7 +501,7 @@ const Util = {
 
   /**
    * 两个参数之间的随机浮点数
-   * mathRandomDuration(5,7): 5 <= x <= 7
+   * mathRandomDuration(5,7) 返回随机数：5 <= x <= 7
    */
   mathRandomFloat: (min, max) => Math.random() * (max - min) + min,
 
@@ -554,6 +542,21 @@ const Util = {
   /************************************************************************
    * 对象类
    ************************************************************************/
+
+  /**
+   * 复制并过滤：第二个参数覆盖第一个参数，且第二个参数多余的key不理睬
+   * @example
+   * assignFilter({name}, {name:'xx', aa:1 }) 返回 {name: 'xx'}
+   * @returns object
+   */
+  assignFilter: (expectObj, rawObj) => {
+    for (let k in rawObj) {
+      if (expectObj.hasOwnProperty(k)) {
+        expectObj[k] = rawObj[k]
+      }
+    }
+    return expectObj
+  },
 
   /* 对象拷贝
         var obj = {
@@ -633,9 +636,9 @@ const Util = {
 
   /**
    * 是否有某个属性/键（大小写敏感）
-   * jsonHas({aa:1}, 'aa'): true
+   * objHas({aa:1}, 'aa'): true
    */
-  jsonHas: function(obj, key) {
+  objHas: function(obj, key) {
     return obj.hasOwnProperty(key)
   },
 
@@ -654,7 +657,7 @@ const Util = {
   /**
    * 驼峰转为连字符
    * @example
-   * toLine({ userName: 1 }) : {user_name: 1}
+   * toLine({ userName: 1 }) 返回 {user_name: 1}
    * @description
    * 通常在操作数据库之前调用本函数，把变量转换成表的真实字段
    * @returns object
@@ -696,7 +699,7 @@ const Util = {
   /**
    * 连字符转为驼峰
    * @example
-   * toCamel({ user_name: 1 }) : {userName: 1}
+   * toCamel({ user_name: 1 }) 返回 {userName: 1}
    * @description
    * 通常在获取数据库数据之后调用本函数，把变量转换成js常用的驼峰写法
    * @returns object
@@ -757,15 +760,15 @@ const Util = {
 
   /**
    * 返回字符串在某个字符串中出现的次数
-   * strCount('a23aaa23aa','23') : 2
+   * strCount('a23aaa23aa','23') 返回 2
    */
   strCount: function(s, c) {
     return s.split(c).length - 1
   },
 
   /**
-   * 返回字符串中出现最多的字符和次数，返回json
-   * stringMax('啊12啊啊啊3')
+   * 返回字符串中出现最多的字符和次数，返回json对象
+   * strFindMost('啊12啊啊啊3') 返回 {value: "啊", count: 4}
    */
   strFindMost: function(str) {
     var obj = {}
@@ -790,11 +793,10 @@ const Util = {
   },
 
   /**
-   * 清除字符串左侧或右侧的任意空格
+   * 清除字符串的任意空格
+   * strDeleteSpace('  he l lo  ') 返回 hello
    */
-  strTrim: function(str) {
-    return str.replace(/^\s+|\s+$/g, '')
-  },
+  strDeleteSpace: str => str.replace(/\s/g, ''),
 
   /**
    * 清除左空格
@@ -812,11 +814,13 @@ const Util = {
 
   /**
    * 反转字符串
+   * strReverse('abc') 返回 'cba'
    */
   strReverse: str => [...str].reverse().join(''),
 
   /**
    * 按字母顺序排序
+   * strSortCharacters('badce') 返回 'abcde'
    */
   strSortCharacters: str =>
     str
@@ -829,21 +833,21 @@ const Util = {
    ************************************************************************/
 
   /**
-   * 返回一个二维数组
-   * @param {*} x
+   * Map转二维数组
    */
   map2arr: function(x) {
     return [...x]
   },
 
   /**
-   * 传入一个二维数组，如[[a,1],[b,2]]
+   * 二维数组转Map，如[[a,1],[b,2]]可转成Map对象
    */
   arr2map: function(x) {
     return new Map(x)
   },
 
   /**
+   * Map转json对象
    * Map对象的键值要为字符串，不能是复杂对象
    */
   map2obj: function(x) {
@@ -856,6 +860,7 @@ const Util = {
   },
 
   /**
+   * json对象转Map
    * 传入json对象，返回Map对象
    */
   obj2map: function(obj) {
@@ -867,8 +872,8 @@ const Util = {
   },
 
   /**
-   * 判断一个变量是否是假值
-   * @param {*} str
+   * 判断一个变量是否是false
+   * 有的字符串值为'null'、'undefined'也认为是false
    */
   isFalse: function(data) {
     if (!data) {
@@ -948,6 +953,19 @@ const Util = {
    * 是否是布尔值
    */
   isBoolean: val => Object.prototype.toString.call(val) == '[object Boolean]',
+
+  /************************************************************************
+   * 其他
+   ************************************************************************/
+
+  /**
+   * 获取客户端ip
+   * @example
+   *
+   * @returns string
+   */
+
+  //TODO:获取客户端ip、导出excel、图片处理
 }
 
 module.exports = Util
