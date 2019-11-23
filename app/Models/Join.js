@@ -10,7 +10,7 @@ class JoinTable {
   /**
    * 条件查询
    * @example
-   * fetchBy({
+   * fetchTest3By({
    *  filter: {
    *    userName: 'wu',
    *    status: 1,
@@ -18,7 +18,7 @@ class JoinTable {
    * })
    * @returns object
    */
-  async fetchBy(obj) {
+  async fetchTest3By(obj) {
     try {
       let result = {}
       const filter = obj.filter

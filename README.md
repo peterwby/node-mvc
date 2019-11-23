@@ -69,8 +69,8 @@ npm run dev
 - 打开浏览器，分别输入：
 
   - http://127.0.0.1:3201/test1
-  - http://127.0.0.1:3201/test2
-  - http://127.0.0.1:3201/test3
+  - http://127.0.0.1:3201/test2?uname=peter
+  - http://127.0.0.1:3201/test3?fromDate=2019-03-22&toDate=2019-04-25&status=1&page=1&limit=3
 
 - 打开/start/routes.js ，一步一步跟踪下去，看每一步怎么实现。完整顺序是 Router->Controllers->Services->Models
 

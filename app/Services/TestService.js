@@ -63,7 +63,7 @@ class TestService extends BaseService {
       //引用Model里的类并初始化
       const joinTable = new (require('../Models/Join'))()
       let result = {}
-      result = await joinTable.fetchBy(ctx.body)
+      result = await joinTable.fetchTest3By(ctx.body)
       if (result.error) {
         throw new Error(result.msg)
       }
