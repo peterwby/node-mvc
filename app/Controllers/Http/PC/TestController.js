@@ -9,6 +9,13 @@ const Util = require('../../../Lib/Util')
 const testService = new (require(`../../../Services/TestService`))()
 
 class TestController {
+  constructor() {
+    this.str1 = '<h3>======数组===================</h3>'
+    this.str2 = '<h3>======字符串===================</h3>'
+    this.str3 = '<h3>======日期===================</h3>'
+    this.str4 = '<h3>======对象===================</h3>'
+    this.str5 = '<h3>======类型检测===================</h3>'
+  }
   //---------------------------------------------
   //async 方法名(ctx)，固定格式，其中ctx是一个对象，表示请求的上下文，ctx = { request, response, session }
   //每个Controller的方法return时，都需通过return Util.end2front()，使得返回的对象的格式具有一致性
@@ -111,6 +118,124 @@ class TestController {
       })
     }
   }
+
+  async testUtil(ctx) {
+    try {
+      //数组
+      this.wrap(`str1`, `判断数组中是否包含某值（大小写敏感）`, `[1, 2].includes(2)`)
+      this.wrap(`str1`, `判断数组中是否包含某值（大小写不敏感）`, `Util.arrIncludes(['a','b','c'],'B')`)
+      this.wrap(`str1`, `截取数组, 从第1开始到第3之前的元素`, `['a', 'b', 'c', 'd'].slice(1, 3)`)
+      this.wrap(`str1`, `截取数组`, `['a', 'b', 'c', 'd'].slice(['a', 'b', 'c', 'd'].indexOf('b'), ['a', 'b', 'c', 'd'].indexOf('d'))`)
+      this.wrap(`str1`, `删除数组右边2个元素`, `['a', 'b', 'c', 'd'].slice(0,-2)`)
+      this.wrap(`str1`, `返回从右边开始数，第n个位置开始的数组`, `Util.arrSliceLast([1, 2, 3], 2)`)
+      this.wrap(`str1`, `返回数组中的最大值`, `Util.arrMax([1, 2, 3])`)
+      this.wrap(`str1`, `返回数组中的最小值`, `Util.arrMin([1, 2, 3])`)
+      this.wrap(`str1`, `将数组块平均拆分为指定大小的较小数组，返回一个二维数组。`, `Util.arrSplit([1, 2, 3, 4, 5], 2)`)
+      this.wrap(`str1`, `计算数组中某个元素值的出现次数（大小写敏感）`, `Util.arrItemCount(['a', 'a', 'b'], 'a')`)
+      this.wrap(`str1`, `返回去重后的数组`, `Util.arrNoDouble([1, 2, 2, 3])`)
+      this.wrap(`str1`, `返回两个数组中相同的元素（注：大小写敏感）`, `Util.arrRetainDoubleCase([1, 2], [2, 3])`)
+      this.wrap(`str1`, `返回两个数组中相同的元素（注：大小写不敏感）`, `Util.arrRetainDouble(['A', 'b', 'C'], ['c'])`)
+      this.wrap(`str1`, `删除2个数组同时存在的元素，返回一个合并后的新数组`, `Util.arrDeleteDoubleAndUnion([1, 2], [2, 3])`)
+      this.wrap(`str1`, `从A数组中删除AB数组同时存在的元素，返回一个新数组`, `Util.arrDeleteDouble([1, 2], [2, 3])`)
+      this.wrap(`str1`, `2个数组合并、去重、返回一个新数组`, `Util.arrNoDoubleUnion([1, 2], [2, 3])`)
+      this.wrap(`str1`, `删除指定的元素值（可多个），返回一个新数组`, `Util.arrDelete(['a','b','c','d','e'],'a','c')`)
+      this.wrap(`str1`, `删除指定的元素值，返回原数组，原数组改变`, `Util.arrDeleteRaw(['a','b','c','d','e'],'d')`)
+      this.wrap(`str1`, `把数组里的所有元素转成小写`, `Util.arr2LowerCase(['a','B'])`)
+      this.wrap(`str1`, `随机返回数组中的一个元素值`, `Util.arrRandomValue([1,2,3])`)
+      this.wrap(`str1`, `返回一个打乱了顺序的数组`, `Util.arrRandomSort([1,2,3])`)
+      this.wrap(`str1`, `返回数组中每间隔n个的那些元素组成的数组`, `Util.arrEveryNth([1,2,3,4,5,6,7,8,9,10],3)`)
+      this.wrap(`str1`, `返回数字数组的平均值(浮点数)`, `Util.arrAvg([3,6,7])`)
+      this.wrap(`str1`, `返回一个数字数组的总和`, `Util.arrSum([1,2,3])`)
+      this.wrap(`str1`, `返回给定数组中有多少个数小于或等于给定值的百分比%`, `Util.arrPercentIle([1,2,3,4],3)`)
+      //字符串
+      this.wrap(`str2`, `返回字符串长度`, `'abcd'.length`)
+      this.wrap(`str2`, `返回字符串是否包含指定字符（大小写敏感）`, `'abcd'.includes('b')`)
+      this.wrap(`str2`, `返回指定字符在字符串中的位置`, `'abcd'.indexOf('b')`)
+      this.wrap(`str2`, `截取字符串，从第1开始到第3之前的字符串`, `'abcde'.slice(1,3)`)
+      this.wrap(`str2`, `截取字符串，从第1开始到右边数第2个之前的字符串`, `'abcde'.slice(1,-2)`)
+      this.wrap(`str2`, `返回字符串第n次出现的下标位置`, `Util.strIndexOfMulti('00ab00ab', 'ab', 2)`)
+      this.wrap(`str2`, `返回字符串在某个字符串中出现的次数`, `Util.strCount('a23aaa23aa', '23')`)
+      this.wrap(`str2`, `返回字符串中出现最多的字符和次数，返回json对象`, `Util.strFindMost('啊12啊啊啊3')`)
+      this.wrap(`str2`, `清除字符串的任意空格`, `Util.strDeleteSpace('  he l lo  ')`)
+      this.wrap(`str2`, `反转字符串`, `Util.strReverse('abc')`)
+      this.wrap(`str2`, `按字母顺序排序`, `Util.strSort('badce')`)
+      //日期
+      //const moment = require('moment') //日期格式化插件
+      //moment.locale('zh-cn') //设为北京时区
+      //http://momentjs.cn/docs/#/displaying/format/
+      this.wrap(`str3`, `格式化日期`, `moment(new Date('2019-1-1')).format("YYYY-MM-DD HH:mm:ss")`)
+      this.wrap(`str3`, `日期减去10分钟`, `moment('2019-01-01 00:00:00').subtract(10, "minutes")`)
+      this.wrap(`str3`, `日期加上10个月`, `moment('2019-01-01 00:00:00').add(10, "months").format("YYYY-MM-DD HH:mm:ss")`)
+      this.wrap(`str3`, `2个日期相差多少间隔 a.diff(b, 'days')  ==  a - b`, `moment('2019-01-01 00:00:00').diff(moment('2019-01-01 01:00:00'),'minutes')`)
+      this.wrap(`str3`, `是否是合法日期`, `moment('2019-13-02').isValid()`)
+      this.wrap(`str3`, `日期转时间戳(毫秒)`, `moment('2019-06-12 12:30:10').valueOf()`)
+      this.wrap(`str3`, `日期转时间戳(秒)`, `moment('2019-06-12 12:30:10').unix()`)
+      this.wrap(`str3`, `时间戳(毫秒）转日期`, `moment(1560313810687).format('YYYY-MM-DD HH:mm:ss')`)
+      this.wrap(`str3`, `获取当月的天数`, `moment().daysInMonth()`)
+      this.wrap(`str3`, `获取指定月的天数`, `moment("2012-02", "YYYY-MM").daysInMonth()`)
+      this.wrap(`str3`, `时间转数组`, `moment().toArray()`)
+      this.wrap(`str3`, `时间转对象`, `moment().toObject()`)
+      this.wrap(`str3`, `2个时间比较`, `moment('2010-10-20').isSame('2010-01-01', 'year')`)
+      this.wrap(`str3`, `2个时间比较`, `moment('2010-10-20').isBefore('2010-12-31', 'year')`)
+      this.wrap(`str3`, `2个时间比较`, `moment('2010-10-20').isAfter('2009-12-31', 'year')`)
+      this.wrap(`str3`, `2个时间比较`, `moment('2010-10-20').isBetween('2009-12-31', '2012-01-01', 'year')`)
+      this.wrap(`str3`, `是否是闰年`, `moment([2001]).isLeapYear()`)
+
+      //对象
+      this.wrap(`str4`, `json对象转字符串`, `JSON.stringify({a:1, b:2})`)
+      this.wrap(`str4`, `字符串转json对象`, `JSON.parse('{"a":1,"b":2}')`)
+      this.wrap(`str4`, `json对象深拷贝 let newObj = Util.deepClone({a:1, b: {c:3}})`, `Util.deepClone({a:1, b: {c:3}})`)
+      this.wrap(`str4`, `是否有某个键（大小写敏感）`, `Util.objHas({aa:1}, 'aa')`)
+
+      //类型检测
+      this.wrap(`str5`, `是否是json对象`, `Util.isObj({aa:1})`)
+      this.wrap(`str5`, `是否是空的json对象：{}`, `Util.isObjEmpty({aa:1})`)
+      this.wrap(`str5`, `是否是数字类型`, `Util.isNumber({aa:1})`)
+      this.wrap(`str5`, `是否是数组`, `Util.isArray([1,2])`)
+      this.wrap(`str5`, `是否是函数`, `Util.isFunction({aa:1})`)
+      this.wrap(`str5`, `是否是字符串`, `Util.isString('abc')`)
+
+      let data = '<h2>常用工具库放在app/Lib/Util.js</h2><p>以下显示的返回值只是参考，以具体运行结果为准</p>'
+      data += this.str1 + this.str2 + this.str3 + this.str4 + this.str5
+      return data
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        code: 9000,
+        track: 'k2j09faaj09',
+      })
+    }
+  }
+
+  /**
+   * 演示get方法访问外部链接
+   * @returns object
+   */
+  async testGet(ctx) {
+    //调用service层来处理业务逻辑
+    const result = await testService.httpGet(ctx)
+    //返回结果给前端
+    return Util.end2front({
+      msg: result.msg,
+      data: result.data,
+    })
+  }
+
+  /**
+   * 演示post方法访问外部链接
+   * @returns object
+   */
+  async testPost(ctx) {
+    //调用service层来处理业务逻辑
+    const result = await testService.httpPost(ctx)
+    //返回结果给前端
+    return Util.end2front({
+      msg: result.msg,
+      data: result.data,
+    })
+  }
+
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   // XXXX       以下还在修改中                    XXXX
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -151,6 +276,11 @@ class TestController {
         track: '023j0f93j89',
       })
     }
+  }
+  wrap = (str, desc, func) => {
+    this[str] += `<div style="margin-bottom:1rem"><li>${desc}</li><div style="padding-left:2rem"><span style="color:green">${func}</span> : <span style="">${eval(
+      func
+    )}</span></div></div>`
   }
 }
 

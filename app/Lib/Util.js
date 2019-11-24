@@ -150,7 +150,7 @@ const Util = {
   arrNoDouble: arr => [...new Set(arr)],
 
   /**
-   * 返回两个数组中相同的元素（注：不去重，大小写敏感）
+   * 返回两个数组中相同的元素（注：大小写敏感）
    * arrRetainDoubleCase([1,2],[2,3]) 返回 [2]
    */
   arrRetainDoubleCase: (a, b) => {
@@ -159,7 +159,7 @@ const Util = {
   },
 
   /**
-   * 返回两个数组中相同的元素（注：不去重，大小写不敏感）
+   * 返回两个数组中相同的元素（注：大小写不敏感）
    * arrRetainDouble(['A','b','C'], ['c']) 返回 ['c']
    */
   arrRetainDouble: (a, b) => {
@@ -219,14 +219,14 @@ const Util = {
   arrSliceLast: (arr, n = 1) => arr.slice(arr.length - n, arr.length),
 
   /**
-   * 删除指定位置的元素值（可多个），返回一个新数组
-   * arrDelete([1,2,3,4,5],3,5) 返回 [1,2,4]
+   * 删除指定的元素值（可多个），返回一个新数组
+   * arrDelete(['a','b','c','d','e'],'a','c') 返回 ['b','d','e']
    */
   arrDelete: (arr, ...args) => arr.filter(v => !args.includes(v)),
 
   /**
-   * 删除指定元素值，返回原数组，原数组改变
-   * arrDeleteRaw([1,2,3,4,5],3) 返回 [1,2,4,5]
+   * 删除指定的元素值，返回原数组，原数组改变
+   * arrDeleteRaw['a','b','c','d','e'],'d') 返回 ['a','b','c','e']
    */
   arrDeleteRaw: function(arr, val) {
     var i = 0
@@ -256,7 +256,7 @@ const Util = {
   },
 
   /**
-   * 检查给定数组中是否包含某值（大小写不敏感）
+   * 判断数组中是否包含某值（大小写不敏感）
    * arrIncludes([1,2],3) 返回 false
    */
   arrIncludes: function(arr, val) {
@@ -312,8 +312,8 @@ const Util = {
   arrSum: arr => arr.reduce((acc, val) => acc + val, 0),
 
   /**
-   * 返回算给定数组中有多少个数小于或等于给定值的百分比
-   * arrPercentile([1,2,3,4],3): 62.5
+   * 返回给定数组中有多少个数小于或等于给定值的百分比
+   * arrPercentIle([1,2,3,4],3): 62.5
    */
   arrPercentIle: (arr, val) => (100 * arr.reduce((acc, v) => acc + (v < val ? 1 : 0) + (v === val ? 0.5 : 0), 0)) / arr.length,
 
@@ -745,7 +745,7 @@ const Util = {
 
   /**
    * 返回字符串第n次出现的下标位置
-   * strIndexOfMulti('00ab00ab', 'ab', 2)： 6
+   * strIndexOfMulti('00ab00ab', 'ab', 2) 返回 6
    * @param {字符串} str
    * @param {待查找} cha
    * @param {第n次出现} num
@@ -820,9 +820,9 @@ const Util = {
 
   /**
    * 按字母顺序排序
-   * strSortCharacters('badce') 返回 'abcde'
+   * strSort('badce') 返回 'abcde'
    */
-  strSortCharacters: str =>
+  strSort: str =>
     str
       .split('')
       .sort((a, b) => a.localeCompare(b))

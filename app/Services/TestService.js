@@ -183,10 +183,8 @@ class TestService extends BaseService {
       if (result.error) {
         throw new Error('访问http出错')
       }
-      let data = result
       //组装数据
-
-      return Util.end(data)
+      return Util.end({ data: result })
     } catch (err) {
       return Util.error({
         msg: err.message,
@@ -197,12 +195,12 @@ class TestService extends BaseService {
 
   async httpPost() {
     try {
-      const url = 'https://media.mz4s.com/mp/port-msg-box'
+      const url = 'http://api.m.taobao.com/rest/api.do?api=mtop.common.getTimestamp'
       const result = await Request.post(url, { account: '123467', error_msg: 'dd' }, { timeout: 5000 })
       if (result.error) {
         throw new Error(result.msg)
       }
-      return Util.end(result)
+      return Util.end({ data: result })
     } catch (err) {
       return Util.error({
         msg: err.message,

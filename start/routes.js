@@ -17,9 +17,11 @@ const Route = use('Route')
 const log = use('Logger')
 const Util = require('../app/Lib/Util')
 
+// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+// XXXX  下面是3个例子，由浅入深的演示此框架的使用    XXXX
+// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 /**
- * 下面是3个例子，由浅入深的演示此框架的使用
- *
  * 访问http://127.0.0.1:3201/test1，会调用"app/Controllers/Http/PC/TestController.js"的test1()方法，以此类推
  */
 Route.get('/test1', 'PC/TestController.test1')
@@ -27,6 +29,12 @@ Route.get('/test1', 'PC/TestController.test1')
 Route.get('/test2', 'PC/TestController.test2')
 //http://127.0.0.1:3201/test3?fromDate=2019-03-22&toDate=2019-04-25&status=1&page=1&limit=3
 Route.get('/test3', 'PC/TestController.test3')
+//演示数组字符串等常用操作
+Route.get('/testUtil', 'PC/TestController.testUtil')
+//演示get方法访问外部链接
+Route.get('/testGet', 'PC/TestController.testGet')
+//演示post方法访问外部链接
+Route.get('/testPost', 'PC/TestController.testPost')
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 // XXXX       以下是正式环境常用的路由设置       XXXX
