@@ -7,6 +7,9 @@ const Util = require('../Lib/Util')
 const BaseService = require('../BaseClass/BaseService')
 
 class TestService extends BaseService {
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  // XXXX       3个由浅入深的例子                 XXXX
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   /**
    * 返回hello world，并打印到控制台
    * @example
@@ -75,6 +78,15 @@ class TestService extends BaseService {
       })
     }
   }
+
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  // XXXX       数组字符串日期等的常用操作         XXXX
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  /**
+   * 数组
+   */
+
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   // XXXX       以下还在修改中                    XXXX
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
