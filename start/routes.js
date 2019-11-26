@@ -61,6 +61,21 @@ Route.group(() => {
   .middleware(['checkAuth']) //验证身份
 
 /**
+ * 一组路由：里面所有url都需要进行身份验证（用约定的字符串来判断）
+ * 通常用在简单的前后端通信，前端携带key访问后端，后端检查key是否正确
+ */
+Route.group(() => {
+  try {
+    Route.get('testAuthString', 'PC/TestController.test1')
+  } catch (err) {
+    return Util.end2front({
+      msg: '服务端无此路由',
+      code: 9999,
+    })
+  }
+}).middleware(['checkAuthByString']) //验证身份
+
+/**
  * 一组路由：里面所有url都需要进行身份验证（用redis来判断）
  * 通常用在内部跨项目之间的调用，调用方在redis存一个变量，被调用方检查是否存在这个变量，以此证明是可信任的
  */

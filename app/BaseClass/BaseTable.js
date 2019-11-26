@@ -5,8 +5,8 @@ const log = use('Logger')
 const Database = use('Database')
 
 class BaseTable {
-  constructor(tabelName) {
-    this.tabelName = tabelName
+  constructor(tableName) {
+    this.tableName = tableName
   }
 
   /**
@@ -20,7 +20,7 @@ class BaseTable {
   async checkExistById(obj) {
     try {
       const result = await Database.select('id')
-        .from(this.tabelName)
+        .from(this.tableName)
         .where('id', obj.id)
 
       return Util.end({
@@ -36,8 +36,6 @@ class BaseTable {
         },
         track: '895893745',
       })
-    } finally {
-      await Database.close()
     }
   }
 
@@ -53,7 +51,7 @@ class BaseTable {
   async create(trx, obj) {
     try {
       let columns = Util.toLine(obj)
-      const result = await trx.table(this.tabelName).insert(columns)
+      const result = await trx.table(this.tableName).insert(columns)
       return Util.end({
         msg: '新增成功',
         data: {
@@ -63,11 +61,9 @@ class BaseTable {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName, req: obj },
+        data: { table: this.tableName, req: obj },
         track: 'hhjhfhf35',
       })
-    } finally {
-      await Database.close()
     }
   }
 
@@ -86,7 +82,7 @@ class BaseTable {
     try {
       let columns = Util.toLine(obj.set)
       const rows = await trx
-        .table(this.tabelName)
+        .table(this.tableName)
         .where('id', obj.id)
         .update(columns)
       return Util.end({
@@ -96,11 +92,9 @@ class BaseTable {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName, req: obj },
+        data: { table: this.tableName, req: obj },
         track: 'lkjfffg04590',
       })
-    } finally {
-      await Database.close()
     }
   }
 
@@ -115,7 +109,7 @@ class BaseTable {
   async deleteBatchById(trx, obj) {
     try {
       const rows = await trx
-        .table(this.tabelName)
+        .table(this.tableName)
         .whereIn('id', obj.ids)
         .delete()
       return Util.end({
@@ -125,11 +119,9 @@ class BaseTable {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName, req: obj },
+        data: { table: this.tableName, req: obj },
         track: 'h98aaah9h8',
       })
-    } finally {
-      await Database.close()
     }
   }
 
@@ -144,7 +136,7 @@ class BaseTable {
   async deleteById(trx, obj) {
     try {
       const rows = await trx
-        .table(this.tabelName)
+        .table(this.tableName)
         .where('id', obj.id)
         .delete()
       return Util.end({
@@ -154,11 +146,9 @@ class BaseTable {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName, req: obj },
+        data: { table: this.tableName, req: obj },
         track: 'ff23f23f23fss',
       })
-    } finally {
-      await Database.close()
     }
   }
 
@@ -178,7 +168,7 @@ class BaseTable {
       const table = Database.clone()
       const result = await table
         .select(...column)
-        .from(this.tabelName)
+        .from(this.tableName)
         .where('id', obj.id)
 
       let data = Util.toCamel(result)
@@ -188,11 +178,9 @@ class BaseTable {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName, req: obj },
+        data: { table: this.tableName, req: obj },
         track: '3i4rf0fasd8',
       })
-    } finally {
-      await Database.close()
     }
   }
 
@@ -210,7 +198,7 @@ class BaseTable {
       const table = Database.clone()
       const result = await table
         .select(...column)
-        .from(this.tabelName)
+        .from(this.tableName)
         .limit(9999)
 
       let data = Util.toCamel(result)
@@ -220,11 +208,9 @@ class BaseTable {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName, req: obj },
+        data: { table: this.tableName, req: obj },
         track: '90sdfsd5j03j0',
       })
-    } finally {
-      await Database.close()
     }
   }
 }

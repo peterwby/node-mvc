@@ -20,7 +20,7 @@ class TestTable extends BaseTable {
   async checkExistByName(obj) {
     try {
       const result = await Database.select('id')
-        .from(this.tabelName)
+        .from(this.tableName)
         .where('user_name', obj.userName)
 
       return Util.end({

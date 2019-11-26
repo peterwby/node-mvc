@@ -59,11 +59,9 @@ class JoinTable {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tabelName, req: obj },
+        data: { table: this.tableName, req: obj },
         track: '3049j09jf0',
       })
-    } finally {
-      await Database.close()
     }
   }
 }
