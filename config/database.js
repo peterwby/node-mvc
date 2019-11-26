@@ -48,7 +48,7 @@ module.exports = {
   |
   */
   mysql: {
-    client: 'mysql2',
+    client: 'mysql',
     connection: {
       host: Env.get('DB_HOST'),
       port: Env.get('DB_PORT'),
