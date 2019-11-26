@@ -1,4 +1,4 @@
-# Node.js 的 MVC 框架
+# Node.js 的 后端 MVC 框架
 
 ## 简介
 
@@ -62,7 +62,7 @@ npm run dev
 - /config/xxx.js：可以对不同模块分别进行配置（一般按默认配置即可）
 - /.env：项目根目录下应该有此文件，用来设置全局配置信息。（重要）
 - /app/Lib/Util.js：常用工具库，包含对数组、对象、字符串、时间等处理的函数
-- /app/Lib/Request.js：通过 http 的 get 或 post 方式访问外部链接
+- /app/Lib/Request.js：基于 axios.js 的 HTTP 库，用于 get、post 方式访问 url
 
 ## 如何使用
 
@@ -115,21 +115,8 @@ npm run dev
   log.error('错误信息')
   ```
 
-- 把变量名从下划线转为驼峰式
-  ```
-  Util.toCamel(obj)
-  ```
-- 把变量名从驼峰式转为下划线
-  ```
-  Util.toLine(obj)
-  ```
-
 ## 常见问题
 
 - 运行失败？
 - 根目录下是否有.env 文件
 - 端口被占用
-
-```
-
-```
