@@ -92,9 +92,9 @@ module.exports = {
   |
   */
   redis: {
-    host: '119.23.47.115',
-    port: 6379,
-    password: '7tl9vYpHe0eYk9tYdXsLgXPxqm1XwPfMQS7h0mRUH5i5Mtm12QLHb92MRA7lU6Fqk0GtcJXzoi8ivHJhWjEfc7iye2cK797srqJfYezFCoCgKgGnJLN7tOkjyJwHJTOI',
+    host: Env.get('REDIS_HOST', '127.0.0.1'),
+    port: Env.get('REDIS_PORT', 6379),
+    password: Env.get('REDIS_PWD', ''),
     db: 0,
     keyPrefix: '',
   },
