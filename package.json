@@ -1,6 +1,6 @@
 {
   "name": "@chanson/node-server",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "adonis-version": "4.1.0",
   "description": "Node.js MVC Framework",
   "main": "server.js",
