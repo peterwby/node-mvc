@@ -35,6 +35,8 @@ Route.get('/testUtil', 'PC/TestController.testUtil')
 Route.get('/testGet', 'PC/TestController.testGet')
 //演示post方法访问外部链接
 Route.get('/testPost', 'PC/TestController.testPost')
+//演示session用法
+Route.get('/testSession', 'PC/TestController.testSession')
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 // XXXX       以下是正式环境常用的路由设置       XXXX
