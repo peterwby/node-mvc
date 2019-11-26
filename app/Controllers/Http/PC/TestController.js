@@ -236,6 +236,33 @@ class TestController {
     })
   }
 
+  /**
+   * 演示session
+   * @returns object
+   */
+  async testSession(ctx) {
+    //session只能存字符串，所以对象、数组需要转成字符串
+    const session = ctx.session
+    //console.log(session.getSessionId())
+    if (!session.get('user')) {
+      //如果找不到，则赋值
+      console.log('赋新值')
+      let data = {
+        name: 'admin',
+        age: '18',
+        time: new Date().getTime(),
+      }
+      session.put('user', JSON.stringify(data))
+    }
+    let userInfo = JSON.parse(session.get('user'))
+    //session.forget('user')//删除
+    //session.clear()//清空
+
+    return Util.end({
+      data: userInfo,
+    })
+  }
+
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   // XXXX       以下还在修改中                    XXXX
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
