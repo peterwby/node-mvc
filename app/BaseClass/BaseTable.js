@@ -17,11 +17,11 @@ class BaseTable {
    * }
    * @returns object
    */
-  async checkExistById(obj) {
+  async checkExistById(obj, idName = 'id') {
     try {
-      const result = await Database.select('id')
+      const result = await Database.select(idName)
         .from(this.tableName)
-        .where('id', obj.id)
+        .where(idName, obj[idName])
 
       return Util.end({
         data: {
@@ -78,12 +78,12 @@ class BaseTable {
    * })
    * @returns object
    */
-  async updateById(trx, obj) {
+  async updateById(trx, obj, idName = 'id') {
     try {
       let columns = Util.toLine(obj.set)
       const rows = await trx
         .table(this.tableName)
-        .where('id', obj.id)
+        .where(idName, obj[idName])
         .update(columns)
       return Util.end({
         msg: '更新成功',
@@ -106,11 +106,11 @@ class BaseTable {
    * })
    * @returns object
    */
-  async deleteBatchById(trx, obj) {
+  async deleteBatchById(trx, obj, idName = 'id') {
     try {
       const rows = await trx
         .table(this.tableName)
-        .whereIn('id', obj.ids)
+        .whereIn(idName, obj.ids)
         .delete()
       return Util.end({
         msg: '删除成功',
@@ -133,11 +133,11 @@ class BaseTable {
    * })
    * @returns object
    */
-  async deleteById(trx, obj) {
+  async deleteById(trx, obj, idName = 'id') {
     try {
       const rows = await trx
         .table(this.tableName)
-        .where('id', obj.id)
+        .where(idName, obj[idName])
         .delete()
       return Util.end({
         msg: '删除成功',
@@ -162,14 +162,14 @@ class BaseTable {
    * @returns object
    */
   //TODO:select的字段由自己决定，不要...column这种写法
-  async fetchById(obj) {
+  async fetchById(obj, idName = 'id') {
     try {
       let column = Util.toLine(obj.column)
       const table = Database.clone()
       const result = await table
         .select(...column)
         .from(this.tableName)
-        .where('id', obj.id)
+        .where(idName, obj[idName])
 
       let data = Util.toCamel(result)
       return Util.end({
