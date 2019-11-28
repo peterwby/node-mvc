@@ -304,7 +304,13 @@ class TestController {
       })
     }
   }
-  wrap = (str, desc, func) => {
+  /**
+   * 辅助函数，用来包装一层div
+   * @example
+   *
+   * @returns object
+   */
+  wrap(str, desc, func) {
     this[str] += `<div style="margin-bottom:1rem"><li>${desc}</li><div style="padding-left:2rem"><span style="color:green">${func}</span> : <span style="">${eval(
       func
     )}</span></div></div>`
