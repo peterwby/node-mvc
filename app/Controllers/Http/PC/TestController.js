@@ -252,10 +252,11 @@ class TestController {
         age: '18',
         time: new Date().getTime(),
       }
-      session.put('user', JSON.stringify(data))
+      session.put('user', data)
     }
-    let userInfo = JSON.parse(session.get('user'))
-    //session.forget('user')//删除
+    let userInfo = session.get('user')
+    console.log(userInfo)
+    //session.forget('user') //删除
     //session.clear()//清空
 
     return Util.end({
