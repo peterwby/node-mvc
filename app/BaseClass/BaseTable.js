@@ -50,7 +50,7 @@ class BaseTable {
    */
   async create(trx, obj) {
     try {
-      let columns = Util.toLine(obj)
+      let columns = obj
       const result = await trx.table(this.tableName).insert(columns)
       return Util.end({
         msg: '新增成功',
@@ -80,7 +80,7 @@ class BaseTable {
    */
   async updateById(trx, obj, idName = 'id') {
     try {
-      let columns = Util.toLine(obj.set)
+      let columns = obj.set
       const rows = await trx
         .table(this.tableName)
         .where(idName, obj[idName])
@@ -164,16 +164,15 @@ class BaseTable {
   //TODO:select的字段由自己决定，不要...column这种写法
   async fetchById(obj, idName = 'id') {
     try {
-      let column = Util.toLine(obj.column)
+      let column = obj.column
       const table = Database.clone()
       const result = await table
         .select(...column)
         .from(this.tableName)
         .where(idName, obj[idName])
 
-      let data = Util.toCamel(result)
       return Util.end({
-        data: data,
+        data: result,
       })
     } catch (err) {
       return Util.error({
@@ -194,16 +193,15 @@ class BaseTable {
    */
   async fetchAll(obj) {
     try {
-      let column = Util.toLine(obj.column)
+      let column = obj.column
       const table = Database.clone()
       const result = await table
         .select(...column)
         .from(this.tableName)
         .limit(9999)
 
-      let data = Util.toCamel(result)
       return Util.end({
-        data: data,
+        data: result,
       })
     } catch (err) {
       return Util.error({
