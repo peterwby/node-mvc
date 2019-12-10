@@ -13,8 +13,8 @@ class BaseTable {
    * 通过主键id查询记录是否存在
    * @example
    * await checkExistById({
-   *  id: 1,
-   * }
+   *  user_id: 1,
+   * },'user_id')
    * @returns object
    */
   async checkExistById(obj, idName = 'id') {
@@ -71,11 +71,11 @@ class BaseTable {
    * 根据主键id更新一条记录
    * @example
    * updateById(trx, {
-   *  id: 10,
+   *  user_id: 10,
    *  set: {
    *    status: 0
    *  }
-   * })
+   * }, 'user_id')
    * @returns object
    */
   async updateById(trx, obj, idName = 'id') {
@@ -103,7 +103,7 @@ class BaseTable {
    * @example
    * deleteBatchById(trx, {
    *  ids: [1,2,3]
-   * })
+   * }, 'user_id')
    * @returns object
    */
   async deleteBatchById(trx, obj, idName = 'id') {
@@ -130,7 +130,7 @@ class BaseTable {
    * @example
    * deleteById(trx, {
    *  id: 1
-   * })
+   * }, 'id')
    * @returns object
    */
   async deleteById(trx, obj, idName = 'id') {
@@ -156,9 +156,9 @@ class BaseTable {
    * 通过主键id查询一条记录
    * @example
    * fetchById({
-   *  id: 1,
+   *  user_id: 1,
    *  column: ['name', 'status']
-   * })
+   * },'user_id')
    * @returns object
    */
   //TODO:select的字段由自己决定，不要...column这种写法
