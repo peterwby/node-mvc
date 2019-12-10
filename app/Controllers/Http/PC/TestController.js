@@ -44,9 +44,8 @@ class TestController {
       let requestAll = ctx.request.all()
 
       //这里对参数进行组装。比如，前端传递的参数是uname，但数据库表的字段是user_name，就需要进行转换组装
-      //注：js默认格式是驼峰式，mysql默认是下划线，将在model层进行转换。这里只需写成userName，而不是user_name
       let body = {
-        userName: requestAll.uname,
+        user_name: requestAll.uname,
         status: requestAll.status,
       }
       //约定：把组装后的对象传给ctx.body，供service层调用
@@ -84,8 +83,8 @@ class TestController {
       let body = {
         filter: {
           //要过滤的条件
-          fromDate: moment(requestAll.fromDate).format('YYYY-MM-DD'),
-          toDate: moment(requestAll.toDate).format('YYYY-MM-DD'),
+          fromdate: moment(requestAll.fromdate).format('YYYY-MM-DD'),
+          todate: moment(requestAll.todate).format('YYYY-MM-DD'),
           status: requestAll.status,
           keyword: requestAll.keyword,
           page: requestAll.page,
@@ -102,7 +101,7 @@ class TestController {
       //组装获取到的数据。比如service获取到了10个字段，但前端只需用到4个，就在这里进行组装
       let data = []
       for (let item of result.data) {
-        data.push({ userName: item.userName, ctime: moment(item.ctime).format('YYYY-MM-DD'), authName: item.authName })
+        data.push({ user_name: item.user_name, ctime: moment(item.ctime).format('YYYY-MM-DD'), auth_name: item.auth_name })
       }
       //返回结果给前端
       return Util.end2front({
@@ -346,7 +345,7 @@ async function testValid(ctx) {
       for (let k in bodyRaw) {
         switch (k.toLowerCase()) {
           case 'username':
-            body.set.userName = bodyRaw[k]
+            body.set.user_name = bodyRaw[k]
             break
           case 'id':
             body.id = bodyRaw[k]
@@ -377,7 +376,7 @@ async function testValid(ctx) {
 
     async function paramsValid() {
       const rules = {
-        userName: 'required|alpha_numeric',
+        user_name: 'required|alpha_numeric',
         beginDate: 'date|after:2019-10-01',
         age: 'number|above:10',
         data: 'json', //data={"a":"1"},data的值能被JSON.parse(data)
@@ -387,8 +386,8 @@ async function testValid(ctx) {
         rePassword: 'same:password',
       }
       const messages = {
-        'userName.required': '用户名为必填项',
-        'userName.alpha_numeric': '用户名应为字母和数字',
+        'user_name.required': '用户名为必填项',
+        'user_name.alpha_numeric': '用户名应为字母和数字',
         'age.above': '年龄应为大于等于20的数字',
         'sex.in': '性别只能是1或2',
         'password.min': '密码最小6位数',

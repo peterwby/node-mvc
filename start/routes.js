@@ -22,12 +22,12 @@ const Util = require('../app/Lib/Util')
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 /**
- * 访问http://127.0.0.1:3201/test1，会调用"app/Controllers/Http/PC/TestController.js"的test1()方法，以此类推
+ * 访问 http://127.0.0.1:3201/test1，会调用"app/Controllers/Http/PC/TestController.js"的test1()方法，以此类推
  */
 Route.get('/test1', 'PC/TestController.test1')
 // http://127.0.0.1:3201/test2?uname=peter
 Route.get('/test2', 'PC/TestController.test2')
-//http://127.0.0.1:3201/test3?fromDate=2019-03-22&toDate=2019-04-25&status=1&page=1&limit=3
+// http://127.0.0.1:3201/test3?fromdate=2019-03-22&todate=2019-04-25&status=1&page=1&limit=3
 Route.get('/test3', 'PC/TestController.test3')
 //演示数组字符串等常用操作
 Route.get('/testUtil', 'PC/TestController.testUtil')

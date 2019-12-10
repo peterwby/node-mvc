@@ -34,8 +34,9 @@ class JoinTable {
         .leftJoin('role_auth as c', 'b.id', 'c.m_role_id')
         .leftJoin('auth as d', 'c.m_auth_id', 'd.id')
         .whereIn('a.status', [0, 1])
-      if (filter.fromDate && filter.toDate) {
-        table.whereBetween('a.ctime', [filter.fromDate, filter.toDate])
+        .where('a.status', '<', 2)
+      if (filter.fromdate && filter.todate) {
+        table.whereBetween('a.ctime', [filter.fromdate, filter.todate])
       }
       if (filter.status) {
         table.where('a.status', filter.status)
@@ -52,7 +53,7 @@ class JoinTable {
       //await关键字：在这里表示执行sql，paginate：把结果分页显示
       result = await table.paginate(page, limit)
 
-      let data = Util.toCamel(result.data)
+      let data = result.data
       return Util.end({
         data: data,
       })
