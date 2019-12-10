@@ -488,7 +488,11 @@ const Util = {
   /**
    * 将数字四舍五入到指定的位数
    */
-  mathRound: (n, decimals = 0) => Number(`${Math.round(`${n}e${decimals}`)}e-${decimals}`),
+  mathRound: (num, n = 0) => {
+    num = parseFloat(num)
+    n = parseInt(n)
+    return (Math.round(num * Math.pow(10, n)) / Math.pow(10, n)).toFixed(n)
+  },
 
   /**
    * 两个参数之间的随机整数
