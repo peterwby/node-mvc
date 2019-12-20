@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@Table/*": ["app/Models/Table/*"],
+      "@Join": ["app/Models/Join"],
+      "@Service/*": ["app/Services/*"],
+      "@Lib/*": ["app/Lib/*"]
+    },
+    "target": "es6",
+    "module": "commonjs"
+  },
+  "exclude": ["node_modules", ".vscode", ".history", "test", "tmp"]
+}
