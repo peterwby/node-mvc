@@ -2,9 +2,9 @@
 
 const Database = use('Database')
 const log = use('Logger')
-const Request = require('../Lib/Request')
-const Util = require('../Lib/Util')
-const BaseService = require('../BaseClass/BaseService')
+const Request = require('@Lib/Request')
+const Util = require('@Lib/Util')
+const BaseService = require('@BaseClass/BaseService')
 
 class TestService extends BaseService {
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -33,7 +33,8 @@ class TestService extends BaseService {
   async test2(ctx) {
     try {
       //引用Model里的类并初始化
-      const testTable = new (require('../Models/Table/test'))('test')
+      const TestTable = require('@Table/test')
+      const testTable = new TestTable('test')
 
       let result = {}
       //使用事务
@@ -64,7 +65,8 @@ class TestService extends BaseService {
   async test3(ctx) {
     try {
       //引用Model里的类并初始化
-      const joinTable = new (require('../Models/Join'))()
+      const JoinTable = require('@Join')
+      const joinTable = new JoinTable()
       let result = {}
       result = await joinTable.fetchTest3By(ctx.body)
       if (result.error) {
@@ -78,14 +80,6 @@ class TestService extends BaseService {
       })
     }
   }
-
-  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  // XXXX       数组字符串日期等的常用操作         XXXX
-  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-  /**
-   * 数组
-   */
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   // XXXX       以下还在修改中                    XXXX

@@ -1,6 +1,6 @@
 'use strict'
 
-const Util = require('../Lib/Util')
+const Util = require('@Lib/Util')
 const log = use('Logger')
 const Database = use('Database')
 

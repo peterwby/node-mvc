@@ -4,8 +4,11 @@
     "paths": {
       "@Table/*": ["app/Models/Table/*"],
       "@Join": ["app/Models/Join"],
-      "@Service/*": ["app/Services/*"],
-      "@Lib/*": ["app/Lib/*"]
+      "@Services/*": ["app/Services/*"],
+      "@Lib/*": ["app/Lib/*"],
+      "@BaseClass/*": ["app/BaseClass/*"],
+      "@Models/*": ["app/Models/*"],
+      "@Middleware/*": ["app/Middleware/*"]
     },
     "target": "es6",
     "module": "commonjs"

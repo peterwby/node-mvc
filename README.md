@@ -9,6 +9,7 @@
 ## 须具备知识
 
 - node.js（最好用过类似 express、koa、egg.js 等框架）
+- 熟悉 MVC 知识
 - 熟悉 es6 语法
 - 熟悉 sql 语法
 

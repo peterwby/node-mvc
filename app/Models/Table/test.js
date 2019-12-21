@@ -1,7 +1,7 @@
 'use strict'
 
-const Util = require('../../Lib/Util')
-const BaseTable = require('../../BaseClass/BaseTable')
+const Util = require('@Lib/Util')
+const BaseTable = require('@BaseClass/BaseTable')
 const Database = use('Database')
 
 /**
