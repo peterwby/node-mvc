@@ -30,13 +30,13 @@ Route.get('/test2', 'PC/TestController.test2')
 // http://127.0.0.1:3201/test3?fromdate=2019-03-22&todate=2019-04-25&status=1&page=1&limit=3
 Route.get('/test3', 'PC/TestController.test3')
 //演示数组字符串等常用操作
-Route.get('/testUtil', 'PC/TestController.testUtil')
+Route.get('/test-util', 'PC/TestController.testUtil')
 //演示get方法访问外部链接
-Route.get('/testGet', 'PC/TestController.testGet')
+Route.get('/test-httpget', 'PC/TestController.testGet')
 //演示post方法访问外部链接
-Route.get('/testPost', 'PC/TestController.testPost')
+Route.get('/test-httppost', 'PC/TestController.testPost')
 //演示session用法
-Route.get('/testSession', 'PC/TestController.testSession')
+Route.get('/test-session', 'PC/TestController.testSession')
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 // XXXX       以下是正式环境常用的路由设置       XXXX

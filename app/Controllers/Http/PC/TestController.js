@@ -4,9 +4,10 @@ const { validate } = use('Validator')
 const log = use('Logger')
 const moment = require('moment') //日期格式化插件
 moment.locale('zh-cn') //设为北京时区
-const Util = require('../../../Lib/Util')
+const Util = require('@Lib/Util')
 //引用Service里的类并初始化
-const testService = new (require(`../../../Services/TestService`))()
+const TestService = require(`@Services/TestService`)
+const testService = new TestService()
 
 class TestController {
   constructor() {

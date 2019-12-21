@@ -1,5 +1,14 @@
 'use strict'
-
+const path = require('path')
+require('node-require-alias').setAlias({
+  ['@Table']: path.join(__dirname, '/app/Models/Table'),
+  ['@Join']: path.join(__dirname, '/app/Models/Join.js'),
+  ['@Models']: path.join(__dirname, '/app/Models'),
+  ['@Services']: path.join(__dirname, '/app/Services'),
+  ['@Lib']: path.join(__dirname, '/app/Lib'),
+  ['@BaseClass']: path.join(__dirname, '/app/BaseClass'),
+  ['@Middleware']: path.join(__dirname, '/app/Middleware'),
+})
 /*
 |--------------------------------------------------------------------------
 | Http server

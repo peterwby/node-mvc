@@ -4,7 +4,7 @@ const { validate } = use('Validator')
 const log = use('Logger')
 const moment = require('moment') //日期格式化插件
 moment.locale('zh-cn') //设为北京时区
-const Util = require('../../../Lib/Util')
+const Util = require('@Lib/Util')
 
 class EmptyController {
   constructor() {}
