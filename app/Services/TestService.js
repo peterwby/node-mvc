@@ -32,11 +32,11 @@ class TestService extends BaseService {
    */
   async test2(ctx) {
     try {
+      let result = {}
       //引用Model里的类并初始化
       const TestTable = require('@Table/test')
       const testTable = new TestTable('test')
 
-      let result = {}
       //使用事务
       await Database.transaction(async trx => {
         //调用models层，插入一条记录到数据库
@@ -46,6 +46,26 @@ class TestService extends BaseService {
         if (result.error) {
           throw new Error(result.msg)
         }
+
+        result = await testTable.createMany(trx, [
+          { user_name: 'chen', status: 1 },
+          { user_name: 'wu', status: 0 },
+          { user_name: 'chen22', status: 1 },
+          { user_name: 'wu22', status: 0 },
+        ])
+
+        result = await testTable.updateAdd(trx, {
+          add: ['age', 1],
+          where: [['id', '=', '10']],
+        })
+
+        result = await testTable.updateBy(trx, {
+          where: [
+            ['id', '>', 20],
+            ['id', '<', 40],
+          ],
+          set: { user_name: 'abc', status: 0, age: 20 },
+        })
       })
       return Util.end(result)
     } catch (err) {
@@ -77,6 +97,52 @@ class TestService extends BaseService {
       return Util.error({
         msg: err.message,
         track: '3490fjjakjkd',
+      })
+    }
+  }
+
+  async test4(ctx) {
+    try {
+      let body = ctx.body
+      let page = body.filter.page || 1
+      let limit = body.filter.limit || 10
+
+      const TestTable = require('@Table/test')
+      const testTable = new TestTable()
+      let result = {}
+
+      result = await testTable.fetchAll({
+        //where: [['status', '=', '1']],
+        whereIn: ['id', [10, 11, 12]],
+        whereNotNull: ['age'],
+        column: ['user_name', 'status'],
+        orderBy: ['user_name', 'desc'],
+        page,
+        limit,
+      })
+      /*
+      result = await testTable.checkExistById(1)
+
+      result = await testTable.fetchOneById(10)
+
+      result = await testTable.fetchCount({
+        where: [['status', '=', '1']],
+      })
+
+      result = await testTable.fetchMin({
+        column: 'id',
+        where: [['status', '=', '1']],
+      })
+
+      */
+
+      return Util.end({
+        data: result.data,
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        track: '34twedf23e',
       })
     }
   }

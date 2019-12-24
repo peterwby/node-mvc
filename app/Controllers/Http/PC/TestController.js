@@ -60,6 +60,7 @@ class TestController {
       //返回结果给前端
       return Util.end2front({
         msg: result.msg,
+        data: result.data,
       })
     } catch (err) {
       return Util.error2front({
@@ -115,6 +116,42 @@ class TestController {
         msg: err.message,
         code: 9000,
         track: 'kljsdf09j2903j',
+      })
+    }
+  }
+
+  async test4(ctx) {
+    try {
+      //获取前端get和post方式传递过来的所有参数
+      let requestAll = ctx.request.all()
+
+      //对前端请求参数进行组装
+      let body = {
+        filter: {
+          page: requestAll.page,
+          limit: requestAll.limit,
+        },
+      }
+      //约定：把组装后的请求参数赋值给ctx.body，供service层调用
+      ctx.body = body
+      //调用service层来处理业务逻辑
+      const result = await testService.test4(ctx)
+      if (result.error) {
+        throw new Error(result.msg)
+      }
+      //组装获取到的数据。比如service获取到了10个字段，但前端只需用到4个，就在这里进行组装
+      let data = result.data
+      //返回结果给前端
+      return Util.end2front({
+        msg: '查询完成',
+        data: data,
+      })
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        code: 9000,
+        track: 'kl34jkfsdf98fv',
       })
     }
   }

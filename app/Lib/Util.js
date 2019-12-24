@@ -666,7 +666,7 @@ const Util = {
    * 通常在操作数据库之前调用本函数，把变量转换成表的真实字段
    * @returns object
    */
-  //TODO:目前缺点，只能处理一层结构
+
   toLine: data => {
     let newData = null
     if (Util.isObj(data)) {
@@ -708,7 +708,7 @@ const Util = {
    * 通常在获取数据库数据之后调用本函数，把变量转换成js常用的驼峰写法
    * @returns object
    */
-  //TODO:目前缺点，只能处理一层结构
+
   toCamel: data => {
     let newData = null
     if (Util.isObj(data)) {

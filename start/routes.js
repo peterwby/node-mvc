@@ -29,6 +29,7 @@ Route.get('/test1', 'PC/TestController.test1')
 Route.get('/test2', 'PC/TestController.test2')
 // http://127.0.0.1:3201/test3?fromdate=2019-03-22&todate=2019-04-25&status=1&page=1&limit=3
 Route.get('/test3', 'PC/TestController.test3')
+Route.get('/test4', 'PC/TestController.test4')
 //演示数组字符串等常用操作
 Route.get('/test-util', 'PC/TestController.testUtil')
 //演示get方法访问外部链接

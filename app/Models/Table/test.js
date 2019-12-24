@@ -9,6 +9,13 @@ const Database = use('Database')
  * 如果表名是users，则创建users.js，类名UsersTable
  */
 class TestTable extends BaseTable {
+  constructor() {
+    const data = {
+      table_name: 'test',
+      primary_key: 'id',
+    }
+    super(data)
+  }
   /**
    * 是否存在姓名
    * @example

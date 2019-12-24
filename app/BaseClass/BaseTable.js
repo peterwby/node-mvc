@@ -5,23 +5,23 @@ const log = use('Logger')
 const Database = use('Database')
 
 class BaseTable {
-  constructor(tableName) {
-    this.tableName = tableName
+  constructor(obj = {}) {
+    this.tableName = obj.table_name
+    this.primaryKey = obj.primary_key || 'id' //只支持单主键
   }
 
   /**
    * 通过主键id查询记录是否存在
    * @example
-   * await checkExistById({
-   *  user_id: 1,
-   * },'user_id')
+   * await checkExistById(id) //id=主键id值
    * @returns object
    */
-  async checkExistById(obj, idName = 'id') {
+  async checkExistById(id) {
     try {
-      const result = await Database.select(idName)
+      if (!id) throw new Error('请传入主键值')
+      const result = await Database.select(this.primaryKey)
         .from(this.tableName)
-        .where(idName, obj[idName])
+        .where(this.primaryKey, id)
 
       return Util.end({
         data: {
@@ -40,7 +40,49 @@ class BaseTable {
   }
 
   /**
-   * 创建一条记录
+   * 指定字段的值自增n
+   * @example
+   * updateAdd(trx, {
+   *  add:['age', 1],
+   *  where:[['status', '=', '1']]
+   * })
+   * @description
+   * 如果字段值为null，则无效，必须为数字
+   * @returns object
+   */
+  async updateAdd(trx, obj) {
+    try {
+      if (!Util.isObj(obj)) throw new Error('请传入一个object')
+      const where = obj.where
+      const add = obj.add
+      if (!Util.isArray(add) || add.length !== 2) throw new Error('add不是合法数组')
+      const table = Database.clone()
+      table.from(this.tableName)
+      if (Util.isArray(where) && where.length) {
+        for (let item of where) {
+          if (Util.isArray(item) && item.length >= 2) {
+            table.where('id', '10')
+          } else {
+            throw new Error('where应该是个二维数组')
+          }
+        }
+      }
+      const result = await table.increment(add[0], add[1]).transacting(trx)
+      const affected_rows = result
+      return Util.end({
+        data: { affected_rows },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        data: { table: this.tableName },
+        track: '9849s8dfs',
+      })
+    }
+  }
+
+  /**
+   * 插入一条记录
    * @example
    * await create(trx,  {
    *  name: 'xx',
@@ -48,10 +90,9 @@ class BaseTable {
    * })
    * @returns object
    */
-  async create(trx, obj) {
+  async create(trx, data) {
     try {
-      let columns = obj
-      const result = await trx.table(this.tableName).insert(columns)
+      const result = await trx.table(this.tableName).insert(data)
       return Util.end({
         msg: '新增成功',
         data: {
@@ -61,39 +102,70 @@ class BaseTable {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tableName, req: obj },
+        data: { table: this.tableName },
         track: 'hhjhfhf35',
       })
     }
   }
 
   /**
-   * 根据主键id更新一条记录
+   * 批量插入记录
    * @example
-   * updateById(trx, {
-   *  user_id: 10,
-   *  set: {
-   *    status: 0
-   *  }
-   * }, 'user_id')
+   * await createMany(trx, [{'user_name':'chen'},{'user_name':'wu'}])
    * @returns object
    */
-  async updateById(trx, obj, idName = 'id') {
+  async createMany(trx, data) {
     try {
-      let columns = obj.set
-      const rows = await trx
-        .table(this.tableName)
-        .where(idName, obj[idName])
-        .update(columns)
+      const result = await trx.batchInsert(this.tableName, data)
       return Util.end({
-        msg: '更新成功',
-        data: { rows },
+        msg: '批量新增成功',
+        data: {
+          newId: result[0],
+        },
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tableName, req: obj },
-        track: 'lkjfffg04590',
+        data: { table: this.tableName },
+        track: '8907kll5asdf32',
+      })
+    }
+  }
+
+  /**
+   * 根据条件更新数据
+   * @example
+   * updateBy(trx, {where:[['id','=',1]]})
+   * @returns object
+   */
+  async updateBy(trx, obj) {
+    try {
+      if (!Util.isObj(obj)) throw new Error('请传入一个对象')
+      const where = obj.where
+      const set = obj.set
+      if (!Util.isObj(set) || Util.isObjEmpty(set)) throw new Error('set必须是个对象')
+      const table = Database.clone()
+      table.from(this.tableName)
+      if (Util.isArray(where) && where.length) {
+        for (let item of where) {
+          if (Util.isArray(item) && item.length >= 2) {
+            table.where(...item)
+          } else {
+            throw new Error('where应该是个二维数组')
+          }
+        }
+      }
+      const affected_rows = await table.update(set).transacting(trx)
+
+      return Util.end({
+        msg: '已更新',
+        data: { affected_rows },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        data: { table: this.tableName },
+        track: '43jsd342er4',
       })
     }
   }
@@ -101,113 +173,380 @@ class BaseTable {
   /**
    * 通过主键id数组，批量删除
    * @example
-   * deleteBatchById(trx, {
-   *  ids: [1,2,3]
-   * }, 'user_id')
+   * deleteById(trx, [1,2,3])
    * @returns object
    */
-  async deleteBatchById(trx, obj, idName = 'id') {
+  async deleteByIds(trx, ids) {
     try {
-      const rows = await trx
+      if (!Util.isArray(ids) || !ids.length) throw new Error('请传入主键的值')
+      const affected_rows = await trx
         .table(this.tableName)
-        .whereIn(idName, obj.ids)
+        .whereIn(this.primaryKey, ids)
         .delete()
       return Util.end({
-        msg: '删除成功',
-        data: { rows },
+        msg: '已删除',
+        data: { affected_rows },
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tableName, req: obj },
+        data: { table: this.tableName },
         track: 'h98aaah9h8',
       })
     }
   }
 
   /**
-   * 通过主键id删除一条记录
+   * 根据条件删除数据
    * @example
-   * deleteById(trx, {
-   *  id: 1
-   * }, 'id')
+   * deleteBy(trx, {where:[['id','=',1]]})
    * @returns object
    */
-  async deleteById(trx, obj, idName = 'id') {
+  async deleteBy(trx, obj) {
     try {
-      const rows = await trx
-        .table(this.tableName)
-        .where(idName, obj[idName])
-        .delete()
+      if (!Util.isObj(obj)) throw new Error('请传入一个对象')
+      const where = obj.where
+      const table = Database.clone()
+      table.from(this.tableName)
+      if (Util.isArray(where) && where.length) {
+        for (let item of where) {
+          if (Util.isArray(item) && item.length >= 2) {
+            table.where(...item)
+          } else {
+            throw new Error('where应该是个二维数组')
+          }
+        }
+      }
+      const affected_rows = await table.delete().transacting(trx)
+
       return Util.end({
-        msg: '删除成功',
-        data: { rows },
+        msg: '已删除',
+        data: { affected_rows },
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tableName, req: obj },
-        track: 'ff23f23f23fss',
+        data: { table: this.tableName },
+        track: 'k2jg034elflk',
       })
     }
   }
 
   /**
-   * 通过主键id查询一条记录
+   * 通过主键id查询一条记录，返回的data是对象而不是数组
    * @example
-   * fetchById({
-   *  user_id: 1,
-   *  column: ['name', 'status']
-   * },'user_id')
+   * fetchOneById(id)
+   * @param id
+   * 主键值
    * @returns object
    */
-  //TODO:select的字段由自己决定，不要...column这种写法
-  async fetchById(obj, idName = 'id') {
+  async fetchOneById(id) {
     try {
-      let column = obj.column
-      const table = Database.clone()
-      const result = await table
-        .select(...column)
+      if (!id) throw new Error('请传入主键值')
+      const result = await Database.select('*')
         .from(this.tableName)
-        .where(idName, obj[idName])
-
+        .where(this.primaryKey, id)
+      let data = result[0] || {}
       return Util.end({
-        data: result,
+        data,
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tableName, req: obj },
+        data: { table: this.tableName },
         track: '3i4rf0fasd8',
       })
     }
   }
 
   /**
-   * 无条件查询所有记录（limit 9999以防止查询太多）
+   * 根据条件查询，
    * @example
-   * fetchAll({
-   *  column: ['name', 'status']
+   * await fetchAll() //返回所有结果
+   * 或
+   * await fetchAll({ //按条件返回结果
+   *  where:[['id', '>', '10'], ['status', '=', '1']],
+   *  whereIn:['id', [1,2,3]],
+   *  whereNotIn....,
+   *  whereNull('status'),
+   *  whereNotNull....,
+   *  whereRaw('id = ?', [20]),
+   *  column: ['user_name', 'age'],
+   *  orderby: ['user_name', 'asc'],
+   *  page: 1,
+   *  limit: 10
    * })
    * @returns object
    */
-  async fetchAll(obj) {
+  async fetchAll(obj = {}) {
     try {
-      let column = obj.column
-      const table = Database.clone()
-      const result = await table
-        .select(...column)
-        .from(this.tableName)
-        .limit(9999)
+      const column = obj.column
+      const where = obj.where
+      const whereIn = obj.whereIn
+      const whereNotIn = obj.whereNotIn
+      const whereNull = obj.whereNull
+      const whereNotNull = obj.whereNotNull
+      const whereRaw = obj.whereRaw
+      const page = parseInt(obj.page || 1) //当前是第N页
+      const limit = parseInt(obj.limit || 9999) //每页显示N行记录
+      const orderBy = obj.orderBy
 
+      const table = Database.clone()
+      table.from(this.tableName)
+      if (Util.isArray(column) && column.length && column[0] !== '*') {
+        table.select(...column)
+      } else {
+        table.select('*')
+      }
+      if (Util.isArray(where) && where.length) {
+        for (let item of where) {
+          if (Util.isArray(item) && item.length >= 2) {
+            table.where(...item)
+          } else {
+            throw new Error('where应该是个二维数组')
+          }
+        }
+      }
+      if (Util.isArray(whereIn) && whereIn.length === 2 && Util.isString(whereIn[0]) && Util.isArray(whereIn[1])) {
+        table.whereIn(whereIn[0], whereIn[1])
+      }
+      if (Util.isArray(whereNotIn) && whereNotIn.length === 2 && Util.isString(whereNotIn[0]) && Util.isArray(whereNotIn[1])) {
+        table.whereIn(whereNotIn[0], whereNotIn[1])
+      }
+      if (whereNull && Util.isString(whereNull)) {
+        table.whereNull(whereNull)
+      }
+      if (whereNotNull && Util.isString(whereNotNull)) {
+        table.whereNotNull(whereNotNull)
+      }
+      if (Util.isArray(whereRaw) && whereRaw.length === 2 && Util.isString(whereRaw[0]) && Util.isArray(whereRaw[1])) {
+        table.whereRaw(whereRaw[0], whereRaw[1])
+      }
+      if (Util.isArray(orderBy) && orderBy.length === 2) {
+        table.orderBy(...orderBy)
+      }
+
+      const result = await table.paginate(page, limit)
       return Util.end({
         data: result,
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: { table: this.tableName, req: obj },
-        track: '90sdfsd5j03j0',
+        data: { table: this.tableName },
+        track: '93404t9u89u9u9098jf',
+      })
+    }
+  }
+
+  /**
+   * 获取总数量
+   * @example
+   * fetchCount(obj)
+   * @param obj
+   * 可选，空：无条件；对象{ where:[['status', '=', '1']] }：按条件
+   * @returns object
+   */
+  async fetchCount(obj = null) {
+    try {
+      const table = Database.clone()
+      table.from(this.tableName)
+      if (Util.isObj(obj)) {
+        const where = obj.where
+        if (Util.isArray(where) && where.length) {
+          for (let item of where) {
+            if (Util.isArray(item) && item.length >= 2) {
+              table.where(...item)
+            } else {
+              throw new Error('where应该是个二维数组')
+            }
+          }
+        }
+      }
+      table.count('* as countValue')
+      const result = await table
+
+      let countValue = result[0].countValue || 0
+      return Util.end({
+        data: { countValue },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        data: { table: this.tableName },
+        track: 'affffkljkiii4a',
+      })
+    }
+  }
+
+  /**
+   * 获取指定字段的最大值
+   * @example
+   * fetchMax({
+   *  column: 'id'
+   *  where:[['status', '=', '1']]
+   * })
+   * @returns object
+   */
+  async fetchMax(obj) {
+    try {
+      if (!Util.isObj(obj)) throw new Error('请传入一个object')
+      const where = obj.where
+      const column = obj.column.toString()
+      if (!column) throw new Error('请传入一个字段名column')
+
+      const table = Database.clone()
+      table.from(this.tableName)
+      if (Util.isArray(where) && where.length) {
+        for (let item of where) {
+          if (Util.isArray(item) && item.length >= 2) {
+            table.where(...item)
+          } else {
+            throw new Error('where应该是个二维数组')
+          }
+        }
+      }
+      table.max(`${column} as maxValue`)
+      const result = await table
+
+      let maxValue = result[0].maxValue || 0
+      return Util.end({
+        data: { maxValue },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        data: { table: this.tableName },
+        track: 'ammkmfffsssfff3f',
+      })
+    }
+  }
+
+  /**
+   * 获取指定字段的最小值
+   * @example
+   * fetchMin({
+   *  column: 'id'
+   *  where:[['status', '=', '1']]
+   * })
+   * @returns object
+   */
+  async fetchMin(obj) {
+    try {
+      if (!Util.isObj(obj)) throw new Error('请传入一个object')
+      const where = obj.where
+      const column = obj.column.toString()
+      if (!column) throw new Error('请传入一个字段名column')
+
+      const table = Database.clone()
+      table.from(this.tableName)
+      if (Util.isArray(where) && where.length) {
+        for (let item of where) {
+          if (Util.isArray(item) && item.length >= 2) {
+            table.where(...item)
+          } else {
+            throw new Error('where应该是个二维数组')
+          }
+        }
+      }
+      table.min(`${column} as minValue`)
+      const result = await table
+
+      let minValue = result[0].minValue || 0
+      return Util.end({
+        data: { minValue },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        data: { table: this.tableName },
+        track: 'jkksssmmma55a59mmmmi',
+      })
+    }
+  }
+
+  /**
+   * 获取指定字段的相加总和
+   * @example
+   * fetchSum({
+   *  column: 'id'
+   *  where:[['status', '=', '1']]
+   * })
+   * @returns object
+   */
+  async fetchSum(obj) {
+    try {
+      if (!Util.isObj(obj)) throw new Error('请传入一个object')
+      const where = obj.where
+      const column = obj.column.toString()
+      if (!column) throw new Error('请传入一个字段名column')
+
+      const table = Database.clone()
+      table.from(this.tableName)
+      if (Util.isArray(where) && where.length) {
+        for (let item of where) {
+          if (Util.isArray(item) && item.length >= 2) {
+            table.where(...item)
+          } else {
+            throw new Error('where应该是个二维数组')
+          }
+        }
+      }
+      table.sum(`${column} as sumValue`)
+      const result = await table
+
+      let sumValue = result[0].sumValue || 0
+      return Util.end({
+        data: { sumValue },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        data: { table: this.tableName },
+        track: '43sfkl20hksdf9oljfs',
+      })
+    }
+  }
+
+  /**
+   * 获取指定字段的平均数
+   * @example
+   * fetchAvg({
+   *  column: 'id'
+   *  where:[['status', '=', '1']]
+   * })
+   * @returns object
+   */
+  async fetchAvg(obj) {
+    try {
+      if (!Util.isObj(obj)) throw new Error('请传入一个object')
+      const where = obj.where
+      const column = obj.column.toString()
+      if (!column) throw new Error('请传入一个字段名column')
+
+      const table = Database.clone()
+      table.from(this.tableName)
+      if (Util.isArray(where) && where.length) {
+        for (let item of where) {
+          if (Util.isArray(item) && item.length >= 2) {
+            table.where(...item)
+          } else {
+            throw new Error('where应该是个二维数组')
+          }
+        }
+      }
+      table.avg(`${column} as avgValue`)
+      const result = await table
+
+      let avgValue = result[0].avgValue || 0
+      return Util.end({
+        data: { avgValue },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        data: { table: this.tableName },
+        track: '9023gf9jfs',
       })
     }
   }
