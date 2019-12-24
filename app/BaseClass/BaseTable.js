@@ -6,8 +6,8 @@ const Database = use('Database')
 
 class BaseTable {
   constructor(obj = {}) {
-    this.tableName = obj.table_name
-    this.primaryKey = obj.primary_key || 'id' //只支持单主键
+    this.tableName = obj.table_name //表的名字，需跟数据库上的表名一模一样
+    this.primaryKey = obj.primary_key || 'id' //表的主键，只支持单主键
   }
 
   /**
@@ -35,48 +35,6 @@ class BaseTable {
           isExist: false,
         },
         track: '895893745',
-      })
-    }
-  }
-
-  /**
-   * 指定字段的值自增n
-   * @example
-   * updateAdd(trx, {
-   *  add:['age', 1],
-   *  where:[['status', '=', '1']]
-   * })
-   * @description
-   * 如果字段值为null，则无效，必须为数字
-   * @returns object
-   */
-  async updateAdd(trx, obj) {
-    try {
-      if (!Util.isObj(obj)) throw new Error('请传入一个object')
-      const where = obj.where
-      const add = obj.add
-      if (!Util.isArray(add) || add.length !== 2) throw new Error('add不是合法数组')
-      const table = Database.clone()
-      table.from(this.tableName)
-      if (Util.isArray(where) && where.length) {
-        for (let item of where) {
-          if (Util.isArray(item) && item.length >= 2) {
-            table.where('id', '10')
-          } else {
-            throw new Error('where应该是个二维数组')
-          }
-        }
-      }
-      const result = await table.increment(add[0], add[1]).transacting(trx)
-      const affected_rows = result
-      return Util.end({
-        data: { affected_rows },
-      })
-    } catch (err) {
-      return Util.error({
-        msg: err.message,
-        data: { table: this.tableName },
-        track: '9849s8dfs',
       })
     }
   }
@@ -171,9 +129,51 @@ class BaseTable {
   }
 
   /**
+   * 指定字段的值自增n
+   * @example
+   * updateAdd(trx, {
+   *  add:['age', 1],
+   *  where:[['status', '=', '1']]
+   * })
+   * @description
+   * 如果字段值为null，则无效，必须为数字
+   * @returns object
+   */
+  async updateAdd(trx, obj) {
+    try {
+      if (!Util.isObj(obj)) throw new Error('请传入一个object')
+      const where = obj.where
+      const add = obj.add
+      if (!Util.isArray(add) || add.length !== 2) throw new Error('add不是合法数组')
+      const table = Database.clone()
+      table.from(this.tableName)
+      if (Util.isArray(where) && where.length) {
+        for (let item of where) {
+          if (Util.isArray(item) && item.length >= 2) {
+            table.where('id', '10')
+          } else {
+            throw new Error('where应该是个二维数组')
+          }
+        }
+      }
+      const result = await table.increment(add[0], add[1]).transacting(trx)
+      const affected_rows = result
+      return Util.end({
+        data: { affected_rows },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        data: { table: this.tableName },
+        track: '9849s8dfs',
+      })
+    }
+  }
+
+  /**
    * 通过主键id数组，批量删除
    * @example
-   * deleteById(trx, [1,2,3])
+   * deleteByIds(trx, [1,2,3])
    * @returns object
    */
   async deleteByIds(trx, ids) {
