@@ -35,7 +35,7 @@ class TestService extends BaseService {
       let result = {}
       //引用Model里的类并初始化
       const TestTable = require('@Table/test')
-      const testTable = new TestTable('test')
+      const testTable = new TestTable()
 
       //使用事务
       await Database.transaction(async trx => {
