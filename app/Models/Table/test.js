@@ -6,7 +6,7 @@ const Database = use('Database')
 
 /**
  * 真实数据库中有一个表叫test，则Models/Table目录也建一个test.js文件，里面创建一个TestTable
- * 如果表名是users，则创建users.js，类名UsersTable
+ * 如果表名是user_order，则创建user_order.js，类名UserOrderTable
  */
 class TestTable extends BaseTable {
   constructor() {
@@ -20,7 +20,7 @@ class TestTable extends BaseTable {
    * 是否存在姓名
    * @example
    * checkExistByName({
-   *  userName: 'xx',
+   *  user_name: 'xx',
    * })
    * @returns object
    */
@@ -28,7 +28,7 @@ class TestTable extends BaseTable {
     try {
       const result = await Database.select('id')
         .from(this.tableName)
-        .where('user_name', obj.userName)
+        .where('user_name', obj.user_name)
 
       return Util.end({
         data: {

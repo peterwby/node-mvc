@@ -280,16 +280,9 @@ class BaseTable {
    */
   async fetchAll(obj = {}) {
     try {
-      const column = obj.column
-      const where = obj.where
-      const whereIn = obj.whereIn
-      const whereNotIn = obj.whereNotIn
-      const whereNull = obj.whereNull
-      const whereNotNull = obj.whereNotNull
-      const whereRaw = obj.whereRaw
+      const { column, where, whereIn, whereNotIn, whereNull, whereNotNull, whereRaw, orderBy } = obj
       const page = parseInt(obj.page || 1) //当前是第N页
       const limit = parseInt(obj.limit || 9999) //每页显示N行记录
-      const orderBy = obj.orderBy
 
       const table = Database.clone()
       table.from(this.tableName)

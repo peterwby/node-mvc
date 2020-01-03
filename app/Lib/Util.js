@@ -56,7 +56,7 @@ const Util = {
 
     log.notice(obj.track) //TODO:检查log会不会影响对象内容
     if (JSON.stringify(obj.data) !== '{}') {
-      log.error(obj.data)
+      console.log(obj.data)
     }
     log.error(obj.msg)
     return obj
@@ -103,7 +103,7 @@ const Util = {
     obj.track = obj.track || ''
 
     if (JSON.stringify(obj.data) !== '{}') {
-      log.error(obj.data)
+      console.log(obj.data)
     }
 
     return obj

@@ -89,6 +89,8 @@ npm run dev
   ctx.session.get('user')
   ctx.session.put('user', 'wu')
   ```
+- redis 的操作
+
 - 函数正常结束时调用。用途：规范函数的返回值，使得返回值具有相同结构
 
   ```
