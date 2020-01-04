@@ -28,7 +28,7 @@ const Util = {
       throw new Error(obj.msg)
     }
     obj.error = false
-    obj.status = obj.status || 1 //status的值，<0: 异常，=0：正常但操作被拒绝，>0：成功
+    obj.status = !!obj.status || obj.status === 0 ? obj.status : 1 //status的值，<0: 异常，=0：正常但操作被拒绝，>0：成功
     obj.msg = obj.msg || '操作已完成'
     obj.data = obj.data || {}
     return obj
@@ -49,7 +49,7 @@ const Util = {
       throw new Error('error(obj)的obj应该是个对象')
     }
     obj.error = true
-    obj.status = obj.status || -1
+    obj.status = !!obj.status || obj.status === 0 ? obj.status : -1
     obj.msg = obj.msg || '出现错误'
     obj.data = obj.data || {}
     obj.track = obj.track || ''

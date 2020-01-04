@@ -19,7 +19,7 @@ class BaseTable {
   async checkExistById(id) {
     try {
       if (!id) throw new Error('请传入主键值')
-      const result = await Database.select(this.primaryKey)
+      let result = await Database.select(this.primaryKey)
         .from(this.tableName)
         .where(this.primaryKey, id)
 
@@ -50,7 +50,7 @@ class BaseTable {
    */
   async create(trx, data) {
     try {
-      const result = await trx.table(this.tableName).insert(data)
+      let result = await trx.table(this.tableName).insert(data)
       return Util.end({
         msg: '新增成功',
         data: {
@@ -74,7 +74,7 @@ class BaseTable {
    */
   async createMany(trx, data) {
     try {
-      const result = await trx.batchInsert(this.tableName, data)
+      let result = await trx.batchInsert(this.tableName, data)
       return Util.end({
         msg: '批量新增成功',
         data: {
@@ -156,7 +156,7 @@ class BaseTable {
           }
         }
       }
-      const result = await table.increment(add[0], add[1]).transacting(trx)
+      let result = await table.increment(add[0], add[1]).transacting(trx)
       const affected_rows = result
       return Util.end({
         data: { affected_rows },
@@ -243,7 +243,7 @@ class BaseTable {
   async fetchOneById(id) {
     try {
       if (!id) throw new Error('请传入主键值')
-      const result = await Database.select('*')
+      let result = await Database.select('*')
         .from(this.tableName)
         .where(this.primaryKey, id)
       let data = result[0] || {}
@@ -319,7 +319,7 @@ class BaseTable {
         table.orderBy(...orderBy)
       }
 
-      const result = await table.paginate(page, limit)
+      let result = await table.paginate(page, limit)
       return Util.end({
         data: result,
       })
@@ -357,7 +357,7 @@ class BaseTable {
         }
       }
       table.count('* as countValue')
-      const result = await table
+      let result = await table
 
       let countValue = result[0].countValue || 0
       return Util.end({
@@ -400,7 +400,7 @@ class BaseTable {
         }
       }
       table.max(`${column} as maxValue`)
-      const result = await table
+      let result = await table
 
       let maxValue = result[0].maxValue || 0
       return Util.end({
@@ -443,7 +443,7 @@ class BaseTable {
         }
       }
       table.min(`${column} as minValue`)
-      const result = await table
+      let result = await table
 
       let minValue = result[0].minValue || 0
       return Util.end({
@@ -486,7 +486,7 @@ class BaseTable {
         }
       }
       table.sum(`${column} as sumValue`)
-      const result = await table
+      let result = await table
 
       let sumValue = result[0].sumValue || 0
       return Util.end({
@@ -529,7 +529,7 @@ class BaseTable {
         }
       }
       table.avg(`${column} as avgValue`)
-      const result = await table
+      let result = await table
 
       let avgValue = result[0].avgValue || 0
       return Util.end({
