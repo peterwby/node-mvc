@@ -40,6 +40,33 @@ class BaseTable {
   }
 
   /**
+   * 查询某个记录是否存在
+   * @example
+   * await checkExistByColumn({ columnName : xx })
+   * @returns object
+   */
+  async checkExistByColumn(obj) {
+    try {
+      let arr = Object.entries(obj)[0]
+      let result = await Database.select(this.primaryKey)
+        .from(this.tableName)
+        .where(arr[0], arr[1])
+
+      return Util.end({
+        data: {
+          isExist: !!result[0],
+        },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        data: { table: this.tableName },
+        track: '43t349fjg',
+      })
+    }
+  }
+
+  /**
    * 插入一条记录
    * @example
    * await create(trx,  {
@@ -93,7 +120,7 @@ class BaseTable {
   /**
    * 根据条件更新数据
    * @example
-   * updateBy(trx, {where:[['id','=',1]]})
+   * updateBy(trx, {where:[['id','=',1]], set:{xx:1,yy:2}})
    * @returns object
    */
   async updateBy(trx, obj) {
@@ -117,6 +144,7 @@ class BaseTable {
 
       return Util.end({
         msg: '已更新',
+        status: affected_rows > 0 ? 1 : 0,
         data: { affected_rows },
       })
     } catch (err) {
@@ -265,14 +293,14 @@ class BaseTable {
    * await fetchAll() //返回所有结果
    * 或
    * await fetchAll({ //按条件返回结果
+   *  column: ['user_name', 'age'],
    *  where:[['id', '>', '10'], ['status', '=', '1']],
    *  whereIn:['id', [1,2,3]],
    *  whereNotIn....,
    *  whereNull('status'),
    *  whereNotNull....,
    *  whereRaw('id = ?', [20]),
-   *  column: ['user_name', 'age'],
-   *  orderby: ['user_name', 'asc'],
+   *  orderBy: [['user_name', 'asc']],
    *  page: 1,
    *  limit: 10
    * })
@@ -304,7 +332,7 @@ class BaseTable {
         table.whereIn(whereIn[0], whereIn[1])
       }
       if (Util.isArray(whereNotIn) && whereNotIn.length === 2 && Util.isString(whereNotIn[0]) && Util.isArray(whereNotIn[1])) {
-        table.whereIn(whereNotIn[0], whereNotIn[1])
+        table.whereNotIn(whereNotIn[0], whereNotIn[1])
       }
       if (whereNull && Util.isString(whereNull)) {
         table.whereNull(whereNull)
@@ -315,8 +343,14 @@ class BaseTable {
       if (Util.isArray(whereRaw) && whereRaw.length === 2 && Util.isString(whereRaw[0]) && Util.isArray(whereRaw[1])) {
         table.whereRaw(whereRaw[0], whereRaw[1])
       }
-      if (Util.isArray(orderBy) && orderBy.length === 2) {
-        table.orderBy(...orderBy)
+      if (Util.isArray(orderBy) && orderBy.length) {
+        for (let item of orderBy) {
+          if (Util.isArray(item) && item.length === 2) {
+            table.orderBy(...item)
+          } else {
+            throw new Error('orderBy应该是个二维数组')
+          }
+        }
       }
 
       let result = await table.paginate(page, limit)

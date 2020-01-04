@@ -116,7 +116,10 @@ class TestService extends BaseService {
         whereIn: ['id', [10, 11, 12]],
         whereNotNull: ['age'],
         column: ['user_name', 'status'],
-        orderBy: ['user_name', 'desc'],
+        orderBy: [
+          ['user_name', 'desc'],
+          ['status', 'asc'],
+        ],
         page,
         limit,
       })
