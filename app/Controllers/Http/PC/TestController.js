@@ -54,9 +54,7 @@ class TestController {
 
       //调用service层来处理业务逻辑
       const result = await testService.test2(ctx)
-      if (result.error) {
-        throw new Error(result.msg)
-      }
+
       //返回结果给前端
       return Util.end2front({
         msg: result.msg,
@@ -97,9 +95,7 @@ class TestController {
       ctx.body = body
       //调用service层来处理业务逻辑
       const result = await testService.test3(ctx)
-      if (result.error) {
-        throw new Error(result.msg)
-      }
+
       //组装获取到的数据。比如service获取到了10个字段，但前端只需用到4个，就在这里进行组装
       let data = []
       for (let item of result.data) {
@@ -136,9 +132,7 @@ class TestController {
       ctx.body = body
       //调用service层来处理业务逻辑
       const result = await testService.test4(ctx)
-      if (result.error) {
-        throw new Error(result.msg)
-      }
+
       //组装获取到的数据。比如service获取到了10个字段，但前端只需用到4个，就在这里进行组装
       let data = result.data
       //返回结果给前端
@@ -324,9 +318,7 @@ class TestController {
       }
       //调用业务逻辑
       const result = await testService.updateDb(ctx)
-      if (result.error) {
-        throw new Error(result.msg)
-      }
+
       //组装数据，返回json给前端
       return Util.end2front({
         msg: result.msg,

@@ -70,9 +70,7 @@ class TestRemoteService extends BaseService {
     try {
       const url = 'http://api.m.taobao.com/rest/api.do?api=mtop.common.getTimestamp'
       const result = await Request.get(url, { aa: '1234' }, { timeout: 5000 }) //timeout ??
-      if (result.error) {
-        throw new Error('访问http出错')
-      }
+
       let data = result
       //组装数据
 
@@ -89,9 +87,7 @@ class TestRemoteService extends BaseService {
     try {
       const url = 'https://media.mz4s.com/mp/port-msg-box'
       const result = await Request.post(url, { account: '123467', error_msg: 'dd' }, { timeout: 5000 })
-      if (result.error) {
-        throw new Error(result.msg)
-      }
+
       return Util.end(result)
     } catch (err) {
       return Util.error({

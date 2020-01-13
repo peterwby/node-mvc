@@ -25,15 +25,13 @@ class BaseTable {
 
       return Util.end({
         data: {
-          isExist: !!result[0],
+          is_exist: !!result[0],
         },
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        data: {
-          isExist: false,
-        },
+        data: { table: this.tableName },
         track: '895893745',
       })
     }
@@ -54,7 +52,7 @@ class BaseTable {
 
       return Util.end({
         data: {
-          isExist: !!result[0],
+          is_exist: !!result[0],
         },
       })
     } catch (err) {
@@ -80,6 +78,7 @@ class BaseTable {
       let result = await trx.table(this.tableName).insert(data)
       return Util.end({
         msg: '新增成功',
+        status: !result[0] ? 0 : 1,
         data: {
           newId: result[0],
         },
@@ -297,9 +296,9 @@ class BaseTable {
    *  where:[['id', '>', '10'], ['status', '=', '1']],
    *  whereIn:['id', [1,2,3]],
    *  whereNotIn....,
-   *  whereNull('status'),
+   *  whereNull:['status'],
    *  whereNotNull....,
-   *  whereRaw('id = ?', [20]),
+   *  whereRaw:['id = ?', [20]],
    *  orderBy: [['user_name', 'asc']],
    *  page: 1,
    *  limit: 10

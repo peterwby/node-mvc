@@ -54,12 +54,14 @@ const Util = {
     obj.data = obj.data || {}
     obj.track = obj.track || ''
 
-    log.notice(obj.track) //TODO:检查log会不会影响对象内容
+    log.notice(obj.track)
     if (JSON.stringify(obj.data) !== '{}') {
-      console.log(obj.data)
+      let errdata = Object.assign({}, obj.data)
+      log.error(errdata)
     }
     log.error(obj.msg)
-    return obj
+    throw new Error(obj.msg)
+    //return obj
   },
 
   /**
@@ -74,7 +76,6 @@ const Util = {
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
       throw new Error('end2front(obj)的obj应该是个对象')
     }
-    obj.error = false
     obj.msg = obj.msg || '操作已完成'
     obj.data = obj.data || {}
     obj.code = obj.code || 0
@@ -103,7 +104,8 @@ const Util = {
     obj.track = obj.track || ''
 
     if (JSON.stringify(obj.data) !== '{}') {
-      console.log(obj.data)
+      let errdata = Object.assign({}, obj.data)
+      log.error(errdata)
     }
 
     return obj

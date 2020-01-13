@@ -43,9 +43,6 @@ class TestService extends BaseService {
         //ctx.body：为“前端的请求”经过检验、组装后的对象
         //test表本身没有实现create方法，但它的基类BaseTable实现了此方法，故可直接使用
         result = await testTable.create(trx, ctx.body)
-        if (result.error) {
-          throw new Error(result.msg)
-        }
 
         result = await testTable.createMany(trx, [
           { user_name: 'chen', status: 1 },
@@ -89,9 +86,7 @@ class TestService extends BaseService {
       const joinTable = new JoinTable()
       let result = {}
       result = await joinTable.fetchTest3By(ctx.body)
-      if (result.error) {
-        throw new Error(result.msg)
-      }
+
       return Util.end(result)
     } catch (err) {
       return Util.error({
@@ -179,9 +174,7 @@ class TestService extends BaseService {
         let data = ctx.body
         //是否已存在
         result = await Tables.test.checkExistByName({ username: data.userName })
-        if (result.error) {
-          throw new Errror(result.msg)
-        }
+
         if (result.data.isExist) {
           return Util.end({
             msg: '已存在此名字',
@@ -243,9 +236,7 @@ class TestService extends BaseService {
     try {
       const url = 'http://api.m.taobao.com/rest/api.do?api=mtop.common.getTimestamp'
       const result = await Request.get(url, { aa: '1234' }, { timeout: 5000 }) //timeout ??
-      if (result.error) {
-        throw new Error('访问http出错')
-      }
+
       //组装数据
       return Util.end({ data: result })
     } catch (err) {
@@ -260,9 +251,7 @@ class TestService extends BaseService {
     try {
       const url = 'http://api.m.taobao.com/rest/api.do?api=mtop.common.getTimestamp'
       const result = await Request.post(url, { account: '123467', error_msg: 'dd' }, { timeout: 5000 })
-      if (result.error) {
-        throw new Error(result.msg)
-      }
+
       return Util.end({ data: result })
     } catch (err) {
       return Util.error({

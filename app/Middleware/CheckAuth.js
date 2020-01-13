@@ -1,39 +1,38 @@
 'use strict'
 
-const log = use('log')
+const Util = require('@Lib/Util')
 
 class CheckAuth {
   async handle(ctx, next) {
     try {
       const session = ctx.session
-      if (!session.get('userid')) {
+      if (!session.get('member')) {
         //session无效
-        log.error('身份已过期，请重新登录')
         ctx.session.clear()
-        return ctx.response.send({
-          code: 1001,
-          msg: '身份已过期，请重新登录',
-          data: null,
-        })
+        return ctx.response.send(
+          Util.end2front({
+            msg: '身份已过期，请重新登录',
+            code: 1001,
+          })
+        )
       }
       await next()
     } catch (err) {
-      log.notice('j3o4jg09')
       if (err.message && err.message.indexOf('E_UNDEFINED_METHOD') != -1) {
-        log.error(err.message)
-        return ctx.response.send({
-          code: 9999,
-          msg: '服务端未定义此方法',
-          data: null,
-        })
+        return ctx.response.send(
+          Util.end2front({
+            msg: '服务端未定义此方法',
+            code: 9999,
+          })
+        )
       }
-      log.error(err.message)
-      log.error('身份验证异常，请重新登录')
-      return ctx.response.send({
-        code: 1001,
-        msg: '身份验证异常，请重新登录',
-        data: null,
-      })
+      return ctx.response.send(
+        Util.error2front({
+          msg: err.message,
+          code: 1001,
+          track: '902gejfndk8',
+        })
+      )
     }
   }
 }

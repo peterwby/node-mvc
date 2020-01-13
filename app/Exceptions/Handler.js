@@ -29,10 +29,11 @@ class ExceptionHandler extends BaseExceptionHandler {
         //response.redirect('login')
         break
       case 'HttpException':
-        response.status(error.status).send(error.message)
+        response.status(error.status).send('服务端执行出错')
         break
       default:
-        return super.handle(...arguments)
+        response.status(error.status).send('服务端代码出错')
+      //return super.handle(...arguments)
     }
     return null
   }
