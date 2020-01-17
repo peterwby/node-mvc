@@ -533,7 +533,7 @@ const Util = {
   mathGCD: (a, b) => {
     let x = a,
       y = b
-    _gcd = (_x, _y) => (!_y ? _x : _gcd(_y, _x % _y))
+    let _gcd = (_x, _y) => (!_y ? _x : _gcd(_y, _x % _y))
     return _gcd(a, b)
   },
 
@@ -777,9 +777,9 @@ const Util = {
    * strFindMost('啊12啊啊啊3') 返回 {value: "啊", count: 4}
    */
   strFindMost: function(str) {
-    var obj = {}
-    for (var i = 0; i < str.length; i++) {
-      var key = str[i] //key中存储的是每一个字符串
+    let obj = {}
+    for (let i = 0; i < str.length; i++) {
+      let key = str[i] //key中存储的是每一个字符串
       if (obj[key]) {
         //判断这个键值对中有没有这个键
         obj[key]++
@@ -787,9 +787,9 @@ const Util = {
         obj[key] = 1 //obj[w]=1
       }
     }
-    var maxCount = 0 //假设是出现次数最多的次数
-    var maxString = '' //假设这个字符串是次数出现最多的字符串
-    for (var key in obj) {
+    let maxCount = 0 //假设是出现次数最多的次数
+    let maxString = '' //假设这个字符串是次数出现最多的字符串
+    for (let key in obj) {
       if (maxCount < obj[key]) {
         maxCount = obj[key] //保存最大的次数
         maxString = key

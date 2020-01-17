@@ -25,9 +25,9 @@ const Request = {
       return Util.end(result.data)
     } catch (err) {
       let msg = ''
-      if (!!err.response) {
+      if (err.response) {
         msg = `接收响应出错: ${url}`
-      } else if (!!err.request) {
+      } else if (err.request) {
         msg = `发送请求出错: ${url}`
       } else if (err.message.includes('timeout')) {
         msg = `请求超时： ${url}`
@@ -58,9 +58,9 @@ const Request = {
       return Util.end(result.data)
     } catch (err) {
       let msg = ''
-      if (!!err.response) {
+      if (err.response) {
         msg = `接收响应出错: ${url}`
-      } else if (!!err.request) {
+      } else if (err.request) {
         msg = `发送请求出错: ${url}`
       } else if (err.message.includes('timeout')) {
         msg = `请求超时： ${url}`
@@ -95,16 +95,16 @@ const Request = {
       return Util.end(result.data)
     } catch (err) {
       let msg = ''
-      if (!!err.response) {
+      if (err.response) {
         msg = `接收响应出错: ${url}
-        status: ${!!err.response ? err.response.status : 0}
-        statusText: ${!!err.response ? err.response.statusText : ''}`
-      } else if (!!err.request) {
+        status: ${err.response ? err.response.status : 0}
+        statusText: ${err.response ? err.response.statusText : ''}`
+      } else if (err.request) {
         msg = `发送请求出错: ${url}`
       } else if (err.message.includes('timeout')) {
         msg = `请求超时： ${url}
-        status: ${!!err.response ? err.response.status : 0}
-        statusText: ${!!err.response ? err.response.statusText : ''}`
+        status: ${err.response ? err.response.status : 0}
+        statusText: ${err.response ? err.response.statusText : ''}`
       } else {
         msg = err.message
       }

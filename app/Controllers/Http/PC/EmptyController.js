@@ -12,16 +12,24 @@ class EmptyController {
   async test(ctx) {
     try {
       //检查参数合法性
-
+      const resultValid = await testValid(ctx)
+      if (resultValid.error) {
+        return Util.end2front({
+          isShowMsg: true,
+          msg: resultValid.msg,
+          code: 9000,
+          track: '43fsf343a3',
+        })
+      }
       //调用业务逻辑Service
 
       //组装从Service返回的数据，返回给前端
-      return Util.end2front()
+      return Util.end2front({})
     } catch (err) {
       return Util.error2front({
         //isShowMsg: true,
         msg: err.message,
-        track: '304jrlkdg3jgrdl',
+        track: 'test_1579280050',
       })
     }
   }
