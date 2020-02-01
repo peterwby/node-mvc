@@ -197,7 +197,11 @@ class TestController {
       this.wrap(`str3`, `格式化日期`, `moment(new Date('2019-1-1')).format("YYYY-MM-DD HH:mm:ss")`)
       this.wrap(`str3`, `日期减去10分钟`, `moment('2019-01-01 00:00:00').subtract(10, "minutes")`)
       this.wrap(`str3`, `日期加上10个月`, `moment('2019-01-01 00:00:00').add(10, "months").format("YYYY-MM-DD HH:mm:ss")`)
-      this.wrap(`str3`, `2个日期相差多少间隔 a.diff(b, 'days')  ==  a - b`, `moment('2019-01-01 00:00:00').diff(moment('2019-01-01 01:00:00'),'minutes')`)
+      this.wrap(
+        `str3`,
+        `2个日期相差多少间隔 a.diff(b, 'days')  ==  a - b`,
+        `moment('2019-01-01 00:00:00').diff(moment('2019-01-01 01:00:00'),'minutes')`
+      )
       this.wrap(`str3`, `是否是合法日期`, `moment('2019-13-02').isValid()`)
       this.wrap(`str3`, `日期转时间戳(毫秒)`, `moment('2019-06-12 12:30:10').valueOf()`)
       this.wrap(`str3`, `日期转时间戳(秒)`, `moment('2019-06-12 12:30:10').unix()`)
@@ -308,14 +312,7 @@ class TestController {
     try {
       //校验权限和参数
       const resultValid = await testValid(ctx)
-      if (resultValid.error) {
-        return Util.error2front({
-          isShowMsg: true,
-          msg: resultValid.msg,
-          code: 9000,
-          track: '9834jld6',
-        })
-      }
+      if (resultValid) return resultValid
       //调用业务逻辑
       const result = await testService.updateDb(ctx)
 
@@ -341,7 +338,9 @@ class TestController {
    * @returns object
    */
   wrap(str, desc, func) {
-    this[str] += `<div style="margin-bottom:1rem"><li>${desc}</li><div style="padding-left:2rem"><span style="color:green">${func}</span> : <span style="">${eval(
+    this[
+      str
+    ] += `<div style="margin-bottom:1rem"><li>${desc}</li><div style="padding-left:2rem"><span style="color:green">${func}</span> : <span style="">${eval(
       func
     )}</span></div></div>`
   }
@@ -362,7 +361,7 @@ async function testValid(ctx) {
     //校验请求参数合法性
     await paramsValid()
 
-    return Util.end({})
+    return null
 
     async function authValid() {}
 
@@ -433,9 +432,11 @@ async function testValid(ctx) {
       }
     }
   } catch (err) {
-    return Util.error({
+    return Util.error2front({
+      isShowMsg: true,
       msg: err.message,
-      track: 'jkl230034',
+      code: 9000,
+      track: 'kjja23448ue',
     })
   }
 }

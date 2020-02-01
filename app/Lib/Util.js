@@ -122,6 +122,21 @@ const Util = {
     */
 
   /**
+   * 把对象数组中，某个键的值当成键，并分组
+   * @example
+   * arrGroupBy(memberList, 'role_name')
+   * @returns object
+   */
+  arrGroupBy: (arr, key) => {
+    let groupedByKey = {}
+    arr.map(obj => {
+      if (groupedByKey[obj[key]]) groupedByKey[obj[key]].push(obj)
+      else groupedByKey[obj[key]] = [obj]
+    })
+    return groupedByKey
+  },
+
+  /**
    * 返回数组中的最大值
    * arrMax([1,2,3]) 返回 3
    */

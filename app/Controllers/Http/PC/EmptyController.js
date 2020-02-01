@@ -13,14 +13,7 @@ class EmptyController {
     try {
       //检查参数合法性
       const resultValid = await testValid(ctx)
-      if (resultValid.error) {
-        return Util.end2front({
-          isShowMsg: true,
-          msg: resultValid.msg,
-          code: 9000,
-          track: '43fsf343a3',
-        })
-      }
+      if (resultValid) return resultValid
       //调用业务逻辑Service
 
       //组装从Service返回的数据，返回给前端
@@ -50,7 +43,7 @@ async function testValid(ctx) {
     //校验请求参数合法性
     await paramsValid()
 
-    return Util.end({})
+    return null
 
     async function authValid() {}
 
@@ -58,9 +51,11 @@ async function testValid(ctx) {
 
     async function paramsValid() {}
   } catch (err) {
-    return Util.error({
+    return Util.error2front({
+      isShowMsg: true,
       msg: err.message,
-      track: 'sdg34etrfsdgs',
+      code: 9000,
+      track: '3osdssdk',
     })
   }
 }
