@@ -15,7 +15,7 @@
 /** @type {typeof import('@adonisjs/framework/src/Route/Manager')} */
 const Route = use('Route')
 const log = use('Logger')
-const Util = require('../app/Lib/Util')
+const Util = require('@Lib/Util')
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 // XXXX  下面是3个例子，由浅入深的演示此框架的使用    XXXX

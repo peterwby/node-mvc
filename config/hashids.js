@@ -38,7 +38,7 @@ module.exports = {
   */
 
   default: {
-    salt: Env.get('APP_KEY', '340w9rfJ4'),
+    salt: Env.get('APP_KEY', '340w9rfJ'),
     length: 0,
     alphabet: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
   },
