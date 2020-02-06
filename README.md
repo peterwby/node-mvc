@@ -87,36 +87,54 @@ npm run dev
 - session 的操作
   ```
   ctx.session.get('user')
-  ctx.session.put('user', 'wu')
+  ctx.session.put('user', {name:'xxx'})
   ```
 - redis 的操作
+
+  ```
+  await Redis.get(key)//返回字符串
+  await Redis.set(key, JSON.stringify(data))//对象要先转成字符串
+  await Redis.expire(key, 40000)//有效期
+  ```
 
 - 函数正常结束时调用。用途：规范函数的返回值，使得返回值具有相同结构
 
   ```
-  Util.end()
+  Util.end({})
   ```
 
 - 函数内部抛出异常时，在 catch 里调用本函数，使得返回值具有相同结构
   ```
-  Util.error()
+  Util.error({})
   ```
 - Controller 里的函数正常结束时调用。规定要返回给前端的信息
   ```
-  Util.end2front()
+  Util.end2front({})
   ```
 - Controller 里的函数内部抛出异常时，在 catch 里调用本函数，规定要返回给前端的信息
   ```
-  Util.error2front()
+  Util.error2front({})
   ```
 - 打印信息到控制台
 
   ```
   log.debug('调试时建议用这个')
   log.info('普通信息')
-  log.notice('引起注意')
   log.error('错误信息')
   ```
+
+## 快捷操作
+
+> 自定义了一些代码片段，比如输入 func，vscode 就会智能提示 funcController... 按下 tab 键，就会把 controller 下的函数结构补全
+
+- func
+  funcController（创建一个 Controller 里的函数）、funcService（创建一个 Service 里的函数）、funcTable（创建一个 Table 里的函数）
+- require
+  requireService（引用一个 Service 文件）、requireTable、requireJoin
+- trans
+  补全事务
+- template
+  templateTable（补全表的模板）
 
 ## 常见问题
 
