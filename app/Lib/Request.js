@@ -22,7 +22,11 @@ const Request = {
       let { ...config } = more
       config.params = params
       let result = await axios.get(url, config)
-      return Util.end(result.data)
+
+      return Util.end({
+        data: result.data,
+        code: result.status,
+      })
     } catch (err) {
       let msg = ''
       if (err.response) {
@@ -36,7 +40,7 @@ const Request = {
       }
       return Util.error({
         msg: msg,
-        track: '209jf9034',
+        track: 'get_209jf9034',
       })
     }
   },
@@ -55,7 +59,10 @@ const Request = {
     try {
       let { ...config } = more
       let result = await axios.post(url, params, config)
-      return Util.end(result.data)
+      return Util.end({
+        data: result.data,
+        http_code: result.status,
+      })
     } catch (err) {
       let msg = ''
       if (err.response) {
@@ -69,7 +76,11 @@ const Request = {
       }
       return Util.error({
         msg: msg,
-        track: 'j28f2930',
+        data: {
+          errno: err.errno,
+          code: err.code,
+        },
+        track: 'post_j28f2930',
       })
     }
   },

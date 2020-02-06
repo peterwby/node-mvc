@@ -147,11 +147,13 @@ class TestService extends BaseService {
 
   async httpGet() {
     try {
-      const url = 'http://api.m.taobao.com/rest/api.do?api=mtop.common.getTimestamp'
-      const result = await Request.get(url, { aa: '1234' }, { timeout: 5000 }) //timeout ??
-
+      const url = 'http://api.m.taobao2.com/rest/api.do?api=mtop.common.getTimestamp'
+      const result = await Request.get(url, { aa: '1234' }, { timeout: 5000 }).catch(err => {
+        console.log(err.message)
+        return {}
+      })
       //组装数据
-      return Util.end({ data: result })
+      return Util.end({ data: result.data })
     } catch (err) {
       return Util.error({
         msg: err.message,
@@ -163,7 +165,10 @@ class TestService extends BaseService {
   async httpPost() {
     try {
       const url = 'http://api.m.taobao.com/rest/api.do?api=mtop.common.getTimestamp'
-      const result = await Request.post(url, { account: '123467', error_msg: 'dd' }, { timeout: 5000 })
+      const result = await Request.post(url, { account: '123467', error_msg: 'dd' }, { timeout: 5000 }).catch(err => {
+        console.log(err.message)
+        return {}
+      })
 
       return Util.end({ data: result })
     } catch (err) {
