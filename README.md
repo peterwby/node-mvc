@@ -77,6 +77,11 @@ npm run dev
 
 - 打开/start/routes.js ，一步一步跟踪下去，看每一步怎么实现。完整顺序是 Router->Controllers->Services->Models
 
+## 代码规范
+
+- 默认 ide 为 vscode，使用 settings Sync 插件同步设置
+- 使用 eslint、prettier 规范代码格式
+
 ## 常用操作
 
 - 获取前端 get 和 post 方法传递过来的参数
