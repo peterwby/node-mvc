@@ -61,7 +61,7 @@ const Request = {
       let result = await axios.post(url, params, config)
       return Util.end({
         data: result.data,
-        http_code: result.status,
+        code: result.status,
       })
     } catch (err) {
       let msg = ''
@@ -86,7 +86,7 @@ const Request = {
   },
 
   /**
-   * 调用远程函数，执行数据库处理，并返回结果。用于Service调用Model。
+   * 调用远程函数，有带redis验证，并返回执行结果。
    * @example
    * await Request.call(url,{ name:'wu' })
    * await Request.call(url,{ name:'wu' }, {
@@ -103,7 +103,10 @@ const Request = {
       params.rk = rndKey
       let { ...config } = more
       let result = await axios.post(url, params, config)
-      return Util.end(result.data)
+      return Util.end({
+        data: result.data,
+        code: result.status,
+      })
     } catch (err) {
       let msg = ''
       if (err.response) {
@@ -121,7 +124,7 @@ const Request = {
       }
       return Util.error({
         msg: msg,
-        track: 'j28f2930',
+        track: 'call_j28f2930',
       })
     }
   },

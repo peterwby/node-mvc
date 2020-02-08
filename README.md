@@ -4,7 +4,8 @@
 
 - 本项目的 git 地址：https://gitee.com/sh-chanson/node-server.git
 - 基于 Adonis.js 框架，其官方文档地址：https://adonisjs.com/docs/4.1/folder-structure
-- 由于整体项目一般采用前后端分离设计，View 交给前端处理，所以 MVC 架构有所变形：Router->Controllers->Services->Models
+- 整体项目一般采用前后端分离设计，View 交给前端处理， MVC 架构有所变形：Router->Controllers->Services->Models
+- models 层目前不使用 orm，而是 query builder，基于 knex，容易上手
 
 ## 须具备知识
 
@@ -26,7 +27,7 @@
 - 切换国内源
   sudo nrm use taobao
 - 其他全局包
-  sudo npm i -g live-server nodemon @adonisjs/cli
+  sudo npm i -g live-server @adonisjs/cli
 
 ## 项目安装
 
@@ -97,13 +98,13 @@ npm run dev
   await Redis.expire(key, 40000)//有效期
   ```
 
-- 函数正常结束时调用。用途：规范函数的返回值，使得返回值具有相同结构
+- 每个函数正常结束时调用。用途：规范函数的返回值，使得返回值具有相同结构
 
   ```
   Util.end({})
   ```
 
-- 函数内部抛出异常时，在 catch 里调用本函数，使得返回值具有相同结构
+- 每个函数内部抛出异常时，在 catch 里调用本函数，使得返回值具有相同结构
   ```
   Util.error({})
   ```
@@ -132,12 +133,12 @@ npm run dev
 - require
   requireService（引用一个 Service 文件）、requireTable、requireJoin
 - trans
-  补全事务
+  补全事务语法
 - template
-  templateTable（补全表的模板）
+  templateTable（补全 table 类的模板）
 
 ## 常见问题
 
 - 运行失败？
-- 根目录下是否有.env 文件
+- 根目录下是否有.env 文件，没有找管理员要
 - 端口被占用

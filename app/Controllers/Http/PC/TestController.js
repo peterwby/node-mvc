@@ -197,11 +197,7 @@ class TestController {
       this.wrap(`str3`, `格式化日期`, `moment(new Date('2019-1-1')).format("YYYY-MM-DD HH:mm:ss")`)
       this.wrap(`str3`, `日期减去10分钟`, `moment('2019-01-01 00:00:00').subtract(10, "minutes")`)
       this.wrap(`str3`, `日期加上10个月`, `moment('2019-01-01 00:00:00').add(10, "months").format("YYYY-MM-DD HH:mm:ss")`)
-      this.wrap(
-        `str3`,
-        `2个日期相差多少间隔 a.diff(b, 'days')  ==  a - b`,
-        `moment('2019-01-01 00:00:00').diff(moment('2019-01-01 01:00:00'),'minutes')`
-      )
+      this.wrap(`str3`, `2个日期相差多少间隔 a.diff(b, 'days')  ==  a - b`, `moment('2019-01-01 00:00:00').diff(moment('2019-01-01 01:00:00'),'minutes')`)
       this.wrap(`str3`, `是否是合法日期`, `moment('2019-13-02').isValid()`)
       this.wrap(`str3`, `日期转时间戳(毫秒)`, `moment('2019-06-12 12:30:10').valueOf()`)
       this.wrap(`str3`, `日期转时间戳(秒)`, `moment('2019-06-12 12:30:10').unix()`)
@@ -299,38 +295,6 @@ class TestController {
     })
   }
 
-  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  // XXXX       以下还在修改中                    XXXX
-  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  /**
-   * 测试
-   * @example
-   * test(ctx)
-   * @returns object
-   */
-  async test(ctx) {
-    try {
-      //校验权限和参数
-      const resultValid = await testValid(ctx)
-      if (resultValid) return resultValid
-      //调用业务逻辑
-      const result = await testService.updateDb(ctx)
-
-      //组装数据，返回json给前端
-      return Util.end2front({
-        msg: result.msg,
-        data: result.data,
-        code: result.status > 0 ? 0 : 1000,
-      })
-    } catch (err) {
-      return Util.error2front({
-        //isShowMsg: true,
-        msg: err.message,
-        code: 9000,
-        track: '023j0f93j89',
-      })
-    }
-  }
   /**
    * 辅助函数，用来包装一层div
    * @example
@@ -386,23 +350,6 @@ async function testValid(ctx) {
       ctx.body = Util.deepClone(body)
     }
 
-    /*async function paramsHandle() {
-      let bodyRaw = ctx.request.all()
-      let body = {
-        id: 0,
-      }
-      for (let k in bodyRaw) {
-        switch (k.toLowerCase()) {
-          case 'id':
-            body.id = bodyRaw[k]
-            break
-          default:
-            break
-        }
-      }
-      ctx.body = Util.deepClone(body)
-    }*/
-
     async function paramsValid() {
       const rules = {
         user_name: 'required|alpha_numeric',
@@ -426,9 +373,6 @@ async function testValid(ctx) {
       const validation = await validate(ctx.body.set, rules, messages)
       if (validation.fails()) {
         throw new Error(validation.messages()[0].message)
-      }
-      if (Number(ctx.body.id) <= 0) {
-        throw new Error('id应为数字')
       }
     }
   } catch (err) {
