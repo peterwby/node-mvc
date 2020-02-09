@@ -81,6 +81,10 @@ npm run dev
 
 - 默认 ide 为 vscode，使用 settings Sync 插件同步设置
 - 使用 eslint、prettier 规范代码格式
+- api 接口的问题：全部使用 post，只有下载之类的接口使用 get。比如：
+  Route.get('download/:type/:file', 'PC/DownloadController.download')
+  Route.post('member/edit', 'PC/MemberController.edit')
+  Route.post('entity/get-table', 'PC/EntityController.getTable')
 
 ## 常用操作
 
