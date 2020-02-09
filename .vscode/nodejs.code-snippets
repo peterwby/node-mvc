@@ -1,0 +1,244 @@
+{
+  "注释块": {
+    "prefix": "/**",
+    "body": [
+      "/**",
+      " * $1",
+      " * @example",
+      " * $2",
+      " * @returns object$3",
+      " */"
+    ]
+  },
+  "带循环的重试": {
+    "prefix": "retry-for",
+    "body": [
+      "  for (let i = 0; i < 3; i++) {",
+      "      try {",
+      "        log.debug('开始某些操作')",
+      "        await retry(",
+      "          async (bail, attempt) => {",
+      "            if (attempt > 1) {",
+      "              log.debug(`开始第${attempt - 1}次重试`)",
+      "            }",
+      "            log.debug('http GET')",
+      "            //这里可能出错，需要重试",
+      "          },",
+      "          {",
+      "            retries: 3,",
+      "            minTimeout: 1000,",
+      "            maxTimeout: 5000,",
+      "            onRetry: async (err, i) => {",
+      "              if (err) {",
+      "                log.error('发生错误', err)",
+      "              }",
+      "            },",
+      "          }",
+      "        )",
+      "      } catch (e) {",
+      "        log.debug('发送错误，跳过本轮循环:' + i)",
+      "      }",
+      "    }"
+    ],
+    "description": "带循环的重试"
+  },
+  "出错重试": {
+    "prefix": "retry-",
+    "body": [
+      "await retry(",
+      "  async (bail, attempt) => {",
+      "    if (attempt > 1) {",
+      "      log.debug(`开始第${attempt - 1}次重试`)",
+      "    }",
+      "    //这里可能出错，需要重试$1",
+      "  },",
+      "  {",
+      "    retries: 3,",
+      "    minTimeout: 1000,",
+      "    maxTimeout: 5000,",
+      "    onRetry: async (err, i) => {",
+      "      if (err) {",
+      "        log.error('发生错误', err)",
+      "      }",
+      "    },",
+      "  }",
+      ")"
+    ],
+    "description": "出错重试"
+  },
+  "引用Service": {
+    "description": "引用Service文件",
+    "prefix": "requireService",
+    "body": [
+      "const $1Service = require(`@Services/$1Service`)",
+      "const $2Service = new $1Service()"
+    ]
+  },
+  "引用Table": {
+    "description": "引用Table文件",
+    "prefix": "requireTable",
+    "body": [
+      "const $1Table = require('@Table/$2')",
+      "const $3Table = new $1Table()"
+    ]
+  },
+  "引用Join": {
+    "description": "在Service中多表查询时使用",
+    "prefix": "requireJoin",
+    "body": [
+      "const JoinTable = require('@Join')",
+      "const joinTable = new JoinTable()"
+    ]
+  },
+  "Controller里的函数": {
+    "description": "创建一个Controller里的函数",
+    "prefix": "funcController",
+    "body": [
+      "async $1(ctx) {",
+      "  try {",
+      "    let result = {}",
+      "    //检查参数合法性",
+      "    const resultValid = await $1Valid(ctx)",
+      "    if (resultValid) return resultValid",
+      "    //调用业务逻辑Service",
+      "    //$2result = await .$1(ctx)",
+      "    //组装从Service返回的数据，返回给前端",
+      "    return Util.end2front({})",
+      "  } catch (err) {",
+      "    return Util.error2front({",
+      "      //isShowMsg: true,",
+      "      msg: err.message,",
+      "      track: '$1_$CURRENT_SECONDS_UNIX',",
+      "    })",
+      "  }",
+      "}"
+    ]
+  },
+  "Service里的函数": {
+    "description": "创建一个Service里的函数",
+    "prefix": "funcService",
+    "body": [
+      "async $1(ctx) {",
+      "  try {",
+      "    let result = {}",
+      "    const { body } = ctx",
+      "    $2",
+      "    return Util.end({})",
+      "  } catch (err) {",
+      "    return Util.error({",
+      "      msg: err.message,",
+      "      track: '$1_$CURRENT_SECONDS_UNIX',",
+      "    })",
+      "  }",
+      "}"
+    ]
+  },
+  "Table里的函数": {
+    "description": "创建一个Table里的函数",
+    "prefix": "funcTable",
+    "body": [
+      "async $1(obj) {",
+      "  try {",
+      "    let result = {}",
+      "    const table = Database.clone()",
+      "    $2",
+      "    return Util.end({})",
+      "  } catch (err) {",
+      "    return Util.error({",
+      "      msg: err.message,",
+      "      data: { table: this.tableName },",
+      "      track: '$1_$CURRENT_SECONDS_UNIX',",
+      "    })",
+      "  }",
+      "}"
+    ]
+  },
+  "执行时出错": {
+    "description": "如果执行时出错则抛出错误",
+    "prefix": "result.error",
+    "body": ["if(result.error){", "  throw new Error(result.msg)", "}"]
+  },
+  "数据库查询": {
+    "prefix": "Table.fetchAll",
+    "body": [
+      ".fetchAll({",
+      "  column: ['$1'],",
+      "  where: [['$2', '$3', '$4']],",
+      "})"
+    ],
+    "description": "根据条件查询：where、whereIn、orderBy、page、limit..."
+  },
+  "自动事务": {
+    "prefix": "trans",
+    "body": ["await Database.transaction(async trx => {", "  $1", "})"],
+    "description": "数据库的事务操作"
+  },
+  "表模板": {
+    "prefix": "templateTable",
+    "body": [
+      "const Database = use('Database')",
+      "const Util = require('@Lib/Util')",
+      "const BaseTable = require('@BaseClass/BaseTable')",
+      "",
+      "class $1Table extends BaseTable {",
+      "  constructor() {",
+      "    const data = {",
+      "      table_name: '$TM_FILENAME_BASE',",
+      "      primary_key: '$2',",
+      "    }",
+      "    super(data)",
+      "  }",
+      "  $3",
+      "}",
+      "",
+      "module.exports = $1Table"
+    ],
+    "description": "生成数据库表的模板"
+  },
+  "校验前端输入参数": {
+    "prefix": "funcvalid",
+    "body": [
+      "async function $1Valid(ctx) {",
+      "  try {",
+      "    //组装处理参数",
+      "    await paramsHandle()",
+      "    //校验请求参数合法性",
+      "    await paramsValid()",
+      "",
+      "    return null",
+      "",
+      "    async function paramsHandle() {",
+      "      const requestAll = ctx.request.all()",
+      "      let body = {}",
+      "      for (let k in requestAll) {",
+      "        switch (k.toLowerCase()) {",
+      "          case '$2':",
+      "            body. = requestAll[k]",
+      "            break",
+      "          ",
+      "        }",
+      "      }",
+      "      ctx.body = Util.deepClone(body)",
+      "    }",
+      "",
+      "    async function paramsValid() {",
+      "      const rules = {",
+      "        : 'required',",
+      "      }",
+      "      const validation = await validate(ctx.body, rules, messages)",
+      "      if (validation.fails()) {",
+      "        throw new Error(validation.messages()[0].message)",
+      "      }",
+      "    }",
+      "  } catch (err) {",
+      "    return Util.error2front({",
+      "      isShowMsg: true,",
+      "      msg: err.message,",
+      "      code: 9000,",
+      "      track: '$1Valid_$CURRENT_SECONDS_UNIX',",
+      "    })",
+      "  }",
+      "}"
+    ]
+  }
+}
