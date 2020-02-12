@@ -1,14 +1,7 @@
 {
   "注释块": {
     "prefix": "/**",
-    "body": [
-      "/**",
-      " * $1",
-      " * @example",
-      " * $2",
-      " * @returns object$3",
-      " */"
-    ]
+    "body": ["/**", " * $1", " * @example", " * $2", " */"]
   },
   "带循环的重试": {
     "prefix": "retry-for",
@@ -69,26 +62,17 @@
   "引用Service": {
     "description": "引用Service文件",
     "prefix": "requireService",
-    "body": [
-      "const $1Service = require(`@Services/$1Service`)",
-      "const $2Service = new $1Service()"
-    ]
+    "body": ["const $1Service = require(`@Services/$1Service`)", "const $2Service = new $1Service()"]
   },
   "引用Table": {
     "description": "引用Table文件",
     "prefix": "requireTable",
-    "body": [
-      "const $1Table = require('@Table/$2')",
-      "const $3Table = new $1Table()"
-    ]
+    "body": ["const $1Table = require('@Table/$2')", "const $3Table = new $1Table()"]
   },
   "引用Join": {
     "description": "在Service中多表查询时使用",
     "prefix": "requireJoin",
-    "body": [
-      "const JoinTable = require('@Join')",
-      "const joinTable = new JoinTable()"
-    ]
+    "body": ["const JoinTable = require('@Join')", "const joinTable = new JoinTable()"]
   },
   "Controller里的函数": {
     "description": "创建一个Controller里的函数",
@@ -160,12 +144,7 @@
   },
   "数据库查询": {
     "prefix": "Table.fetchAll",
-    "body": [
-      ".fetchAll({",
-      "  column: ['$1'],",
-      "  where: [['$2', '$3', '$4']],",
-      "})"
-    ],
+    "body": [".fetchAll({", "  column: ['$1'],", "  where: [['$2', '$3', '$4']],", "})"],
     "description": "根据条件查询：where、whereIn、orderBy、page、limit..."
   },
   "自动事务": {
@@ -225,6 +204,9 @@
       "      const rules = {",
       "        : 'required',",
       "      }",
+      "      const messages = {",
+      "      '.required': '',",
+      "      }",
       "      const validation = await validate(ctx.body, rules, messages)",
       "      if (validation.fails()) {",
       "        throw new Error(validation.messages()[0].message)",
@@ -239,6 +221,26 @@
       "    })",
       "  }",
       "}"
+    ]
+  },
+  "controller模板": {
+    "prefix": "templateController",
+    "body": [
+      "'use strict'",
+      "",
+      "const { validate } = use('Validator')",
+      "const log = use('Logger')",
+      "const Util = require('@Lib/Util')",
+      "const moment = require('moment') //日期格式化插件",
+      "moment.locale('zh-cn') //设为北京时区",
+      "const Hashids = use('Hashids')",
+      "",
+      "class $1Controller {",
+      "  constructor() {}",
+      "$2",
+      "}",
+      "",
+      "module.exports = $1Controller"
     ]
   }
 }

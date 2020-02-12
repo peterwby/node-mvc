@@ -21,8 +21,8 @@ class ExceptionHandler extends BaseExceptionHandler {
    * @return {void}
    */
   async handle(error, { request, response }) {
-    log.notice('093j4g3j023')
-    log.error(error.message)
+    log.notice('handle_error_1092348903409')
+    log.error(error)
     switch (error.name) {
       case 'InvalidSessionException':
         response.status(error.status).send('请先登录')
@@ -32,7 +32,7 @@ class ExceptionHandler extends BaseExceptionHandler {
         response.status(error.status).send('服务端执行出错')
         break
       default:
-        response.status(error.status).send('服务端代码出错')
+        response.status(error.status).send('发生出错')
       //return super.handle(...arguments)
     }
     return null
