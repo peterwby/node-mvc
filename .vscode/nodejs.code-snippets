@@ -92,7 +92,7 @@
       "    return Util.error2front({",
       "      //isShowMsg: true,",
       "      msg: err.message,",
-      "      track: '$1_$CURRENT_SECONDS_UNIX',",
+      "      track: 'controller_$1_$CURRENT_SECONDS_UNIX',",
       "    })",
       "  }",
       "}"
@@ -111,7 +111,7 @@
       "  } catch (err) {",
       "    return Util.error({",
       "      msg: err.message,",
-      "      track: '$1_$CURRENT_SECONDS_UNIX',",
+      "      track: 'service_$1_$CURRENT_SECONDS_UNIX',",
       "    })",
       "  }",
       "}"
@@ -131,7 +131,7 @@
       "    return Util.error({",
       "      msg: err.message,",
       "      data: { table: this.tableName },",
-      "      track: '$1_$CURRENT_SECONDS_UNIX',",
+      "      track: 'table_$1_$CURRENT_SECONDS_UNIX',",
       "    })",
       "  }",
       "}"
@@ -217,7 +217,7 @@
       "      isShowMsg: true,",
       "      msg: err.message,",
       "      code: 9000,",
-      "      track: '$1Valid_$CURRENT_SECONDS_UNIX',",
+      "      track: 'valid_$1Valid_$CURRENT_SECONDS_UNIX',",
       "    })",
       "  }",
       "}"

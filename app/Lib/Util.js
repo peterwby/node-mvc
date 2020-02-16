@@ -565,6 +565,16 @@ const Util = {
    ************************************************************************/
 
   /**
+   * 删除对象的空属性
+   * @example
+   *
+   */
+  objDeleteEmpty: obj => {
+    Object.keys(obj).forEach(key => !obj[key] && delete obj[key])
+    return obj
+  },
+
+  /**
    * 复制并过滤：第二个参数覆盖第一个参数，且第二个参数多余的key不理睬
    * @example
    * assignFilter({name}, {name:'xx', aa:1 }) 返回 {name: 'xx'}
