@@ -29,7 +29,7 @@ const Util = {
     }
     obj.error = false
     obj.status = !!obj.status || obj.status === 0 ? obj.status : 1 //status的值，<0: 异常，=0：正常但操作被拒绝，>0：成功
-    obj.msg = obj.msg || '操作已完成'
+    obj.msg = obj.msg || 'success'
     obj.data = Util.deepClone(obj.data) || {}
     return obj
   },
@@ -37,11 +37,11 @@ const Util = {
   /**
    * 函数内部抛出异常时，须在catch里调用本函数
    * @example
-   * return Util.error({msg:'', track:'随机值'})
+   * return Util.error({msg:'', stack: err.stack, track:'随机值'})
    * @description
    * 用途：规范函数的返回值，使得返回值具有相同结构
    * track的作用是跟踪错误，可以随机输入一串乱码
-   * @returns { error, status, msg, data, track }
+   * @returns { error, status, msg, data, stack, track }
    */
   error: obj => {
     //不是object
@@ -50,13 +50,15 @@ const Util = {
     }
     obj.error = true
     obj.status = !!obj.status || obj.status === 0 ? obj.status : -1
-    obj.msg = obj.msg || '出现错误'
+    obj.msg = obj.msg || 'found error'
     obj.data = obj.data || {}
     obj.track = obj.track || ''
-
+    if (obj.stack) {
+      log.info(obj.stack.substring(0, Util.strIndexOfMulti(obj.stack, 'at ', 3)))
+    }
     log.notice(obj.track)
     if (JSON.stringify(obj.data) !== '{}') {
-      let errdata = Object.assign({}, obj.data)
+      let errdata = JSON.parse(JSON.stringify(obj.data))
       log.error(errdata)
     }
     log.error(obj.msg)
@@ -76,7 +78,7 @@ const Util = {
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
       throw new Error('end2front(obj)的obj应该是个对象')
     }
-    obj.msg = obj.msg || '操作已完成'
+    obj.msg = obj.msg || 'success'
     obj.data = obj.data || {}
     obj.code = obj.code || 0
     return obj
@@ -98,7 +100,7 @@ const Util = {
     log.notice(obj.track)
     log.error(obj.msg)
     //对前端屏蔽真实错误
-    obj.msg = obj.isShowMsg ? obj.msg : '执行出错'
+    obj.msg = obj.isShowMsg ? obj.msg : 'found error'
     obj.data = obj.data || {}
     obj.code = obj.code || 9999
     obj.track = obj.track || ''
@@ -604,65 +606,89 @@ const Util = {
    * deepClone(obj)
    * @returns object
    */
-  deepClone: function(obj) {
-    if (obj === null) return null
-    if (typeof obj === 'function') {
-      var s = obj.toString()
-      var argsStr = getArgStr(s)
-      var body = getFuncBody(s)
-      return eval('new Function(' + argsStr + '"' + body + '");')
-    }
-    if (typeof obj !== 'object') return obj
-    if (obj.cunstructor === Date) return new Date(obj)
-    if (obj.constructor === RegExp) return new RegExp(obj)
-    var newObj = new obj.constructor() //保持继承链
-    for (var key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        //不遍历其原型链上的属性
-        var val = obj[key]
-        newObj[key] = typeof val === 'object' || typeof val === 'function' ? arguments.callee(val) : val //使用arguments.callee解除与函数名的耦合
-      }
-    }
-    return newObj
-
-    //根据函数字符串获取参数列表字符串
-    function getArgStr(s) {
-      var args = s
-        .split('(')[1]
-        .split(')')[0]
-        .split(',')
-      var argsStr = ''
-      if (args[0] != '') {
-        for (var i in args) {
-          if (args[i].indexOf("'") != -1) {
-            args[i] = args[i].replace(/'/g, "\\'")
-          }
-          if (args[i].indexOf('"') != -1) {
-            args[i] = args[i].replace('"', '\\"')
-          }
-          argsStr += "'" + args[i] + "',"
-        }
-      }
-      return argsStr
+  deepClone: function(x) {
+    // Object.create(null) 的对象，没有hasOwnProperty方法
+    function hasOwnProp(obj, key) {
+      return Object.prototype.hasOwnProperty.call(obj, key)
     }
 
-    //根据函数字符串获取函数体字符串
-    function getFuncBody(s) {
-      var body = s
-        .split('{')[1]
-        .split('}')[0]
-        .split('\n')
-        .join(';')
-        .replace(/[\r\n]/g, '')
-      var temp = body.split('')
-      for (var i in temp) {
-        if (temp[i] === "'" || temp[i] === '"') {
-          temp[i] = '\\' + temp[i]
+    // 仅对对象和数组进行深拷贝，其他类型，直接返回
+    function isClone(x) {
+      const t = Util.type(x)
+      return t === 'object' || t === 'array'
+    }
+
+    const t = Util.type(x)
+
+    let root = x
+
+    if (t === 'array') {
+      root = []
+    } else if (t === 'object') {
+      root = {}
+    }
+
+    // 循环数组
+    const loopList = [
+      {
+        parent: root,
+        key: undefined,
+        data: x,
+      },
+    ]
+
+    while (loopList.length) {
+      // 深度优先
+      const node = loopList.pop()
+      const parent = node.parent
+      const key = node.key
+      const data = node.data
+      const tt = Util.type(data)
+
+      // 初始化赋值目标，key为undefined则拷贝到父元素，否则拷贝到子元素
+      let res = parent
+      if (typeof key !== 'undefined') {
+        res = parent[key] = tt === 'array' ? [] : {}
+      }
+
+      if (tt === 'array') {
+        for (let i = 0; i < data.length; i++) {
+          // 避免一层死循环 a.b = a
+          if (data[i] === data) {
+            res[i] = res
+          } else if (isClone(data[i])) {
+            // 下一次循环
+            loopList.push({
+              parent: res,
+              key: i,
+              data: data[i],
+            })
+          } else {
+            res[i] = data[i]
+          }
+        }
+      } else if (tt === 'object') {
+        for (let k in data) {
+          if (hasOwnProp(data, k)) {
+            // 避免一层死循环 a.b = a
+            if (data[k] === data) {
+              res[k] = res
+            } else if (isClone(data[k])) {
+              // 下一次循环
+              loopList.push({
+                parent: res,
+                key: k,
+                data: data[k],
+              })
+            } else {
+              res[k] = data[k]
+            }
+          }
         }
       }
-      body = temp.join('')
-      return body
     }
+
+    return root
   },
 
   /**
@@ -806,7 +832,7 @@ const Util = {
     } else {
       for (var i in param) {
         var k = key == null ? i : key + (param instanceof Array ? '[' + i + ']' : '.' + i)
-        paramStr += urlEncode(param[i], k, encode)
+        paramStr += Util.obj2url(param[i], k, encode)
       }
     }
     return paramStr
@@ -987,6 +1013,85 @@ const Util = {
       }
     }
     return data
+  },
+
+  /**
+   * 检测类型
+   * @example
+   *
+   */
+  type: function(x, strict = false) {
+    const toString = Object.prototype.toString
+    strict = !!strict
+
+    // fix typeof null = object
+    if (x === null) {
+      return 'null'
+    }
+
+    const t = typeof x
+
+    // 严格模式 区分NaN和number
+    if (strict && t === 'number' && isNaN(x)) {
+      return 'nan'
+    }
+
+    // number string boolean undefined symbol
+    if (t !== 'object') {
+      return t
+    }
+
+    let cls
+    let clsLow
+    try {
+      cls = toString.call(x).slice(8, -1)
+      clsLow = cls.toLowerCase()
+    } catch (e) {
+      // ie下的 activex对象
+      return 'object'
+    }
+
+    if (clsLow !== 'object') {
+      if (strict) {
+        // 区分NaN和new Number
+        if (clsLow === 'number' && isNaN(x)) {
+          return 'NaN'
+        }
+        // 区分 String() 和 new String()
+        if (clsLow === 'number' || clsLow === 'boolean' || clsLow === 'string') {
+          return cls
+        }
+      }
+      return clsLow
+    }
+
+    if (x.constructor == Object) {
+      return clsLow
+    }
+
+    // Object.create(null)
+    try {
+      // __proto__ 部分早期firefox浏览器
+      if (Object.getPrototypeOf(x) === null || x.__proto__ === null) {
+        return 'object'
+      }
+    } catch (e) {
+      // ie下无Object.getPrototypeOf会报错
+    }
+
+    // function A() {}; new A
+    try {
+      const cname = x.constructor.name
+
+      if (typeof cname === 'string') {
+        return cname
+      }
+    } catch (e) {
+      // 无constructor
+    }
+
+    // function A() {}; A.prototype.constructor = null; new A
+    return 'unknown'
   },
 
   /**

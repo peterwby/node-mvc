@@ -27,12 +27,19 @@ class TestController {
    * @returns object
    */
   async test1(ctx) {
-    //调用service层来处理业务逻辑
-    const result = await testService.test1(ctx)
-    //返回结果给前端
-    return Util.end2front({
-      msg: result.msg,
-    })
+    try {
+      //调用service层来处理业务逻辑
+      const result = await testService.test1(ctx)
+      //返回结果给前端
+      return Util.end2front({
+        msg: result.msg,
+      })
+    } catch (err) {
+      return Util.error2front({
+        msg: err.message,
+        track: '11111',
+      })
+    }
   }
 
   /**

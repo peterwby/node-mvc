@@ -17,9 +17,19 @@ class TestService extends BaseService {
    * @returns object
    */
   async test1(ctx) {
-    let msg = `hello world`
-    log.info(msg)
-    return Util.end({ msg: msg })
+    try {
+      let msg = `hello world`
+      var obj = { name: '张三', class: { className: 'class1' }, classMates: [{ name: 'lily' }] }
+      console.log(Util.obj2url(obj))
+      log.info(msg)
+      return Util.end({ msg: msg })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        track: '000000',
+      })
+    }
   }
 
   /**

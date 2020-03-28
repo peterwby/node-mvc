@@ -31,7 +31,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: '895893745',
+        track: 'BaseTable_checkExistById_0293490244',
       })
     }
   }
@@ -58,7 +58,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: '43t349fjg',
+        track: 'BaseTable_080329r3iffd',
       })
     }
   }
@@ -86,7 +86,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: 'hhjhfhf35',
+        track: 'BaseTable_hhjhfhf35',
       })
     }
   }
@@ -110,7 +110,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: '8907kll5asdf32',
+        track: 'BaseTable_8907kll5asdf32',
       })
     }
   }
@@ -149,7 +149,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: '43jsd342er4',
+        track: 'BaseTable_43jsd342er4',
       })
     }
   }
@@ -191,7 +191,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: '9849s8dfs',
+        track: 'BaseTable_9849s8dfs',
       })
     }
   }
@@ -217,7 +217,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: 'h98aaah9h8',
+        track: 'BaseTable_h98aaah9h8',
       })
     }
   }
@@ -253,7 +253,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: 'k2jg034elflk',
+        track: 'BaseTable_k2jg034elflk',
       })
     }
   }
@@ -280,7 +280,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: '3i4rf0fasd8',
+        track: 'BaseTable_3i4rf0fasd8',
       })
     }
   }
@@ -359,7 +359,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: '93404t9u89u9u9098jf',
+        track: 'BaseTable_93404t9u89u9u9098jf',
       })
     }
   }
@@ -399,7 +399,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: 'affffkljkiii4a',
+        track: 'BaseTable_affffkljkiii4a',
       })
     }
   }
@@ -442,7 +442,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: 'ammkmfffsssfff3f',
+        track: 'BaseTable_2kmfffsssfff3f',
       })
     }
   }
@@ -485,7 +485,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: 'jkksssmmma55a59mmmmi',
+        track: 'BaseTable_mma55a59mmmmi',
       })
     }
   }
@@ -528,7 +528,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: '43sfkl20hksdf9oljfs',
+        track: 'BaseTable_0hksdf9oljfs',
       })
     }
   }
@@ -571,7 +571,7 @@ class BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: '9023gf9jfs',
+        track: 'BaseTable_9023gf9jfs',
       })
     }
   }
