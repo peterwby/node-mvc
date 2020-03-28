@@ -175,7 +175,7 @@ class TestService extends BaseService {
   async httpPost() {
     try {
       const url = 'http://api.m.taobao.com/rest/api.do?api=mtop.common.getTimestamp'
-      const result = await Request.post(url, { account: '123467', error_msg: 'dd' }, { timeout: 5000 }).catch(err => {
+      const result = await Request.post(url, { account: '123467', error_msg: 'dd' }, { timeout: 5000, headers: { token: '1234' } }).catch(err => {
         console.log(err.message)
         return {}
       })

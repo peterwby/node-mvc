@@ -5,6 +5,7 @@ const log = use('Logger')
 const Util = require('./Util')
 const uuidv4 = require('uuid/v4')
 const Redis = use('Redis')
+const Env = use('Env')
 
 const Request = {
   /**
@@ -12,14 +13,13 @@ const Request = {
    * @example
    * await Request.get('http://xxx',{ id:1 })
    * await Request.get('http://xxx',{ id:1 }, {
-   *  header: {'键': '值'},
+   *  headers: {'键': '值'},
    *  timeout: 5000
    * })
    * @returns object
    */
-  async get(url, params = {}, more = {}) {
+  async get(url, params = {}, config = {}) {
     try {
-      let { ...config } = more
       config.params = params
       let result = await axios.get(url, config)
 
@@ -50,14 +50,13 @@ const Request = {
    * @example
    * await Request.post('http://xxx',{ id:1 })
    * await Request.post('http://xxx',{ id:1 }, {
-   *  header: {'键': '值'},
+   *  headers: {'键': '值'},
    *  timeout: 5000
    * })
    * @returns object
    */
-  async post(url, params = {}, more = {}) {
+  async post(url, params = {}, config = {}) {
     try {
-      let { ...config } = more
       let result = await axios.post(url, params, config)
       return Util.end({
         data: result.data,
@@ -90,7 +89,7 @@ const Request = {
    * @example
    * await Request.call(url,{ name:'wu' })
    * await Request.call(url,{ name:'wu' }, {
-   *  header: {'键': '值'},
+   *  headers: {'键': '值'},
    *  timeout: 5000
    * })
    * @param redisKey 可选，用来把对象存到redis中，做识别身份用

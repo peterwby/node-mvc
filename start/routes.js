@@ -48,7 +48,7 @@ Route.get('/test-session', 'PC/TestController.testSession')
  */
 Route.group(() => {
   try {
-    Route.get('get_user_list', 'PC/UserController.getUserList')
+    Route.get('get-user-list', 'PC/UserController.getUserList')
   } catch (err) {
     return Util.end2front({
       msg: '服务端无此路由',
