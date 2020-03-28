@@ -30,7 +30,7 @@ const Util = {
     obj.error = false
     obj.status = !!obj.status || obj.status === 0 ? obj.status : 1 //status的值，<0: 异常，=0：正常但操作被拒绝，>0：成功
     obj.msg = obj.msg || '操作已完成'
-    obj.data = obj.data || {}
+    obj.data = Util.deepClone(obj.data) || {}
     return obj
   },
 
@@ -770,9 +770,61 @@ const Util = {
     return newData
   },
 
+  /**
+   * url参数转换为对象
+   * @example
+   *
+   */
+  url2obj: function(url) {
+    var reg_url = /^[^\?]+\?([\w\W]+)$/,
+      reg_para = /([^&=]+)=([\w\W]*?)(&|$|#)/g,
+      arr_url = reg_url.exec(url),
+      ret = {}
+    if (arr_url && arr_url[1]) {
+      var str_para = arr_url[1],
+        result
+      while ((result = reg_para.exec(str_para)) != null) {
+        ret[result[1]] = result[2]
+      }
+    }
+    return ret
+  },
+
+  /**
+   * param 将要转为URL参数字符串的对象
+   * key URL参数字符串的前缀
+   * encode true/false 是否进行URL编码,默认为true
+   *
+   * return URL参数字符串
+   */
+  obj2url: function(param, key, encode) {
+    if (param == null) return ''
+    var paramStr = ''
+    var t = typeof param
+    if (t == 'string' || t == 'number' || t == 'boolean') {
+      paramStr += '&' + key + '=' + (encode == null || encode ? encodeURIComponent(param) : param)
+    } else {
+      for (var i in param) {
+        var k = key == null ? i : key + (param instanceof Array ? '[' + i + ']' : '.' + i)
+        paramStr += urlEncode(param[i], k, encode)
+      }
+    }
+    return paramStr
+  },
+
   /************************************************************************
    * 字符串类
    ************************************************************************/
+
+  /*
+   * 删除bom头 \xef\xbb\xbf
+   */
+  strDeleteBOM: function(content) {
+    if (content.charCodeAt(0) === 0xfeff) {
+      content = content.slice(1)
+    }
+    return content
+  },
 
   /**
    * 返回字符串第n次出现的下标位置
