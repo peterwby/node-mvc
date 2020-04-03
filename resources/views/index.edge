@@ -1,23 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
+@layout('{{ assetsUrl('include/main') }}')
 
-<head>
-  <meta charset="UTF-8" />
-  <title>Hello Adonis</title>
-  {{ style('style') }}
-</head>
+@section('content')
+<div>欢迎使用千秀系统</div>
+@endsection
 
-<body>
-  <section>
-    <div class="logo"></div>
-    <div class="title"></div>
-    <div class="subtitle">
-      <p>AdonisJs simplicity will make you feel confident about your code</p>
-      <p>
-        Don't know where to start? Read the <a href="https://adonisjs.com/docs">documentation</a>.
-      </p>
-    </div>
-  </section>
-</body>
-
-</html>
+@section('script')
+<script>
+  console.log('abc')
+</script>
+@endsection

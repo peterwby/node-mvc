@@ -18,19 +18,17 @@ const log = use('Logger')
 const Util = require('@Lib/Util')
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-// XXXX  下面是3个例子，由浅入深的演示此框架的使用    XXXX
+// XXXX  下面的几个例子，演示此框架的使用           XXXX
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-/**
- * 访问 http://127.0.0.1:3201/test1，会调用"app/Controllers/Http/PC/TestController.js"的test1()方法，以此类推
- */
+// 访问 http://127.0.0.1:3201/test1，会调用"app/Controllers/Http/PC/TestController.js"的test1()方法，以此类推
 Route.get('/test1', 'PC/TestController.test1')
 // http://127.0.0.1:3201/test2?uname=peter
 Route.get('/test2', 'PC/TestController.test2')
 // http://127.0.0.1:3201/test3?fromdate=2019-03-22&todate=2019-04-25&status=1&page=1&limit=3
 Route.get('/test3', 'PC/TestController.test3')
 Route.get('/test4', 'PC/TestController.test4')
-//演示数组字符串等常用操作
+//演示Util工具库的常用操作
 Route.get('/test-util', 'PC/TestController.testUtil')
 //演示get方法访问外部链接
 Route.get('/test-httpget', 'PC/TestController.testGet')
@@ -39,9 +37,12 @@ Route.get('/test-httppost', 'PC/TestController.testPost')
 //演示session用法
 Route.get('/test-session', 'PC/TestController.testSession')
 
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-// XXXX       以下是正式环境常用的路由设置       XXXX
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+/**
+ * 模板引擎渲染
+ * @example
+ *
+ */
+Route.get('/', ({ view }) => view.render('index'))
 
 /**
  * 一组路由：需要进行身份验证（用session来判断）
@@ -58,39 +59,6 @@ Route.group(() => {
 })
   .prefix('api/v1') //统一给这组路由的uri加入前缀
   .middleware(['checkAuth']) //验证身份
-
-/**
- * 一组路由：需要进行身份验证（用约定的字符串来判断）
- * 通常用在简单的前后端通信，前端携带key访问后端，后端检查key是否正确
- */
-Route.group(() => {
-  try {
-    Route.get('test-auth2', 'PC/TestController.testAuth2')
-  } catch (err) {
-    return Util.end2front({
-      msg: '服务端无此路由',
-      code: 9999,
-    })
-  }
-}).middleware(['checkAuthByString']) //验证身份
-
-/**
- * 一组路由：需要进行身份验证（用redis来判断）
- * 通常用在内部跨项目之间的调用，调用方在redis存一个变量，被调用方检查是否存在这个变量，以此证明是可信任的
- */
-Route.group(() => {
-  try {
-    Route.post('test-auth3', 'PC/TestController.testAuth3')
-  } catch (err) {
-    log.err(err)
-    return Util.end2front({
-      msg: '服务端无此路由',
-      code: 9999,
-    })
-  }
-})
-  .prefix('api/v1')
-  .middleware(['checkAuthByRedis'])
 
 //兜底：如果都匹配不到路由，则转到404页面
 //Route.any('*', ({ view }) => view.render('404'))

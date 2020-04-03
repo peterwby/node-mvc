@@ -20,6 +20,18 @@ const Request = {
    */
   async get(url, params = {}, config = {}) {
     try {
+      if (config.session) {
+        //约定通过session传token
+        const token_name = Env.get('API_TOKEN_NAME')
+        const token = config.session.get(token_name)
+        if (!config.headers) {
+          config.headers = {}
+        }
+        if (token) {
+          config.headers[token_name] = token
+        }
+        delete config.session
+      }
       config.params = params
       let result = await axios.get(url, config)
 
@@ -57,6 +69,18 @@ const Request = {
    */
   async post(url, params = {}, config = {}) {
     try {
+      if (config.session) {
+        //约定通过session传token
+        const token_name = Env.get('API_TOKEN_NAME')
+        const token = config.session.get(token_name)
+        if (!config.headers) {
+          config.headers = {}
+        }
+        if (token) {
+          config.headers[token_name] = token
+        }
+        delete config.session
+      }
       let result = await axios.post(url, params, config)
       return Util.end({
         data: result.data,
