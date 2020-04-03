@@ -81,6 +81,7 @@ const Request = {
         }
         delete config.session
       }
+      config.maxContentLength = 100 * 1024 * 1024 //让axios支持上传100M大文件
       let result = await axios.post(url, params, config)
       return Util.end({
         data: result.data,
