@@ -9,7 +9,7 @@
   <meta name="keywords" content="" />
   <meta name="description" content="" />
   <meta name="author" content="" />
-  {{ style('css/style') }}
+  <link rel="stylesheet" href="{{ assetsUrl('layui/css/layui.css') }}" media="all" />
   <meta name="renderer" content="webkit" />
   <link rel="shortcut icon" href="{{ assetsUrl('favicon.ico') }}" />
   @endsection
@@ -27,6 +27,7 @@
   @section('script_link')
 
   {{ script('js/config') }}
+  {{ script('layui/layui.all') }}
   <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
   <!--[if lt IE 9]>
       <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
