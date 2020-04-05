@@ -1,17 +1,29 @@
-### 后端模板 结合 layui 单页面 beta
+### layui 封装第三方插件
 
-- src/views 复制到 nodejs 的 resources/views，并把 html 改为 edge
-- src 目录下其他所有文件都复制到 nodejs 的 public 目录下
-- 修改 routes.js
-  ```
-  Route.any('/', ({ view }) => view.render('admin.index'))
-  Route.get('*', ({ view, params, request }) => {
-  const url = request.url()
-  let tpl_src = url.replace(/\//g, '.')
-  if (tpl_src.endsWith('.edge')) {
-      tpl_src = tpl_src.substring(0, tpl_src.lastIndexOf('.edge'))
-  }
-  return view.render('admin' + tpl_src)
-  })
-  ```
-- layui 的 layout.js 里，所有代码外面，包住@raw @endraw
+```bash
+layui.define(function(exports){ //提示：组件也可以依赖其它组件，如：layui.define('jquery', callback);
+  //插件内容
+  //输出test接口
+  exports('test');
+});
+
+//如果有依赖的css则是
+layui.define(function(exports){
+  //插件内容
+  //输出test接口
+  exports('test');
+}).addcss('css相对于这个js的路径');
+
+//调用
+layui.config({
+  base: '/res/js/' //假设这是test.js所在的目录   可以把你需要扩展的js插件都放在一个文件夹内
+}).extend({ //设定组件别名
+  test: 'test'
+});
+
+//使用test
+layui.use('test', function(){
+  var test = layui.test;
+  //插件的调用  有依赖就加依赖，比如jq
+});
+```

@@ -16,21 +16,18 @@ const Request = {
    *  headers: {'键': '值'},
    *  timeout: 5000
    * })
+   * await Request.get('http://xxx',{ id:1 }, { token })
    * @returns object
    */
   async get(url, params = {}, config = {}) {
     try {
-      if (config.session) {
-        //约定通过session传token
+      if (config.token) {
         const token_name = Env.get('API_TOKEN_NAME')
-        const token = config.session.get(token_name)
         if (!config.headers) {
           config.headers = {}
         }
-        if (token) {
-          config.headers[token_name] = token
-        }
-        delete config.session
+        config.headers[token_name] = config.token
+        delete config.token
       }
       config.params = params
       let result = await axios.get(url, config)
@@ -52,7 +49,7 @@ const Request = {
       }
       return Util.error({
         msg: msg,
-        track: 'get_209jf9034',
+        track: 'request.get_209jf9034',
       })
     }
   },
@@ -65,21 +62,18 @@ const Request = {
    *  headers: {'键': '值'},
    *  timeout: 5000
    * })
+   * await Request.post('http://xxx',{ id:1 }, { token })
    * @returns object
    */
   async post(url, params = {}, config = {}) {
     try {
-      if (config.session) {
-        //约定通过session传token
+      if (config.token) {
         const token_name = Env.get('API_TOKEN_NAME')
-        const token = config.session.get(token_name)
         if (!config.headers) {
           config.headers = {}
         }
-        if (token) {
-          config.headers[token_name] = token
-        }
-        delete config.session
+        config.headers[token_name] = config.token
+        delete config.token
       }
       config.maxContentLength = 100 * 1024 * 1024 //让axios支持上传100M大文件
       let result = await axios.post(url, params, config)
@@ -104,7 +98,7 @@ const Request = {
           errno: err.errno,
           code: err.code,
         },
-        track: 'post_j28f2930',
+        track: 'request.post_j28f2930',
       })
     }
   },
