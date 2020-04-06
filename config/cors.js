@@ -49,7 +49,7 @@ module.exports = {
   |
   */
   headers: true,
-  //headers: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With', 'openid', 'access_token'],
+  //headers: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With', 'openid', 'token'],
   /*
   |--------------------------------------------------------------------------
   | Expose Headers
@@ -64,7 +64,7 @@ module.exports = {
   |
   */
   //exposeHeaders: true,
-  exposeHeaders: ['openid', 'access_token'],
+  exposeHeaders: ['openid', 'token'],
   /*
   |--------------------------------------------------------------------------
   | Credentials

@@ -9,9 +9,9 @@ class CheckAuthByString {
   async handle(ctx, next) {
     try {
       const body = ctx.request.all()
-      let access_token = ctx.request.header('access_token')
-      access_token = access_token || (body && body.access_token ? body.access_token : '')
-      if (access_token !== Env.get('AUTH_KEY')) {
+      let token = ctx.request.header('token')
+      token = token || (body && body.token ? body.token : '')
+      if (token !== Env.get('AUTH_KEY')) {
         return ctx.response.send({
           code: 9999,
           msg: '没有权限',

@@ -265,7 +265,7 @@ class TestController {
    * @returns object
    */
   async testPost(ctx) {
-    //ctx.session.put('access_token', '12345')
+    //ctx.session.put('token', '12345')
     //调用service层来处理业务逻辑
     const result = await testService.httpPost(ctx)
     //返回结果给前端

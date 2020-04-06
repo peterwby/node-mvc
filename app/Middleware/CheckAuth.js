@@ -30,7 +30,7 @@ class CheckAuth {
         Util.error2front({
           msg: err.message,
           code: 1001,
-          track: '902gejfndk8',
+          track: 'handle_902gejfndk8',
         })
       )
     }

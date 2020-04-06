@@ -4,6 +4,8 @@
 ****************************************************************************/
 
 const log = use('Logger')
+const Env = use('Env')
+const Hashids = use('Hashids')
 
 const Util = {
   /************************************************************************
@@ -19,7 +21,7 @@ const Util = {
    * （可选参数status）<0: 操作异常，=0：不符合业务条件被拒绝，>0：操作成功
    * @returns { error, status, msg, data }
    */
-  end: obj => {
+  end: (obj) => {
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
       throw new Error('end(obj)的obj应该是个对象')
     }
@@ -43,7 +45,7 @@ const Util = {
    * track的作用是跟踪错误，可以随机输入一串乱码
    * @returns { error, status, msg, data, stack, track }
    */
-  error: obj => {
+  error: (obj) => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
       throw new Error('error(obj)的obj应该是个对象')
@@ -74,7 +76,7 @@ const Util = {
    * 根据前端的要求，返回相应的数据结构
    * @returns object
    */
-  end2front: obj => {
+  end2front: (obj) => {
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
       throw new Error('end2front(obj)的obj应该是个对象')
     }
@@ -92,7 +94,7 @@ const Util = {
    * 如果要向前端显示真实错误，则{ isShowMsg: true }
    * @returns object
    */
-  error2front: obj => {
+  error2front: (obj) => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
       throw new Error('error2front(obj)的obj应该是个对象')
@@ -113,6 +115,49 @@ const Util = {
     return obj
   },
 
+  /**
+   * 对数字进行加密
+   * @example
+   * encode(id)
+   */
+  encode: (id) => {
+    if (!id) {
+      log.error('待加密encode的参数是空值')
+      return null
+    }
+    if (!Util.isNumber(id)) {
+      log.error('待加密encode的参数不是数值型')
+      return id
+    }
+    if (Env.get('NODE_ENV') === 'development') {
+      //开发环境下不加密，便于测试
+      return id
+    }
+    return Hashids.encodeHex(id)
+  },
+
+  /**
+   * 把字符串解密还原成数字
+   * @example
+   * decode(str)
+   */
+  decode: (str) => {
+    if (!str) {
+      log.error('待解密decode的参数是空值')
+      return null
+    }
+    if (Env.get('NODE_ENV') === 'development') {
+      //开发环境下不转换，便于测试
+      return str
+    }
+    let origin_id = Hashids.decodeHex(str)
+    if (!Util.isNumber(origin_id)) {
+      log.error('解密后decode的参数不是数值型')
+      return null
+    }
+    return origin_id
+  },
+
   /************************************************************************
    * Arrays
    ************************************************************************/
@@ -131,7 +176,7 @@ const Util = {
    */
   arrGroupBy: (arr, key) => {
     let groupedByKey = {}
-    arr.map(obj => {
+    arr.map((obj) => {
       if (groupedByKey[obj[key]]) groupedByKey[obj[key]].push(obj)
       else groupedByKey[obj[key]] = [obj]
     })
@@ -142,13 +187,13 @@ const Util = {
    * 返回数组中的最大值
    * arrMax([1,2,3]) 返回 3
    */
-  arrMax: arr => Math.max(...arr),
+  arrMax: (arr) => Math.max(...arr),
 
   /**
    * 返回数组中的最小值
    *  arrMin([1,2,3]) 返回 1
    */
-  arrMin: arr => Math.min(...arr),
+  arrMin: (arr) => Math.min(...arr),
 
   /**
    * 将数组块平均拆分为指定大小的较小数组，返回一个二维数组。
@@ -166,7 +211,7 @@ const Util = {
    * 返回去重后的数组
    * arrNoDouble([1,2,2,3]) 返回 [1,2,3]
    */
-  arrNoDouble: arr => [...new Set(arr)],
+  arrNoDouble: (arr) => [...new Set(arr)],
 
   /**
    * 返回两个数组中相同的元素（注：大小写敏感）
@@ -174,7 +219,7 @@ const Util = {
    */
   arrRetainDoubleCase: (a, b) => {
     const s = new Set(b)
-    return a.filter(x => s.has(x))
+    return a.filter((x) => s.has(x))
   },
 
   /**
@@ -191,7 +236,7 @@ const Util = {
       a1.push(i.toLowerCase())
     }
     const s = new Set(b1)
-    return a1.filter(x => s.has(x))
+    return a1.filter((x) => s.has(x))
   },
 
   /**
@@ -201,7 +246,7 @@ const Util = {
   arrDeleteDoubleAndUnion: (a, b) => {
     const sA = new Set(a),
       sB = new Set(b)
-    return [...a.filter(x => !sB.has(x)), ...b.filter(x => !sA.has(x))]
+    return [...a.filter((x) => !sB.has(x)), ...b.filter((x) => !sA.has(x))]
   },
 
   /**
@@ -210,7 +255,7 @@ const Util = {
    */
   arrDeleteDouble: (a, b) => {
     const s = new Set(b)
-    return a.filter(x => !s.has(x))
+    return a.filter((x) => !s.has(x))
   },
 
   /**
@@ -223,13 +268,13 @@ const Util = {
    * 返回数组中的所有元素, 除第一个
    * arrDeleteFirst([1,2,3]) 返回 [2,3]
    */
-  arrDeleteFirst: arr => (arr.length > 1 ? arr.slice(1) : arr),
+  arrDeleteFirst: (arr) => (arr.length > 1 ? arr.slice(1) : arr),
 
   /**
    * 返回数组中的所有元素, 除最后一个
    * arrDeleteLast([1,2,3]) 返回 [1,2]
    */
-  arrDeleteLast: arr => arr.slice(0, -1),
+  arrDeleteLast: (arr) => arr.slice(0, -1),
 
   /**
    * 返回从右边开始数，第n个位置开始的数组
@@ -241,13 +286,13 @@ const Util = {
    * 删除指定的元素值（可多个），返回一个新数组
    * arrDelete(['a','b','c','d','e'],'a','c') 返回 ['b','d','e']
    */
-  arrDelete: (arr, ...args) => arr.filter(v => !args.includes(v)),
+  arrDelete: (arr, ...args) => arr.filter((v) => !args.includes(v)),
 
   /**
    * 删除指定的元素值，返回原数组，原数组改变
    * arrDeleteRaw['a','b','c','d','e'],'d') 返回 ['a','b','c','e']
    */
-  arrDeleteRaw: function(arr, val) {
+  arrDeleteRaw: function (arr, val) {
     var i = 0
     while (i < arr.length) {
       if (arr[i] == val) {
@@ -264,7 +309,7 @@ const Util = {
    * arrIncludesCase([1,2],3) 返回 false
    * 等同于js原生[1,2].includes(3)
    */
-  arrIncludesCase: function(arr, val) {
+  arrIncludesCase: function (arr, val) {
     var i = arr.length
     while (i--) {
       if (arr[i] === val) {
@@ -278,7 +323,7 @@ const Util = {
    * 判断数组中是否包含某值（大小写不敏感）
    * arrIncludes([1,2],3) 返回 false
    */
-  arrIncludes: function(arr, val) {
+  arrIncludes: function (arr, val) {
     var i = arr.length
     while (i--) {
       if (arr[i].toLowerCase() == val.toLowerCase()) {
@@ -291,7 +336,7 @@ const Util = {
   /**
    * 把数组里的所有元素转成小写
    */
-  arr2LowerCase: function(arr) {
+  arr2LowerCase: function (arr) {
     if (!arr) {
       return []
     }
@@ -306,13 +351,13 @@ const Util = {
    * 随机返回数组中的一个元素值
    * arrRandomValue([1,2,3]): 1、2、3里的随机一个值
    */
-  arrRandomValue: arr => arr[Math.floor(Math.random() * arr.length)],
+  arrRandomValue: (arr) => arr[Math.floor(Math.random() * arr.length)],
 
   /**
    * 返回一个打乱了顺序的数组
    * arrRandomSort([1,2,3]): 可能返回[2,1,3]
    */
-  arrRandomSort: arr => arr.sort(() => Math.random() - 0.5),
+  arrRandomSort: (arr) => arr.sort(() => Math.random() - 0.5),
 
   /**
    * 返回数组中每间隔n个的那些元素组成的数组
@@ -323,12 +368,12 @@ const Util = {
   /**
    * 返回数字数组的平均值(浮点数)
    */
-  arrAvg: arr => arr.reduce((acc, val) => acc + val, 0) / arr.length,
+  arrAvg: (arr) => arr.reduce((acc, val) => acc + val, 0) / arr.length,
 
   /**
    * 返回一个数字数组的总和
    */
-  arrSum: arr => arr.reduce((acc, val) => acc + val, 0),
+  arrSum: (arr) => arr.reduce((acc, val) => acc + val, 0),
 
   /**
    * 返回给定数组中有多少个数小于或等于给定值的百分比
@@ -343,7 +388,7 @@ const Util = {
    * 把秒数换算成天、时、分、秒组成的json
    * number2timeJson(10000) 返回 {second: 40, minute: 46, hour: 2, day: 0}
    */
-  number2timeJson: function(value) {
+  number2timeJson: function (value) {
     var theTime = parseInt(value) // 秒
     var theTime1 = 0 // 分
     var theTime2 = 0 // 小时
@@ -371,40 +416,40 @@ const Util = {
   /**
      格式化日期
      moment('2019-1-1').format("YYYY-MM-DD HH:mm:ss")
-      
+
      日期减去10分钟
      moment('2019-01-01 00:00:00').subtract(10, "minutes")
-     
+
      日期加上10个月
      moment('2019-01-01 00:00:00').add(10, "months").format("YYYY-MM-DD HH:mm:ss")
-     
+
      2个日期相差多少间隔 a.diff(b, 'days')  ==  a - b
      moment('2019-01-01 00:00:00').diff(moment('2019-01-01 01:00:00'),'minutes') = -60;
 
      是否是合法日期
      moment('2019-13-02').isValid()
-    
+
      日期转时间戳
      moment('2019-06-12 12:30:10').valueOf()//毫秒
      moment('2019-06-12 12:30:10').unix()//秒
-     
+
      时间戳(毫秒）转日期
      moment(1560313810687).format('YYYY-MM-DD HH:mm:ss')
-     
+
      获取当月的天数
      moment().daysInMonth()
      moment("2012-02", "YYYY-MM").daysInMonth() // 29
-     
+
      转换
      moment().toArray()
      moment().toObject()
-     
+
      比较
      moment('2010-10-20').isSame('2010-01-01', 'year');  // true
      moment('2010-10-20').isBefore('2010-12-31', 'year'); // false
      moment('2010-10-20').isAfter('2009-12-31', 'year'); // true
      moment('2010-10-20').isBetween('2009-12-31', '2012-01-01', 'year'); // true
-     
+
      是否闰年
      moment().isLeapYear();
      moment([2001]).isLeapYear()
@@ -423,9 +468,9 @@ const Util = {
    * debounce(fn, 500)
    * @returns function
    */
-  debounce: function(fn, delay = 1000) {
+  debounce: function (fn, delay = 1000) {
     let timer = null
-    return function() {
+    return function () {
       if (timer) clearTimeout(timer)
       timer = setTimeout(() => {
         fn.apply(this, arguments)
@@ -440,10 +485,10 @@ const Util = {
    * throttle(fn, 1000)
    * @returns function
    */
-  throttle: function(func, delay) {
+  throttle: function (func, delay) {
     var timer = null
     var startTime = Date.now()
-    return function() {
+    return function () {
       var curTime = Date.now()
       var remaining = delay - (curTime - startTime)
       var context = this
@@ -462,7 +507,7 @@ const Util = {
    * 让程序暂停 n 毫秒
    * await sleep(1000)
    */
-  sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
+  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 
   /**
      * 避免调用await函数时大量使用try{func()}catch(e){}结构，用to函数使得页面整洁
@@ -471,19 +516,19 @@ const Util = {
          return console.log(err)
        }
      */
-  to: promise => {
+  to: (promise) => {
     if (!promise || !Promise.prototype.isPrototypeOf(promise)) {
       return new Promise((resolve, reject) => {
         reject(new Error('to要求参数是promise类型'))
-      }).catch(err => {
+      }).catch((err) => {
         return [err, null]
       })
     }
     return promise
-      .then(function() {
+      .then(function () {
         return [null, ...arguments]
       })
-      .catch(err => {
+      .catch((err) => {
         return [err, null]
       })
   },
@@ -493,7 +538,7 @@ const Util = {
    * function aa(){}
    * let result = funcTime(aa) 返回 xxxx ms
    */
-  funcTime: callback => {
+  funcTime: (callback) => {
     console.time('耗费时间')
     const r = callback()
     console.timeEnd('耗费时间')
@@ -532,7 +577,7 @@ const Util = {
    * 返回从0开始的斐波那契数列的长度为n的数组
    * mathFibonacci(5): [0, 1, 1, 2, 3]
    */
-  mathFibonacci: n =>
+  mathFibonacci: (n) =>
     Array(n)
       .fill(0)
       .reduce((acc, val, i) => acc.concat(i > 1 ? acc[i - 1] + acc[i - 2] : i), []),
@@ -542,7 +587,7 @@ const Util = {
   isDivisible: (dividend, divisor) => dividend % divisor === 0,
 
   // isEven: 如果给定的数字为偶数, 则返回true, 否则为false
-  isEven: num => num % 2 === 0,
+  isEven: (num) => num % 2 === 0,
 
   /**
    * 计算最大公约数
@@ -571,8 +616,8 @@ const Util = {
    * @example
    *
    */
-  objDeleteEmpty: obj => {
-    Object.keys(obj).forEach(key => !obj[key] && delete obj[key])
+  objDeleteEmpty: (obj) => {
+    Object.keys(obj).forEach((key) => !obj[key] && delete obj[key])
     return obj
   },
 
@@ -606,7 +651,7 @@ const Util = {
    * deepClone(obj)
    * @returns object
    */
-  deepClone: function(x) {
+  deepClone: function (x) {
     // Object.create(null) 的对象，没有hasOwnProperty方法
     function hasOwnProp(obj, key) {
       return Object.prototype.hasOwnProperty.call(obj, key)
@@ -695,19 +740,19 @@ const Util = {
    * 是否有某个属性/键（大小写敏感）
    * objHas({aa:1}, 'aa'): true
    */
-  objHas: function(obj, key) {
+  objHas: function (obj, key) {
     return obj.hasOwnProperty(key)
   },
 
   /**
    * 字符串：驼峰转为连字符
    */
-  str2Line: hump => hump.replace(/([A-Z]|\d)/g, (a, l) => `_${l.toLowerCase()}`),
+  str2Line: (hump) => hump.replace(/([A-Z]|\d)/g, (a, l) => `_${l.toLowerCase()}`),
   /**
    * 字符串：连字符转为驼峰
    */
-  str2Camel: name =>
-    name.replace(/\_(\w)/g, function(all, letter) {
+  str2Camel: (name) =>
+    name.replace(/\_(\w)/g, function (all, letter) {
       return letter.toUpperCase()
     }),
 
@@ -720,7 +765,7 @@ const Util = {
    * @returns object
    */
 
-  toLine: data => {
+  toLine: (data) => {
     let newData = null
     if (Util.isObj(data)) {
       newData = {}
@@ -762,7 +807,7 @@ const Util = {
    * @returns object
    */
 
-  toCamel: data => {
+  toCamel: (data) => {
     let newData = null
     if (Util.isObj(data)) {
       newData = {}
@@ -801,7 +846,7 @@ const Util = {
    * @example
    *
    */
-  url2obj: function(url) {
+  url2obj: function (url) {
     var reg_url = /^[^\?]+\?([\w\W]+)$/,
       reg_para = /([^&=]+)=([\w\W]*?)(&|$|#)/g,
       arr_url = reg_url.exec(url),
@@ -823,7 +868,7 @@ const Util = {
    *
    * return URL参数字符串
    */
-  obj2url: function(param, key, encode) {
+  obj2url: function (param, key, encode) {
     if (param == null) return ''
     var paramStr = ''
     var t = typeof param
@@ -845,7 +890,7 @@ const Util = {
   /*
    * 删除bom头 \xef\xbb\xbf
    */
-  strDeleteBOM: function(content) {
+  strDeleteBOM: function (content) {
     if (content.charCodeAt(0) === 0xfeff) {
       content = content.slice(1)
     }
@@ -859,7 +904,7 @@ const Util = {
    * @param {待查找} cha
    * @param {第n次出现} num
    */
-  strIndexOfMulti: function(str, cha, num) {
+  strIndexOfMulti: function (str, cha, num) {
     var x = str.indexOf(cha)
     for (var i = 0; i < num - 1; i++) {
       x = str.indexOf(cha, x + 1)
@@ -871,7 +916,7 @@ const Util = {
    * 返回字符串在某个字符串中出现的次数
    * strCount('a23aaa23aa','23') 返回 2
    */
-  strCount: function(s, c) {
+  strCount: function (s, c) {
     return s.split(c).length - 1
   },
 
@@ -879,7 +924,7 @@ const Util = {
    * 返回字符串中出现最多的字符和次数，返回json对象
    * strFindMost('啊12啊啊啊3') 返回 {value: "啊", count: 4}
    */
-  strFindMost: function(str) {
+  strFindMost: function (str) {
     let obj = {}
     for (let i = 0; i < str.length; i++) {
       let key = str[i] //key中存储的是每一个字符串
@@ -905,19 +950,19 @@ const Util = {
    * 清除字符串的任意空格
    * strDeleteSpace('  he l lo  ') 返回 hello
    */
-  strDeleteSpace: str => str.replace(/\s/g, ''),
+  strDeleteSpace: (str) => str.replace(/\s/g, ''),
 
   /**
    * 清除左空格
    */
-  strLTrim: function(str) {
+  strLTrim: function (str) {
     return str.replace(/^\s+/, '')
   },
 
   /**
    * 清除右空格
    */
-  strRTrim: function(val) {
+  strRTrim: function (val) {
     return val.replace(/\s+$/, '')
   },
 
@@ -925,13 +970,13 @@ const Util = {
    * 反转字符串
    * strReverse('abc') 返回 'cba'
    */
-  strReverse: str => [...str].reverse().join(''),
+  strReverse: (str) => [...str].reverse().join(''),
 
   /**
    * 按字母顺序排序
    * strSort('badce') 返回 'abcde'
    */
-  strSort: str =>
+  strSort: (str) =>
     str
       .split('')
       .sort((a, b) => a.localeCompare(b))
@@ -944,14 +989,14 @@ const Util = {
   /**
    * Map转二维数组
    */
-  map2arr: function(x) {
+  map2arr: function (x) {
     return [...x]
   },
 
   /**
    * 二维数组转Map，如[[a,1],[b,2]]可转成Map对象
    */
-  arr2map: function(x) {
+  arr2map: function (x) {
     return new Map(x)
   },
 
@@ -959,7 +1004,7 @@ const Util = {
    * Map转json对象
    * Map对象的键值要为字符串，不能是复杂对象
    */
-  map2obj: function(x) {
+  map2obj: function (x) {
     //转为json对象
     let obj = Object.create(null)
     for (let [k, v] of x) {
@@ -972,7 +1017,7 @@ const Util = {
    * json对象转Map
    * 传入json对象，返回Map对象
    */
-  obj2map: function(obj) {
+  obj2map: function (obj) {
     let strMap = new Map()
     for (let k of Object.keys(obj)) {
       strMap.set(k, obj[k])
@@ -984,7 +1029,7 @@ const Util = {
    * 判断一个变量是否是false
    * 有的字符串值为'null'、'undefined'也认为是false
    */
-  isFalse: function(data) {
+  isFalse: function (data) {
     if (!data) {
       return true
     } else {
@@ -1003,7 +1048,7 @@ const Util = {
    * 把null或'null'或'undefined'转为''
    * null2empty(data, '')
    */
-  null2empty: function(data, empty) {
+  null2empty: function (data, empty) {
     if (!data) {
       data = empty
     } else if (Object.prototype.toString.call(data) == '[object String]') {
@@ -1020,7 +1065,7 @@ const Util = {
    * @example
    *
    */
-  type: function(x, strict = false) {
+  type: function (x, strict = false) {
     const toString = Object.prototype.toString
     strict = !!strict
 
@@ -1098,7 +1143,7 @@ const Util = {
    * 是否是空的json对象：{}
    *
    */
-  isObjEmpty: function(obj) {
+  isObjEmpty: function (obj) {
     return Object.keys(obj).length === 0 && obj.constructor === Object
   },
 
@@ -1106,7 +1151,7 @@ const Util = {
    * 是否是json对象
    *
    */
-  isObj: function(obj) {
+  isObj: function (obj) {
     return Object.prototype.toString.call(obj) == '[object Object]'
   },
 
@@ -1114,46 +1159,33 @@ const Util = {
    * 判断是否为一个数字
    * @param {*} value
    */
-  isNumber: function(value) {
+  isNumber: function (value) {
     return !isNaN(parseFloat(value)) && isFinite(value)
   },
 
   /**
    * 是否是数组
    */
-  isArray: function(value) {
+  isArray: function (value) {
     return Object.prototype.toString.call(value) == '[object Array]'
   },
 
   /**
    * 是否是函数
    */
-  isFunction: function(value) {
+  isFunction: function (value) {
     return Object.prototype.toString.call(value) == '[object Function]'
   },
 
   /**
    * 是否是字符串
    */
-  isString: str => Object.prototype.toString.call(str) == '[object String]',
+  isString: (str) => Object.prototype.toString.call(str) == '[object String]',
 
   /**
    * 是否是布尔值
    */
-  isBoolean: val => Object.prototype.toString.call(val) == '[object Boolean]',
-
-  /************************************************************************
-   * 其他
-   ************************************************************************/
-
-  /**
-   * 获取客户端ip
-   * @example
-   *
-   * @returns string
-   */
-
-  //TODO:获取客户端ip、导出excel、图片处理
+  isBoolean: (val) => Object.prototype.toString.call(val) == '[object Boolean]',
 }
 
 module.exports = Util
