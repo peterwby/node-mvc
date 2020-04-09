@@ -101,6 +101,41 @@ class MemberTable extends BaseTable {
   }
 
   /**
+   * 获取关联信息
+   * @example
+   * fetchDetailById(id)
+   */
+  async fetchDetailById(id) {
+    try {
+      let result = await Database.select(
+        'a.login_name',
+        'a.member_name',
+        'a.email',
+        'a.cellphone',
+        'a.gender_id',
+        'a.ctime',
+        'a.member_status_id',
+        'b.member_status_name',
+        'a.remark'
+      )
+        .from('member as a')
+        .innerJoin('member_status as b', 'a.member_status_id', 'b.member_status_id')
+        .where('a.member_id', id)
+      let data = result[0] || {}
+      return Util.end({
+        data,
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        data: { table: this.tableName },
+        track: 'table_fetchDetailById_1586339053',
+      })
+    }
+  }
+
+  /**
    * 列表信息
    * @example
    * fetchListBy({ status_id, search_word, page, limit })
@@ -109,15 +144,19 @@ class MemberTable extends BaseTable {
     try {
       let result = {}
       const table = Database.clone()
-      table.select('*').from('member as a').orderBy('a.member_id', 'desc')
-      if (obj.status_id) {
-        table.where('a.member_status_id', '=', obj.status_id)
+      table
+        .select('a.member_id', 'a.member_name', 'a.email', 'a.cellphone', 'a.ctime', 'a.member_status_id', 'b.member_status_name')
+        .from('member as a')
+        .innerJoin('member_status as b', 'a.member_status_id', 'b.member_status_id')
+        .orderBy('a.member_id', 'desc')
+      if (obj.member_status_id) {
+        table.where('a.member_status_id', '=', obj.member_status_id)
       }
       if (obj.search_word) {
         table.where(function () {
           this.where('a.member_name', 'like', `%${obj.search_word}%`)
             .orWhere('a.email', 'like', `%${obj.search_word}%`)
-            .orWhere('b.login_name', 'like', `%${obj.search_word}%`)
+            .orWhere('a.login_name', 'like', `%${obj.search_word}%`)
         })
       }
       result = await table.paginate(obj.page, obj.limit)

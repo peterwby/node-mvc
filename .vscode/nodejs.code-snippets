@@ -111,6 +111,7 @@
       "  } catch (err) {",
       "    return Util.error({",
       "      msg: err.message,",
+      "      stack: err.stack,",
       "      track: 'service_$1_$CURRENT_SECONDS_UNIX',",
       "    })",
       "  }",
@@ -131,6 +132,7 @@
       "    return Util.error({",
       "      msg: err.message,",
       "      data: { table: this.tableName },",
+      "      stack: err.stack,",
       "      track: 'table_$1_$CURRENT_SECONDS_UNIX',",
       "    })",
       "  }",
@@ -249,5 +251,13 @@
       "",
       "module.exports = $1Controller"
     ]
+  },
+  "controller操作未执行的返回": {
+    "prefix": "result.status-controller",
+    "body": ["if (result.status === 0) {", "  return Util.end2front({", "    msg: result.msg,", "    code: 9000,", "  })", "}"]
+  },
+  "service操作未执行的返回": {
+    "prefix": "result.status-service",
+    "body": ["if (result.status === 0) {", "  return Util.end({", "    msg: result.msg,", "    status: 0,", "  })", "}"]
   }
 }

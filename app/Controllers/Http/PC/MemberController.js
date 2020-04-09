@@ -119,6 +119,47 @@ class MemberController {
     }
   }
 
+  async getEditCommon(ctx) {
+    try {
+      let result = {}
+      //检查参数合法性
+      const resultValid = await getEditCommonValid(ctx)
+      if (resultValid) return resultValid
+      //调用业务逻辑Service
+      result = await memberService.getEditCommon(ctx)
+      //组装从Service返回的数据，返回给前端
+      const data = result.data
+      return Util.end2front({ data })
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        track: 'controller_getEditCommon_1586338587',
+      })
+    }
+  }
+
+  async getCreateCommon(ctx) {
+    try {
+      let result = {}
+      //检查参数合法性
+      const resultValid = await getCreateCommonValid(ctx)
+      if (resultValid) return resultValid
+      //调用业务逻辑Service
+      result = await memberService.getCreateCommon(ctx)
+      //组装从Service返回的数据，返回给前端
+      return Util.end2front({
+        data: result.data,
+      })
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        track: 'controller_getCreateCommon_1586403873',
+      })
+    }
+  }
+
   async create(ctx) {
     try {
       let result = {}
@@ -198,6 +239,33 @@ class MemberController {
         //isShowMsg: true,
         msg: err.message,
         track: 'controller_edit_1586097585',
+      })
+    }
+  }
+
+  async remove(ctx) {
+    try {
+      let result = {}
+      //检查参数合法性
+      const resultValid = await removeValid(ctx)
+      if (resultValid) return resultValid
+      //调用业务逻辑Service
+      result = await memberService.remove(ctx)
+      //组装从Service返回的数据，返回给前端
+      if (result.status === 0) {
+        return Util.end2front({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
+      return Util.end2front({
+        msg: '已删除',
+      })
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        track: 'controller_remove_1586354164',
       })
     }
   }
@@ -313,9 +381,9 @@ async function getTableValid(ctx) {
       let body = {}
       for (let k in requestAll) {
         switch (k.toLowerCase()) {
-          case 'status_id':
+          case 'member_status_id':
             if (Util.isNumber(requestAll[k])) {
-              body.status_id = requestAll[k]
+              body.member_status_id = requestAll[k]
             }
             break
           case 'page':
@@ -345,6 +413,39 @@ async function getTableValid(ctx) {
       msg: err.message,
       code: 9000,
       track: 'valid_getTableValid_1586103322',
+    })
+  }
+}
+
+async function getCreateCommonValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.request.all()
+      let body = {}
+
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {}
+
+    async function authValid() {
+      const session = ctx.session
+    }
+  } catch (err) {
+    return Util.error2front({
+      isShowMsg: true,
+      msg: err.message,
+      code: 9000,
+      track: 'valid_getCreateCommonValid_1586403896',
     })
   }
 }
@@ -490,6 +591,58 @@ async function editPasswordValid(ctx) {
   }
 }
 
+async function getEditCommonValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'member_id':
+            {
+              const tmp = Util.decode(requestAll[k])
+              if (tmp) body.member_id = tmp
+            }
+            break
+        }
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {
+      const rules = {
+        member_id: 'required',
+      }
+      const messages = {
+        'member_id.required': 'member_id为必填项',
+      }
+      const validation = await validate(ctx.body, rules, messages)
+      if (validation.fails()) {
+        throw new Error(validation.messages()[0].message)
+      }
+    }
+
+    async function authValid() {
+      const session = ctx.session
+    }
+  } catch (err) {
+    return Util.error2front({
+      msg: err.message,
+      code: 9000,
+      track: 'valid_getEditCommonValid_1586338627',
+    })
+  }
+}
+
 async function editValid(ctx) {
   try {
     //组装处理参数
@@ -515,6 +668,21 @@ async function editValid(ctx) {
           case 'member_name':
             body.member_name = requestAll[k]
             break
+          case 'login_pwd':
+            body.login_pwd = requestAll[k]
+            break
+          case 'cellphone':
+            body.cellphone = requestAll[k]
+            break
+          case 'email':
+            body.email = requestAll[k]
+            break
+          case 'gender_id':
+            body.gender_id = requestAll[k]
+            break
+          case 'remark':
+            body.remark = requestAll[k]
+            break
         }
       }
       ctx.body = Util.deepClone(body)
@@ -522,7 +690,7 @@ async function editValid(ctx) {
 
     async function paramsValid() {
       const rules = {
-        member_id: 'member_id',
+        member_id: 'required',
         member_name: 'required|max:20',
       }
       const messages = {
@@ -549,6 +717,64 @@ async function editValid(ctx) {
       msg: err.message,
       code: 9000,
       track: 'valid_editValid_1586098365',
+    })
+  }
+}
+
+async function removeValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'ids': {
+            if (Util.isArray(requestAll[k])) {
+              const ids = requestAll[k].filter((item) => {
+                item = Util.decode(item)
+                return item
+              })
+              if (ids.length) {
+                body.ids = ids
+              }
+            }
+          }
+        }
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {
+      const rules = {
+        ids: 'required',
+      }
+      const messages = {
+        'ids.required': 'ids参数为必填项',
+      }
+      const validation = await validate(ctx.body, rules, messages)
+      if (validation.fails()) {
+        throw new Error(validation.messages()[0].message)
+      }
+    }
+
+    async function authValid() {
+      const session = ctx.session
+    }
+  } catch (err) {
+    return Util.error2front({
+      isShowMsg: true,
+      msg: err.message,
+      code: 9000,
+      track: 'valid_removeValid_1586354732',
     })
   }
 }

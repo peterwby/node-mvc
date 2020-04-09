@@ -71,7 +71,9 @@ Route.group(() => {
     Route.post('member/get-table', 'PC/MemberController.getTable')
     Route.post('member/logout', 'PC/MemberController.logout')
     Route.post('member/edit-password', 'PC/MemberController.editPassword')
+    Route.post('member/get-edit-common', 'PC/MemberController.getEditCommon')
     Route.post('member/edit', 'PC/MemberController.edit')
+    Route.post('member/get-create-common', 'PC/MemberController.getCreateCommon')
     Route.post('member/create', 'PC/MemberController.create')
     Route.post('member/remove', 'PC/MemberController.remove')
   } catch (err) {

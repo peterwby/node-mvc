@@ -87,8 +87,8 @@ class Service extends BaseService {
         orderBy: [['sequence', 'asc']],
       })
       const status_list = result.data.data.map((item) => ({
-        status_id: item.status_id,
-        status_name: item.status_name,
+        member_status_id: item.member_status_id,
+        member_status_name: item.member_status_name,
       }))
       //公共信息
       const common_info = {}
@@ -215,6 +215,35 @@ class Service extends BaseService {
     }
   }
 
+  async getEditCommon(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+      //common_gender
+      const CommonGenderTable = require('@Table/common_gender')
+      const commonGenderTable = new CommonGenderTable()
+      result = await commonGenderTable.fetchAll()
+      const gender_list = result.data.data.map((item) => ({
+        gender_id: item.gender_id,
+        gender_name: item.gender_name,
+      }))
+      //获取公共信息
+      result = await memberTable.fetchDetailById(body.member_id)
+      const common_info = result.data
+      const data = {
+        gender_list,
+        common_info,
+      }
+      return Util.end({ data })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        track: 'service_getEditCommon_1586338878',
+      })
+    }
+  }
+
   async edit(ctx) {
     try {
       let result = {}
@@ -224,7 +253,7 @@ class Service extends BaseService {
       await Database.transaction(async (trx) => {
         result = await memberTable.updateBy(trx, {
           where: [['member_id', '=', body.member_id]],
-          set: { member_name: body.member_name },
+          set: { member_name: body.member_name, email: body.email, cellphone: body.cellphone, remark: body.remark, gender_id: body.gender_id },
         })
         if (result.status === 0) {
           throw new Error('编辑失败')
@@ -236,6 +265,31 @@ class Service extends BaseService {
       return Util.error({
         msg: err.message,
         track: 'edit_1581237428',
+      })
+    }
+  }
+
+  async remove(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+      await Database.transaction(async (trx) => {
+        result = await memberTable.deleteByIds(trx, body.ids)
+        if (result.status === 0) {
+          return Util.end({
+            msg: result.msg,
+            status: 0,
+          })
+        }
+      })
+      return Util.end({
+        data: result.data,
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        track: 'service_remove_1586354645',
       })
     }
   }

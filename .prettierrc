@@ -5,5 +5,8 @@
   "tabWidth": 2,
   "semi": false,
   "jsxSingleQuote": true,
-  "endOfLine": "lf"
+  "endOfLine": "lf",
+  "arrowParens": "always",
+  "useTabs": false,
+  "proseWrap": "preserve"
 }

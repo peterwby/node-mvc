@@ -52,7 +52,7 @@ const Util = {
     }
     obj.error = true
     obj.status = !!obj.status || obj.status === 0 ? obj.status : -1
-    obj.msg = obj.msg || 'found error'
+    obj.msg = obj.msg || '程序执行出错'
     obj.data = obj.data || {}
     obj.track = obj.track || ''
     if (obj.stack) {
@@ -102,7 +102,7 @@ const Util = {
     log.notice(obj.track)
     log.error(obj.msg)
     //对前端屏蔽真实错误
-    obj.msg = obj.isShowMsg ? obj.msg : 'found error'
+    obj.msg = Env.get('NODE_ENV') === 'development' ? obj.msg : obj.isShowMsg ? obj.msg : '程序执行出错'
     obj.data = obj.data || {}
     obj.code = obj.code || 9999
     obj.track = obj.track || ''
@@ -844,9 +844,9 @@ const Util = {
   /**
    * url参数转换为对象
    * @example
-   *
+   * Util.query2obj('http://abc.com?search_word=中国')
    */
-  url2obj: function (url) {
+  query2obj: function (url) {
     var reg_url = /^[^\?]+\?([\w\W]+)$/,
       reg_para = /([^&=]+)=([\w\W]*?)(&|$|#)/g,
       arr_url = reg_url.exec(url),
@@ -865,10 +865,11 @@ const Util = {
    * param 将要转为URL参数字符串的对象
    * key URL参数字符串的前缀
    * encode true/false 是否进行URL编码,默认为true
-   *
    * return URL参数字符串
+   * @example
+   * Util.obj2query({ a: 1, b: 2 })
    */
-  obj2url: function (param, key, encode) {
+  obj2query: function (param, key, encode) {
     if (param == null) return ''
     var paramStr = ''
     var t = typeof param
@@ -877,7 +878,7 @@ const Util = {
     } else {
       for (var i in param) {
         var k = key == null ? i : key + (param instanceof Array ? '[' + i + ']' : '.' + i)
-        paramStr += Util.obj2url(param[i], k, encode)
+        paramStr += Util.obj2query(param[i], k, encode)
       }
     }
     return paramStr
