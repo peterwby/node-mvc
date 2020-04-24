@@ -2,7 +2,7 @@
 
 ## 简介
 
-- 本项目的 git 地址：https://gitee.com/sh-chanson/node-server.git
+- 本 demo 项目的地址：https://gitee.com/sh-chanson/node-server.git
 - 基于 Adonis.js 框架，其官方文档地址：https://adonisjs.com/docs/4.1/folder-structure
 - 整体项目一般采用前后端分离设计，View 交给前端处理， MVC 架构有所变形：Router->Controllers->Services->Models
 - models 层目前不使用 orm，而是 query builder，基于 knex，容易上手
@@ -18,7 +18,7 @@
 
 - 安装 node.js（选择 LTS 版本）https://nodejs.org/en/
 
-###### 在命令行输入以下命令
+###### 安装常用全局包
 
 （windows 下无需 sudo 这 4 个字母）
 
@@ -26,8 +26,10 @@
   sudo npm i -g nrm
 - 切换国内源
   sudo nrm use taobao
+- adonis 必须的全局包
+  sudo npm i -g @adonisjs/cli
 - 其他全局包
-  sudo npm i -g live-server @adonisjs/cli
+  sudo npm i -g live-server
 
 ## 项目安装
 
@@ -71,9 +73,9 @@ npm run dev
 - 可以开始测试了，默认准备了 3 个由浅入深的例子
 - 打开浏览器，分别输入：
 
-  - http://127.0.0.1:3201/test1
-  - http://127.0.0.1:3201/test2?uname=peter&status=1
-  - http://127.0.0.1:3201/test3?fromDate=2019-03-22&toDate=2019-04-25&status=1&page=1&limit=3
+  - http://127.0.0.1:3000/test1
+  - http://127.0.0.1:3000/test2?uname=peter&status=1
+  - http://127.0.0.1:3000/test3?fromDate=2019-03-22&toDate=2019-04-25&status=1&page=1&limit=3
 
 - 打开/start/routes.js ，一步一步跟踪下去，看每一步怎么实现。完整顺序是 Router->Controllers->Services->Models
 
@@ -83,8 +85,9 @@ npm run dev
 - 使用 eslint、prettier 规范代码格式
 - api 接口的问题：全部使用 post，只有下载之类的接口使用 get。比如：
   Route.get('download/:type/:file', 'PC/DownloadController.download')
-  Route.post('member/edit', 'PC/MemberController.edit')
+  Route.post('entity/edit', 'PC/EntityController.edit')
   Route.post('entity/get-table', 'PC/EntityController.getTable')
+  Route.post('entity/get-table-common', 'PC/EntityController.getTableCommon')
 
 ## 常用操作
 
@@ -124,6 +127,11 @@ npm run dev
 - Controller 里的函数内部抛出异常时，在 catch 里调用本函数，规定要返回给前端的信息
   ```
   Util.error2front({})
+  ```
+- 对返回前端的 id(数字型) 进行加解密
+  ```
+  Util.encode(int)
+  Util.decode(str)
   ```
 - 打印信息到控制台
 

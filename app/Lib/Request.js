@@ -49,6 +49,7 @@ const Request = {
       }
       return Util.error({
         msg: msg,
+        code: 500,
         track: 'request.get_209jf9034',
       })
     }
@@ -98,6 +99,7 @@ const Request = {
           errno: err.errno,
           code: err.code,
         },
+        code: 500,
         track: 'request.post_j28f2930',
       })
     }
@@ -142,6 +144,7 @@ const Request = {
       }
       return Util.error({
         msg: msg,
+        code: 500,
         track: 'call_j28f2930',
       })
     }
