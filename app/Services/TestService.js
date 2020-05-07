@@ -48,7 +48,7 @@ class TestService extends BaseService {
       const testTable = new TestTable()
 
       //使用事务
-      await Database.transaction(async trx => {
+      await Database.transaction(async (trx) => {
         //调用models层，插入一条记录到数据库
         //ctx.body：为“前端的请求”经过检验、组装后的对象
         //test表本身没有实现create方法，但它的基类BaseTable实现了此方法，故可直接使用
@@ -158,9 +158,9 @@ class TestService extends BaseService {
   async httpGet() {
     try {
       const url = 'http://api.m.taobao2.com/rest/api.do?api=mtop.common.getTimestamp'
-      const result = await Request.get(url, { aa: '1234' }, { timeout: 5000 }).catch(err => {
+      const result = await Request.get(url, { aa: '1234' }, { timeout: 5000 }).catch((err) => {
         console.log(err.message)
-        return {}
+        return Util.end({})
       })
       //组装数据
       return Util.end({ data: result.data })
@@ -175,9 +175,9 @@ class TestService extends BaseService {
   async httpPost(ctx) {
     try {
       const url = 'http://api.m.taobao.com/rest/api.do?api=mtop.common.getTimestamp'
-      const result = await Request.post(url, { account: '123467', error_msg: 'dd' }, { session: ctx.session, timeout: 5000 }).catch(err => {
+      const result = await Request.post(url, { account: '123467', error_msg: 'dd' }, { timeout: 5000 }).catch((err) => {
         console.log(err.message)
-        return {}
+        return Util.end({})
       })
 
       return Util.end({ data: result })

