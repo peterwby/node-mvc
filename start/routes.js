@@ -18,6 +18,22 @@ const log = use('Logger')
 const Util = require('@Lib/Util')
 
 /**
+ * 考核时用下面的路由组
+ * @example
+ *
+ */
+Route.group(() => {
+  try {
+    //Route.post('xxx', 'PC/xxx')
+  } catch (err) {
+    return Util.end2front({
+      msg: '服务端无此路由',
+      code: 9999,
+    })
+  }
+}).prefix('test')
+
+/**
  * 无需验证的接口组
  */
 Route.group(() => {

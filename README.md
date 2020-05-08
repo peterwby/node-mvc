@@ -4,8 +4,8 @@
 
 - 本 demo 项目的地址：https://gitee.com/sh-chanson/node-server.git
 - 基于 Adonis.js 框架，其官方文档地址：https://adonisjs.com/docs/4.1/folder-structure
-- 整体项目一般采用前后端分离设计，View 交给前端处理， MVC 架构有所变形：Router->Controllers->Services->Models
-- models 层目前不使用 orm，而是 query builder，基于 knex，容易上手
+- 实际项目一般采用前后端分离开发，View 交给前端处理， 本框架的结构：Router->Controllers->Services->Models
+- models 层使用 query builder，基于 knex，容易上手
 
 ## 须具备知识
 
@@ -16,7 +16,7 @@
 
 ## 准备工作
 
-- 安装 node.js（选择 LTS 版本）https://nodejs.org/en/
+- 安装 node.js（v12 以上版本）https://nodejs.org/en/
 
 ###### 安装常用全局包
 
@@ -68,28 +68,22 @@ npm run dev
 - /app/Lib/Util.js：常用工具库，包含对数组、对象、字符串、时间等处理的函数
 - /app/Lib/Request.js：基于 axios.js 的 HTTP 库，用于 get、post 方式访问 url
 
-## 如何使用
-
-- 可以开始测试了，默认准备了 3 个由浅入深的例子
-- 打开浏览器，分别输入：
-
-  - http://127.0.0.1:3000/test1
-  - http://127.0.0.1:3000/test2?uname=peter&status=1
-  - http://127.0.0.1:3000/test3?fromDate=2019-03-22&toDate=2019-04-25&status=1&page=1&limit=3
-
-- 打开/start/routes.js ，一步一步跟踪下去，看每一步怎么实现。完整顺序是 Router->Controllers->Services->Models
-
 ## 代码规范
 
-- 默认 ide 为 vscode，使用 settings Sync 插件同步设置
+- 默认 ide 为 vscode，使用 settings sync 插件同步设置
 - 使用 eslint、prettier 规范代码格式
 - api 接口的问题：全部使用 post，只有下载之类的接口使用 get。比如：
   Route.get('download/:type/:file', 'PC/DownloadController.download')
   Route.post('entity/edit', 'PC/EntityController.edit')
   Route.post('entity/get-table', 'PC/EntityController.getTable')
   Route.post('entity/get-table-common', 'PC/EntityController.getTableCommon')
+- 类的名称用大驼峰：比如 UserController
+- 函数名称用小驼峰：比如 getUserInfo()
+- 变量、json 对象里的 key 用下划线：比如 let user_info = { user_name: 'xxx' }
 
 ## 常用操作
+
+- 熟悉 Util.js 里的函数，有需求时优先使用里面的函数，而不是另外写一个
 
 - 获取前端 get 和 post 方法传递过来的参数
 
@@ -110,25 +104,25 @@ npm run dev
   await Redis.expire(key, 40000)//有效期
   ```
 
-- 每个函数正常结束时调用。用途：规范函数的返回值，使得返回值具有相同结构
+- 每个函数正常结束时调用。用途：规范函数的返回值，使得返回值具有相同的数据结构
 
   ```
   Util.end({})
   ```
 
-- 每个函数内部抛出异常时，在 catch 里调用本函数，使得返回值具有相同结构
+- 每个函数内部抛出异常时，在 catch 里调用本函数，使得返回值具有相同的数据结构
   ```
   Util.error({})
   ```
-- Controller 里的函数正常结束时调用。规定要返回给前端的信息
+- Controller 里的函数正常结束时调用。规范要返回给前端的数据结构
   ```
   Util.end2front({})
   ```
-- Controller 里的函数内部抛出异常时，在 catch 里调用本函数，规定要返回给前端的信息
+- Controller 里的函数内部抛出异常时，在 catch 里调用本函数，规范要返回给前端的数据结构
   ```
   Util.error2front({})
   ```
-- 对返回前端的 id(数字型) 进行加解密
+- 对返回前端的 id(数字型) 进行加解密，用于某些不希望前端直接看到内容的场景，比如 user_id
   ```
   Util.encode(int)
   Util.decode(str)
