@@ -79,7 +79,14 @@ npm run dev
   Route.post('entity/get-table-common', 'PC/EntityController.getTableCommon')
 - 类的名称用大驼峰：比如 UserController
 - 函数名称用小驼峰：比如 getUserInfo()
+- url 用连字符：比如 get-user-info
 - 变量、json 对象里的 key 用下划线：比如 let user_info = { user_name: 'xxx' }
+
+## 页面-接口约定
+
+- 常见的页面分为列表页（比如文章列表、用户列表）和详情页（比如文章编辑页、用户信息编辑页）
+- 列表页一般都有 2 个接口，一个是公共接口，比如 get-table-common（返回页面上的一些公共信息），一个是 get-table（返回表格数据）
+- 详情页一般都有 2 个接口，一个是公共接口 get-edit-common（返回页面上的一些公共信息），一个是提交接口，比如 edit、create 等
 
 ## 常用操作
 

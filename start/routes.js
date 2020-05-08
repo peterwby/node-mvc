@@ -17,11 +17,9 @@ const Route = use('Route')
 const log = use('Logger')
 const Util = require('@Lib/Util')
 
-/**
+/****************************
  * 考核时用下面的路由组
- * @example
- *
- */
+ ****************************/
 Route.group(() => {
   try {
     //Route.post('xxx', 'PC/xxx')
