@@ -130,8 +130,8 @@ const Util = {
       return id
     }
     if (Env.get('NODE_ENV') === 'development') {
-      //开发环境下不加密，便于测试
-      return id
+      //开发环境下简单加密，便于测试
+      return 'a' + id
     }
     return Hashids.encodeHex(id)
   },
@@ -147,8 +147,8 @@ const Util = {
       return null
     }
     if (Env.get('NODE_ENV') === 'development') {
-      //开发环境下不转换，便于测试
-      return str
+      //开发环境下简单解密，便于测试
+      return str.substring(1)
     }
     let origin_id = Hashids.decodeHex(str)
     if (!Util.isNumber(origin_id)) {
