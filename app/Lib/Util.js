@@ -126,7 +126,7 @@ const Util = {
       return null
     }
     if (!Util.isNumber(id)) {
-      log.error('待加密encode的参数不是数值型')
+      log.error('待加密encode的参数不是数值型:' + id)
       return id
     }
     if (Env.get('NODE_ENV') === 'development') {
@@ -152,7 +152,7 @@ const Util = {
     }
     let origin_id = Hashids.decodeHex(str)
     if (!Util.isNumber(origin_id)) {
-      log.error('解密后decode的参数不是数值型')
+      log.error('解密后decode的参数不是数值型:' + str)
       return null
     }
     return origin_id
