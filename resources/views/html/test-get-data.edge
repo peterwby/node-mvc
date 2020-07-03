@@ -1,0 +1,77 @@
+@layout('/html/include/main')
+
+@section('content')
+<div id="App">
+  <form class="layui-form layui-card-header" lay-filter="C-list-form" id="C-list-form">
+    <div class="layui-inline">
+      <select name="member_status_id" id="C-list-statuslist">
+        <option value="">请选择</option>
+      </select>
+    </div>
+  </form>
+</div>
+@endsection
+
+@section('script')
+<script>
+  layui.use(['Util', 'request'], function () {
+    /****************************************************
+     * 公共变量
+     ***************************************************/
+    var $ = layui.$, form = layui.form, Util = layui.Util, request = layui.request
+
+    /****************************************************
+     * 表格
+     ***************************************************/
+
+    /****************************************************
+    * 事件监听
+    ***************************************************/
+
+
+    /****************************************************
+    * 页面初始化
+    ***************************************************/
+
+    renderPage()
+
+    /****************************************************
+     * 业务函数
+     ***************************************************/
+
+    function renderPage() {
+      let params = layui.url().search
+      let url = ''
+      let data = {}
+      let result = {}
+
+      //获取本页面公共数据
+      url = config.serverUrl + 'member/get-table-common'
+      result = request.post(url, data, { async: false }).done(function (res) {
+        if (res.code === 0) {
+          //渲染状态下拉框
+          Util.renderOption({
+            selector: '#C-list-statuslist',
+            list: res.data.status_list,
+            value: 'member_status_id',
+            text: 'member_status_name',
+          })
+
+          //组装表单信息
+          let field = {
+            member_status_id: params.member_status_id,
+          }
+          //填充表单并渲染
+          form.val('C-list-form', field)
+        }
+      })
+    }
+
+
+
+  })
+
+
+</script>
+
+@endsection

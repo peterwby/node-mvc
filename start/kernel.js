@@ -46,6 +46,7 @@ const namedMiddleware = {
   checkAuth: 'App/Middleware/CheckAuth',
   checkAuthByRedis: 'App/Middleware/CheckAuthByRedis',
   checkAuthByString: 'App/Middleware/CheckAuthByString',
+  htmlGlobal: 'App/Middleware/HtmlGlobal',
 }
 
 /*
@@ -60,6 +61,4 @@ const namedMiddleware = {
 */
 const serverMiddleware = ['Adonis/Middleware/Static', 'Adonis/Middleware/Cors']
 
-Server.registerGlobal(globalMiddleware)
-  .registerNamed(namedMiddleware)
-  .use(serverMiddleware)
+Server.registerGlobal(globalMiddleware).registerNamed(namedMiddleware).use(serverMiddleware)

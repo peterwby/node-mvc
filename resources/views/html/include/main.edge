@@ -18,7 +18,7 @@
 <body>
   <header>
     @section('header')
-    <h1>千秀</h1>
+    <h1>LOGO</h1>
     @endsection
   </header>
 
@@ -26,8 +26,11 @@
 
   @section('script_link')
 
-  {{ script('js/config') }}
-  {{ script('layui/layui.all') }}
+  <script type="text/javascript" src="{{ assetsUrl('layui/layui.all.js?v='+version) }}"></script>
+  <script type="text/javascript" src="{{ assetsUrl('js/config.js?v='+version) }}"></script>
+  <script type="text/javascript" src="{{ assetsUrl('js/request.js?v='+version) }}"></script>
+  <script type="text/javascript" src="{{ assetsUrl('js/Util.js?v='+version) }}"></script>
+
   <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
   <!--[if lt IE 9]>
       <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>

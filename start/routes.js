@@ -78,7 +78,27 @@ Route.group(() => {
  * @example
  * 本框架支持服务端渲染生成html，即mvc架构里的view，但在前后端分离的项目里，一般是在客户端渲染的
  */
-Route.get('/', ({ view }) => view.render('index'))
+//Route.get('/', ({ view }) => view.render('index'))
+
+Route.group(() => {
+  try {
+    Route.get('/index', 'html/IndexController.init')
+
+    Route.get('*', ({ view, params, request }) => {
+      const url = request.url()
+      let tpl_src = url.replace(/\//g, '.').replace('.html.', 'html.')
+
+      if (tpl_src.endsWith('.edge')) {
+        tpl_src = tpl_src.substring(0, tpl_src.lastIndexOf('.edge'))
+      }
+      return view.render(tpl_src)
+    })
+  } catch (err) {
+    return view.render('error.404')
+  }
+})
+  .prefix('html')
+  .middleware(['htmlGlobal'])
 
 //兜底：如果都匹配不到路由，则转到404页面
 //Route.any('*', ({ view }) => view.render('error.404'))

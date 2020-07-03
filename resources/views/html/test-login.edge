@@ -1,0 +1,108 @@
+@layout('/html/include/main')
+
+@section('content')
+<div id="App">
+  <form class="layui-form" lay-filter="C-login-form">
+    <div class="layui-form-item">
+      <div class="layui-inline">
+        <label class="layui-form-label">登录名</label>
+        <div class="layui-input-inline">
+          <input type="text" name="login_name" id="C-login-name" value="admin" lay-verify="required" placeholder="账号"
+            class="layui-input" />
+        </div>
+      </div>
+      <div class="layui-inline">
+        <label class="layui-form-label">密码</label>
+        <div class="layui-input-inline">
+          <input type="password" name="login_pwd" value="123456" id="C-login-pwd" lay-verify="required" placeholder="密码"
+            class="layui-input" />
+        </div>
+      </div>
+      <div class="layui-inline">
+        <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="C-login-submit" id="C-login-submit">
+          登 录
+        </button>
+      </div>
+    </div>
+  </form>
+
+
+
+</div>
+@endsection
+
+@section('script')
+<script>
+  layui.use(['Util', 'request'], function () {
+    /****************************************************
+     * 公共变量
+     ***************************************************/
+    var $ = layui.$, form = layui.form, Util = layui.Util, request = layui.request
+
+    /****************************************************
+     * 表格
+     ***************************************************/
+
+    /****************************************************
+    * 事件监听
+    ***************************************************/
+    //提交
+    form.on('submit(C-login-submit)', function (obj) {
+      Util.disable('#C-login-submit')
+      //请求登入接口
+      request.post(config.serverUrl + 'member/login', obj.field)
+        .done(function (res) {
+          if (res.code == 0) {
+
+            console.log(res.data)
+            //请求成功后，写入 token
+            layui.data('a', {
+              key: 'token',
+              value: res.data.token,
+            })
+            //保存用户信息
+            layui.data('a', {
+              key: 'member',
+              value: res.data.member_info,
+            })
+
+            //登录成功
+            Util.msgOk(res.msg, function () {
+              location.href = '/html/test-get-data'
+            })
+          }
+        })
+        .always(function (res) {
+          Util.enable('#C-login-submit')
+        })
+      return false
+    })
+
+    /****************************************************
+    * 页面初始化
+    ***************************************************/
+
+    renderPage()
+
+    /****************************************************
+     * 业务函数
+     ***************************************************/
+
+    function renderPage() {
+      //初始化表单
+      form.val('C-login-form', {
+        login_name: 'admin',
+        login_pwd: layui.data('a').login_pwd || '123456',
+        remember: !!layui.data('a').login_pwd,
+      })
+
+      form.render()
+    }
+
+
+  })
+
+
+</script>
+
+@endsection
