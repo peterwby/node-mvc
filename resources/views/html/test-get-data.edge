@@ -8,6 +8,11 @@
         <option value="">请选择</option>
       </select>
     </div>
+    <div class="layui-inline">
+      <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="C-logout-submit" id="C-logout-submit">
+        退出
+      </button>
+    </div>
   </form>
 </div>
 @endsection
@@ -28,6 +33,19 @@
     * 事件监听
     ***************************************************/
 
+    $('#C-logout-submit').on('click', function () {
+      //请求登入接口
+      request.post(config.server_url + 'member/logout')
+        .done(function (res) {
+          if (res.code == 1001) {
+            // Util.msgOk('退出成功', function () {
+            //   console.log('/html/test-login')
+            //   //location.href = '/html/test-login'
+            // })
+          }
+        })
+
+    })
 
     /****************************************************
     * 页面初始化
@@ -46,7 +64,7 @@
       let result = {}
 
       //获取本页面公共数据
-      url = config.serverUrl + 'member/get-table-common'
+      url = config.server_url + 'member/get-table-common'
       result = request.post(url, data, { async: false }).done(function (res) {
         if (res.code === 0) {
           //渲染状态下拉框

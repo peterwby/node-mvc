@@ -50,11 +50,10 @@
     form.on('submit(C-login-submit)', function (obj) {
       Util.disable('#C-login-submit')
       //请求登入接口
-      request.post(config.serverUrl + 'member/login', obj.field)
+      request.post(config.server_url + 'member/login', obj.field)
         .done(function (res) {
           if (res.code == 0) {
 
-            console.log(res.data)
             //请求成功后，写入 token
             layui.data('a', {
               key: 'token',
@@ -65,11 +64,20 @@
               key: 'member',
               value: res.data.member_info,
             })
+            //把token保存到前端服务器上
+            request.post(config.front_url + 'save-token', { token: res.data.token })
+              .done(function (res) {
+                if (res.code == 0) {
+                  //登录成功
+                  Util.msgOk('登录成功', function () {
+                    Util.gotoUrl('/html/test-get-data')
+                  })
+                } else {
+                  Util.msgFail('保存登录信息时出错')
+                  return false
+                }
+              })
 
-            //登录成功
-            Util.msgOk(res.msg, function () {
-              location.href = '/html/test-get-data'
-            })
           }
         })
         .always(function (res) {

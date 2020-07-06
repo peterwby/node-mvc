@@ -53,7 +53,6 @@ Route.group(() => {
     //菜单
     Route.post('menu/get-menu', 'PC/MenuController.getMenu')
     //用户
-    Route.post('member/logout', 'PC/MemberController.logout')
     Route.post('member/get-table-common', 'PC/MemberController.getTableCommon')
     Route.post('member/get-table', 'PC/MemberController.getTable')
     Route.post('member/logout', 'PC/MemberController.logout')
@@ -82,9 +81,17 @@ Route.group(() => {
 
 Route.group(() => {
   try {
-    Route.get('/index', 'html/IndexController.init')
+    Route.post('/save-token', 'html/MemberController.saveToken')
+    Route.post('/remove-token', 'html/MemberController.removeToken')
 
-    Route.get('*', ({ view, params, request }) => {
+    Route.get('/index', 'html/IndexController.init')
+    Route.get('test-login', ({ view }) => view.render('html.test-login'))
+
+    Route.get('*', ({ view, params, request, session, response }) => {
+      //前端：如果没登录则跳到登录页
+      if (!session.get('token')) {
+        return response.redirect('/html/test-login')
+      }
       const url = request.url()
       let tpl_src = url.replace(/\//g, '.').replace('.html.', 'html.')
 

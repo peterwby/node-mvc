@@ -90,7 +90,7 @@ layui.define(['Util'], function (exports) {
         })
     },
     getOssToken: function (obj) {
-      var url = config.serverUrl + 'oss/get-token'
+      var url = config.server_url + 'oss/get-token'
       var data = {
         from: obj.from || 'web',
       }
@@ -144,8 +144,15 @@ layui.define(['Util'], function (exports) {
       remove: true,
     })
 
+    //把token从前端服务器删除
+    request.post(config.front_url + 'remove-token', {}, { async: false }).done(function (res) {
+      if (res.code !== 0) {
+        Util.msgFail('清除信息时出错')
+      }
+    })
+
     //跳转到登入页
-    location.href = '/'
+    location.href = '/html/test-login'
   }
 
   exports('request', request)

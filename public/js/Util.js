@@ -227,6 +227,21 @@ layui.define(function (exports) {
         })
     },
 
+    /**
+     * get方式跳转到某个url，自动携带token
+     * @example
+     *
+     */
+    gotoUrl: function (url) {
+      let obj = Util.url2obj(url)
+      obj.token = layui.data('a').token || ''
+      let query = Util.obj2url(obj)
+      if (query.slice(0, 1) === '&') {
+        query = query.slice(1)
+      }
+      location.href = url.split('?')[0] + '?' + query
+    },
+
     /************************************************************************
      * Arrays
      ************************************************************************/
@@ -913,9 +928,9 @@ layui.define(function (exports) {
     /**
      * url参数转换为对象
      * @example
-     * Util.query2obj('http://abc.com?search_word=中国')
+     * Util.url2obj('http://abc.com?search_word=中国')
      */
-    query2obj: function (url) {
+    url2obj: function (url) {
       var reg_url = /^[^\?]+\?([\w\W]+)$/,
         reg_para = /([^&=]+)=([\w\W]*?)(&|$|#)/g,
         arr_url = reg_url.exec(url),
@@ -936,9 +951,9 @@ layui.define(function (exports) {
      * encode true/false 是否进行URL编码,默认为true
      * return URL参数字符串
      * @example
-     * Util.obj2query({ a: 1, b: 2 })
+     * Util.obj2url({ a: 1, b: 2 })
      */
-    obj2query: function (param, key, encode) {
+    obj2url: function (param, key, encode) {
       if (param == null) return ''
       var paramStr = ''
       var t = typeof param
@@ -947,7 +962,7 @@ layui.define(function (exports) {
       } else {
         for (var i in param) {
           var k = key == null ? i : key + (param instanceof Array ? '[' + i + ']' : '.' + i)
-          paramStr += Util.obj2query(param[i], k, encode)
+          paramStr += Util.obj2url(param[i], k, encode)
         }
       }
       return paramStr

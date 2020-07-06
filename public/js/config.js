@@ -1,5 +1,6 @@
 var config = {
-  serverUrl: 'http://127.0.0.1:3000/api/v1/',
+  server_url: 'http://127.0.0.1:3000/api/v1/', //接口服务器地址
+  front_url: location.origin + '/html/',
   table_limit: 20,
   is_dev_env: true,
 }
