@@ -20,7 +20,7 @@ class ExceptionHandler extends BaseExceptionHandler {
    *
    * @return {void}
    */
-  async handle(error, { request, response }) {
+  async handle(error, { request, response, view }) {
     log.notice('handle_error_1092348903409')
     log.error(error)
     switch (error.name) {
@@ -32,6 +32,10 @@ class ExceptionHandler extends BaseExceptionHandler {
         response.status(error.status).send('服务端执行出错')
         break
       default:
+        if (' ' + error.message.indexOf('E_MISSING_VIEW') > -1) {
+          response.status(error.status).send('找不到该网址')
+          return null
+        }
         response.status(error.status).send('发生出错')
       //return super.handle(...arguments)
     }

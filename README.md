@@ -6,6 +6,7 @@
 - 基于 Adonis.js 框架，其官方文档地址：https://adonisjs.com/docs/4.1/folder-structure
 - 实际项目一般采用前后端分离开发，View 交给前端处理， 本框架的结构：Router->Controllers->Services->Models
 - models 层使用 query builder，基于 knex，容易上手
+- 本框架可以作为纯后端，提供 api 给前端调用。也可以作为前端的 node 中间层，调用后端 api，对数据进行处理，然后再渲染到 html
 
 ## 须具备知识
 
@@ -67,12 +68,13 @@ npm run dev
 - /.env：项目根目录下应该有此文件，用来设置全局配置信息。（重要）
 - /app/Lib/Util.js：常用工具库，包含对数组、对象、字符串、时间等处理的函数
 - /app/Lib/Request.js：基于 axios.js 的 HTTP 库，用于 get、post 方式访问 url
+- /resources/views/html/ : 存放 html 静态文件模板
 
 ## 代码规范
 
 - 默认 ide 为 vscode，使用 settings sync 插件同步设置
 - 使用 eslint、prettier 规范代码格式
-- api 接口的问题：全部使用 post，只有下载之类的接口使用 get。比如：
+- api 接口的 method：全部使用 post，只有下载之类的接口使用 get。比如：
   Route.get('download/:type/:file', 'PC/DownloadController.download')
   Route.post('entity/edit', 'PC/EntityController.edit')
   Route.post('entity/get-table', 'PC/EntityController.getTable')
@@ -80,7 +82,7 @@ npm run dev
 - 类的名称用大驼峰：比如 UserController
 - 函数名称用小驼峰：比如 getUserInfo()
 - url 用连字符：比如 get-user-info
-- 变量、json 对象里的 key 用下划线：比如 let user_info = { user_name: 'xxx' }
+- 变量、json 里的 key 用下划线：比如 let user_info = { user_name: 'xxx' }
 
 ## 页面-接口约定
 

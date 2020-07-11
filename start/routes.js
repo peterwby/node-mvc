@@ -23,6 +23,7 @@ const Util = require('@Lib/Util')
 Route.group(() => {
   try {
     //Route.post('xxx', 'PC/xxx')
+    //Route.get('xxx', 'PC/xxx')
   } catch (err) {
     return Util.end2front({
       msg: '服务端无此路由',
@@ -31,6 +32,9 @@ Route.group(() => {
   }
 }).prefix('test')
 
+/****************************
+ * demo
+ ****************************/
 /**
  * 无需验证的接口组
  */
@@ -53,7 +57,6 @@ Route.group(() => {
     //菜单
     Route.post('menu/get-menu', 'PC/MenuController.getMenu')
     //用户
-    Route.post('member/logout', 'PC/MemberController.logout')
     Route.post('member/get-table-common', 'PC/MemberController.getTableCommon')
     Route.post('member/get-table', 'PC/MemberController.getTable')
     Route.post('member/logout', 'PC/MemberController.logout')
@@ -73,12 +76,37 @@ Route.group(() => {
   .prefix('api/v1') //统一给这组路由的uri加入前缀
   .middleware(['checkAuth']) //验证身份
 
-/**
- * 服务端模板渲染的例子
- * @example
- * 本框架支持服务端渲染生成html，即mvc架构里的view，但在前后端分离的项目里，一般是在客户端渲染的
- */
-Route.get('/', ({ view }) => view.render('index'))
+/****************************
+ * 服务端模板渲染输出html
+ ****************************/
+
+Route.group(() => {
+  try {
+    Route.post('/save-token', 'html/MemberController.saveToken')
+    Route.post('/remove-token', 'html/MemberController.removeToken')
+
+    Route.get('/index', 'html/IndexController.init')
+    Route.get('test-login', ({ view }) => view.render('html.test-login'))
+
+    Route.get('*', ({ view, params, request, session, response }) => {
+      //前端：如果没登录则跳到登录页
+      if (!session.get('token')) {
+        return response.redirect('/html/test-login')
+      }
+      const url = request.url()
+      let tpl_src = url.replace(/\//g, '.').replace('.html.', 'html.')
+
+      if (tpl_src.endsWith('.edge')) {
+        tpl_src = tpl_src.substring(0, tpl_src.lastIndexOf('.edge'))
+      }
+      return view.render(tpl_src)
+    })
+  } catch (err) {
+    return view.render('error.404')
+  }
+})
+  .prefix('html')
+  .middleware(['htmlGlobal']) //中间件，用于定义模板的公共变量
 
 //兜底：如果都匹配不到路由，则转到404页面
 //Route.any('*', ({ view }) => view.render('error.404'))
