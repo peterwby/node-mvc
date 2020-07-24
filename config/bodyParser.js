@@ -68,6 +68,7 @@ module.exports = {
   */
   form: {
     types: ['application/x-www-form-urlencoded'],
+    limit: '10mb', //post方式提交时的内容的大小
   },
 
   /*
