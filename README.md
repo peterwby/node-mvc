@@ -6,7 +6,7 @@
 - 基于 Adonis.js 框架，其官方文档地址：https://adonisjs.com/docs/4.1/folder-structure
 - 实际项目一般采用前后端分离开发，View 交给前端处理， 本框架的结构：Router->Controllers->Services->Models
 - models 层使用 query builder，基于 knex，容易上手
-- 本框架可以作为纯后端，提供 api 给前端调用。也可以作为前端的 node 中间层，调用后端 api，对数据进行处理，然后再渲染到 html
+- 本框架可以作为纯后端，提供 api 给前端调用。也可以作为全栈框架直接渲染 html 输出到前端
 
 ## 须具备知识
 
