@@ -39,8 +39,10 @@ const Request = {
     } catch (err) {
       let msg = ''
       if (err.response) {
+        log.debug(err.response)
         msg = `接收响应出错: ${url}`
       } else if (err.request) {
+        log.debug(err.request)
         msg = `发送请求出错: ${url}`
       } else if (err.message.includes('timeout')) {
         msg = `请求超时： ${url}`
@@ -85,8 +87,10 @@ const Request = {
     } catch (err) {
       let msg = ''
       if (err.response) {
+        log.debug(err.response.data)
         msg = `接收响应出错: ${url}`
       } else if (err.request) {
+        log.debug(err.request)
         msg = `发送请求出错: ${url}`
       } else if (err.message.includes('timeout')) {
         msg = `请求超时： ${url}`
@@ -97,7 +101,7 @@ const Request = {
         msg: msg,
         data: {
           errno: err.errno,
-          code: err.code,
+          code: (err.response ? err.response.status : err.code) || 500,
         },
         code: 500,
         track: 'request.post_j28f2930',
