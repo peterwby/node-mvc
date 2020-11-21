@@ -113,6 +113,8 @@ const FileUtil = {
 
   /**
    * unzip file to specified path
+   * @example
+   * await FileUtil.unzipFile(压缩文件路径, 待解压文件路径)
    */
   unzipFile: function (zipFilePath, unzipPath) {
     return new Promise((resolve, reject) => {
@@ -129,6 +131,8 @@ const FileUtil = {
 
   /**
    * zip file or folder
+   * @example
+   * await FileUtil.zipFile(待压缩目录路径, 压缩文件路径)
    */
   zipFile: function (filePath, zipFilePath, folderName) {
     //读取目录及文件
