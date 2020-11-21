@@ -18,9 +18,7 @@ class BaseTable {
   async checkExistById(id) {
     try {
       if (!id) throw new Error('请传入主键值')
-      let result = await Database.select(this.primaryKey)
-        .from(this.tableName)
-        .where(this.primaryKey, id)
+      let result = await Database.select(this.primaryKey).from(this.tableName).where(this.primaryKey, id)
 
       return Util.end({
         data: {
@@ -45,9 +43,7 @@ class BaseTable {
   async checkExistByColumn(obj) {
     try {
       let arr = Object.entries(obj)[0]
-      let result = await Database.select(this.primaryKey)
-        .from(this.tableName)
-        .where(arr[0], arr[1])
+      let result = await Database.select(this.primaryKey).from(this.tableName).where(arr[0], arr[1])
 
       return Util.end({
         data: {
@@ -75,11 +71,20 @@ class BaseTable {
   async create(trx, data) {
     try {
       let result = await trx.table(this.tableName).insert(data)
+      if (result[0]) {
+        return Util.end({
+          msg: '新增成功',
+          status: 1,
+          data: {
+            new_id: result[0],
+          },
+        })
+      }
       return Util.end({
-        msg: '新增成功',
-        status: !result[0] ? 0 : 1,
+        msg: '新增失败',
+        status: 0,
         data: {
-          newId: result[0],
+          new_id: null,
         },
       })
     } catch (err) {
@@ -100,10 +105,19 @@ class BaseTable {
   async createMany(trx, data) {
     try {
       let result = await trx.batchInsert(this.tableName, data)
+      if (!result[0]) {
+        return Util.end({
+          msg: '批量新增失败',
+          status: 0,
+          data: {
+            new_id: null,
+          },
+        })
+      }
       return Util.end({
         msg: '批量新增成功',
         data: {
-          newId: result[0],
+          new_id: result[0],
         },
       })
     } catch (err) {
@@ -139,10 +153,16 @@ class BaseTable {
         }
       }
       const affected_rows = await table.update(set).transacting(trx)
-
+      if (affected_rows > 0) {
+        return Util.end({
+          msg: '已更新',
+          status: 1,
+          data: { affected_rows },
+        })
+      }
       return Util.end({
-        msg: '已更新',
-        status: affected_rows > 0 ? 1 : 0,
+        msg: '更新失败',
+        status: 0,
         data: { affected_rows },
       })
     } catch (err) {
@@ -184,7 +204,16 @@ class BaseTable {
       }
       let result = await table.increment(add[0], add[1]).transacting(trx)
       const affected_rows = result
+      if (affected_rows > 0) {
+        return Util.end({
+          msg: '已更新',
+          status: 1,
+          data: { affected_rows },
+        })
+      }
       return Util.end({
+        msg: '更新失败',
+        status: 0,
         data: { affected_rows },
       })
     } catch (err) {
@@ -204,13 +233,19 @@ class BaseTable {
    */
   async deleteByIds(trx, ids) {
     try {
-      if (!Util.isArray(ids) || !ids.length) throw new Error('请传入主键的值')
-      const affected_rows = await trx
-        .table(this.tableName)
-        .whereIn(this.primaryKey, ids)
-        .delete()
+      if (!Util.isArray(ids) || ids.length === 0) throw new Error('请传入主键的值')
+      const affected_rows = await trx.table(this.tableName).whereIn(this.primaryKey, ids).delete()
+
+      if (affected_rows > 0) {
+        return Util.end({
+          msg: '已删除',
+          status: 1,
+          data: { affected_rows },
+        })
+      }
       return Util.end({
-        msg: '已删除',
+        msg: '删除失败',
+        status: 0,
         data: { affected_rows },
       })
     } catch (err) {
@@ -245,8 +280,16 @@ class BaseTable {
       }
       const affected_rows = await table.delete().transacting(trx)
 
+      if (affected_rows > 0) {
+        return Util.end({
+          msg: '已删除',
+          status: 1,
+          data: { affected_rows },
+        })
+      }
       return Util.end({
-        msg: '已删除',
+        msg: '删除失败',
+        status: 0,
         data: { affected_rows },
       })
     } catch (err) {
@@ -269,9 +312,7 @@ class BaseTable {
   async fetchOneById(id) {
     try {
       if (!id) throw new Error('请传入主键值')
-      let result = await Database.select('*')
-        .from(this.tableName)
-        .where(this.primaryKey, id)
+      let result = await Database.select('*').from(this.tableName).where(this.primaryKey, id)
       let data = result[0] || {}
       return Util.end({
         data,
@@ -388,12 +429,12 @@ class BaseTable {
           }
         }
       }
-      table.count('* as countValue')
+      table.count('* as count_value')
       let result = await table
 
-      let countValue = result[0].countValue || 0
+      let count_value = result[0].count_value || 0
       return Util.end({
-        data: { countValue },
+        data: { count_value },
       })
     } catch (err) {
       return Util.error({
@@ -431,12 +472,12 @@ class BaseTable {
           }
         }
       }
-      table.max(`${column} as maxValue`)
+      table.max(`${column} as max_value`)
       let result = await table
 
-      let maxValue = result[0].maxValue || 0
+      let max_value = result[0].max_value || 0
       return Util.end({
-        data: { maxValue },
+        data: { max_value },
       })
     } catch (err) {
       return Util.error({
@@ -474,12 +515,12 @@ class BaseTable {
           }
         }
       }
-      table.min(`${column} as minValue`)
+      table.min(`${column} as min_value`)
       let result = await table
 
-      let minValue = result[0].minValue || 0
+      let min_value = result[0].min_value || 0
       return Util.end({
-        data: { minValue },
+        data: { min_value },
       })
     } catch (err) {
       return Util.error({
@@ -517,12 +558,12 @@ class BaseTable {
           }
         }
       }
-      table.sum(`${column} as sumValue`)
+      table.sum(`${column} as sum_value`)
       let result = await table
 
-      let sumValue = result[0].sumValue || 0
+      let sum_value = result[0].sum_value || 0
       return Util.end({
-        data: { sumValue },
+        data: { sum_value },
       })
     } catch (err) {
       return Util.error({
@@ -560,12 +601,12 @@ class BaseTable {
           }
         }
       }
-      table.avg(`${column} as avgValue`)
+      table.avg(`${column} as avg_value`)
       let result = await table
 
-      let avgValue = result[0].avgValue || 0
+      let avg_value = result[0].avg_value || 0
       return Util.end({
-        data: { avgValue },
+        data: { avg_value },
       })
     } catch (err) {
       return Util.error({
