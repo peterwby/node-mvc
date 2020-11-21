@@ -112,7 +112,6 @@ class Service extends BaseService {
     try {
       let result = {}
       const { body } = ctx
-      //获取企业注册信息列表
       result = await memberTable.fetchListBy(body)
       return Util.end({
         data: result.data,
@@ -157,7 +156,10 @@ class Service extends BaseService {
         }
         result = await memberTable.create(trx, column)
         if (result.status === 0) {
-          throw new Error('新增失败')
+          return Util.end({
+            msg: '新增失败',
+            status: 0,
+          })
         }
       })
 
@@ -202,7 +204,10 @@ class Service extends BaseService {
         }
         result = await memberTable.updateBy(trx, data)
         if (result.status === 0) {
-          throw new Error('新密码修改失败')
+          return Util.end({
+            msg: '新密码修改失败',
+            status: 0,
+          })
         }
       })
 
@@ -256,7 +261,10 @@ class Service extends BaseService {
           set: { member_name: body.member_name, email: body.email, cellphone: body.cellphone, remark: body.remark, gender_id: body.gender_id },
         })
         if (result.status === 0) {
-          throw new Error('编辑失败')
+          return Util.end({
+            msg: '保存失败',
+            status: 0,
+          })
         }
       })
 
@@ -277,7 +285,7 @@ class Service extends BaseService {
         result = await memberTable.deleteByIds(trx, body.ids)
         if (result.status === 0) {
           return Util.end({
-            msg: result.msg,
+            msg: '删除失败',
             status: 0,
           })
         }

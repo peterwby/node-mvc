@@ -62,9 +62,11 @@ class TestService extends BaseService {
         ])
 
         result = await testTable.updateAdd(trx, {
-          add: ['age', 1],
+          add: ['age', 2],
           where: [['id', '=', '10']],
         })
+
+        result = await testTable.deleteBy(trx, { where: [['id', '=', 13]] })
 
         result = await testTable.updateBy(trx, {
           where: [
