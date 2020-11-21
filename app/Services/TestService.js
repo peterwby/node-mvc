@@ -5,6 +5,7 @@ const log = use('Logger')
 const Request = require('@Lib/Request')
 const Util = require('@Lib/Util')
 const BaseService = require('@BaseClass/BaseService')
+const Ws = use('Ws')
 
 class TestService extends BaseService {
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -186,6 +187,35 @@ class TestService extends BaseService {
     } catch (err) {
       return Util.error({
         msg: err.message,
+      })
+    }
+  }
+
+  async pushMsg(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+      const channel = Ws.getChannel('notice:*')
+      if (!channel) {
+        return Util.end2front({
+          msg: '没有用户在线',
+          code: 9000,
+        })
+      }
+      const topic = channel.topic('notice:news')
+      if (!topic) {
+        return Util.end2front({
+          msg: '没有用户在线',
+          code: 9000,
+        })
+      }
+      topic.broadcast('user....', 'msg...')
+      return Util.end({})
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        track: 'service_pushMsg_1605956980',
       })
     }
   }

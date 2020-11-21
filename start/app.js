@@ -23,6 +23,7 @@ const providers = [
   'adonis-scheduler/providers/SchedulerProvider',
   '@adonisjs/mail/providers/MailProvider',
   'adonis-hashids/providers/HashidsProvider',
+  '@adonisjs/websocket/providers/WsProvider',
 ]
 
 /*

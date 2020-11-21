@@ -7,7 +7,8 @@ class NoticeController {
   }
 
   onMessage(message) {
-    this.socket.broadcastToAll('message', message)
+    console.log('received message ', message)
+    // this.socket.broadcastToAll('message', message)
   }
 
   onClose() {
