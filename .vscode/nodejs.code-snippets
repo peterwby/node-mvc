@@ -279,5 +279,28 @@
       "}"
     ],
     "description": "view模板的函数"
+  },
+  "service模板": {
+    "prefix": "templateService",
+    "body": [
+      "'use strict'",
+      "",
+      "const Database = use('Database')",
+      "const log = use('Logger')",
+      "const Env = use('Env')",
+      "const Helpers = use('Helpers')",
+      "const BaseService = require('@BaseClass/BaseService')",
+      "const Util = require('@Lib/Util')",
+      "",
+      "class $1Service extends BaseService {",
+      "  constructor(props) {",
+      "    super(props)",
+      "  }",
+      "  $2",
+      "}",
+      "",
+      "module.exports = $1Service"
+    ],
+    "description": "service模板"
   }
 }
