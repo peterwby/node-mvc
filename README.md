@@ -2,7 +2,7 @@
 
 ## 简介
 
-- 本 demo 项目的地址：https://gitee.com/sh-chanson/node-server.git
+- 本项目的地址：https://gitee.com/sh-chanson/node-server.git
 - 基于 Adonis.js 框架，其官方文档地址：https://adonisjs.com/docs/4.1/folder-structure
 - 实际项目一般采用前后端分离开发，View 交给前端处理， 本框架的结构：Router->Controllers->Services->Models
 - models 层使用 query builder，基于 knex，容易上手
@@ -72,7 +72,7 @@ npm run dev
 
 ## 代码规范
 
-- 默认 ide 为 vscode，使用 settings sync 插件同步设置
+- 默认 IDE 为 vscode，使用 settings sync 插件同步设置
 - 使用 eslint、prettier 规范代码格式
 - api 接口的 method：全部使用 post，只有下载之类的接口使用 get。比如：
   Route.get('download/:type/:file', 'PC/DownloadController.download')
@@ -148,13 +148,13 @@ npm run dev
 
 > 自定义了一些代码片段，比如输入 func，vscode 就会智能提示 funcController... 按下 tab 键，就会把 controller 下的函数结构补全
 
-- func
+- func：
   funcController（创建一个 Controller 里的函数）、funcService（创建一个 Service 里的函数）、funcTable（创建一个 Table 里的函数）
-- require
+- require：
   requireService（引用一个 Service 文件）、requireTable、requireJoin
-- trans
+- trans：
   补全事务语法
-- template
+- template：
   templateTable（补全 table 类的模板）
 
 ## 常见问题
