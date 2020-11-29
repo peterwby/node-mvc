@@ -1,4 +1,4 @@
-# Node.js 的 后端 MVC 框架
+# Node.js 后端 MVC 框架
 
 ## 简介
 
@@ -144,14 +144,14 @@ npm run dev
   log.error('错误信息')
   ```
 
-## 快捷操作
+## 常用快捷操作
 
-> 自定义了一些代码片段，比如输入 func，vscode 就会智能提示 funcController... 按下 tab 键，就会把 controller 下的函数结构补全
+> （根目录/.vscode/nodejs.code-snippets）请熟悉这个文件里的。自定义了一些代码片段，比如输入 func，vscode 就会智能提示 funcController... 按下 tab 键，就会把 controller 下的函数结构补全
 
 - func：
   funcController（创建一个 Controller 里的函数）、funcService（创建一个 Service 里的函数）、funcTable（创建一个 Table 里的函数）
 - require：
-  requireService（引用一个 Service 文件）、requireTable、requireJoin
+  requireService（引用一个 Service 文件）、requireTable
 - trans：
   补全事务语法
 - template：
