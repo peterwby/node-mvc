@@ -148,7 +148,7 @@ const Util = {
     }
     if (Env.get('NODE_ENV') === 'development') {
       //开发环境下简单解密，便于测试
-      return str.substring(1)
+      return (str + '').substring(1)
     }
     let origin_id = Hashids.decodeHex(str)
     if (!Util.isNumber(origin_id)) {
