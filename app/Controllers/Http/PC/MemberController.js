@@ -739,7 +739,7 @@ async function removeValid(ctx) {
         switch (k.toLowerCase()) {
           case 'ids': {
             if (Util.isArray(requestAll[k])) {
-              const ids = requestAll[k].filter((item) => {
+              const ids = requestAll[k].map((item) => {
                 item = Util.decode(item)
                 return item
               })

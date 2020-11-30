@@ -155,13 +155,13 @@ class Service extends BaseService {
           column.cellphone = body.cellphone
         }
         result = await memberTable.create(trx, column)
-        if (result.status === 0) {
-          return Util.end({
-            msg: '新增失败',
-            status: 0,
-          })
-        }
       })
+      if (result.status === 0) {
+        return Util.end({
+          msg: '新增失败',
+          status: 0,
+        })
+      }
 
       return Util.end({})
     } catch (err) {
@@ -203,14 +203,13 @@ class Service extends BaseService {
           set: { login_pwd: await Hash.make(body.new_pwd) },
         }
         result = await memberTable.updateBy(trx, data)
-        if (result.status === 0) {
-          return Util.end({
-            msg: '新密码修改失败',
-            status: 0,
-          })
-        }
       })
-
+      if (result.status === 0) {
+        return Util.end({
+          msg: '新密码修改失败',
+          status: 0,
+        })
+      }
       return Util.end({})
     } catch (err) {
       return Util.error({
@@ -260,14 +259,13 @@ class Service extends BaseService {
           where: [['member_id', '=', body.member_id]],
           set: { member_name: body.member_name, email: body.email, cellphone: body.cellphone, remark: body.remark, gender_id: body.gender_id },
         })
-        if (result.status === 0) {
-          return Util.end({
-            msg: '保存失败',
-            status: 0,
-          })
-        }
       })
-
+      if (result.status === 0) {
+        return Util.end({
+          msg: '保存失败',
+          status: 0,
+        })
+      }
       return Util.end({})
     } catch (err) {
       return Util.error({
@@ -283,13 +281,13 @@ class Service extends BaseService {
       const { body } = ctx
       await Database.transaction(async (trx) => {
         result = await memberTable.deleteByIds(trx, body.ids)
-        if (result.status === 0) {
-          return Util.end({
-            msg: '删除失败',
-            status: 0,
-          })
-        }
       })
+      if (result.status === 0) {
+        return Util.end({
+          msg: '删除失败',
+          status: 0,
+        })
+      }
       return Util.end({
         data: result.data,
       })
