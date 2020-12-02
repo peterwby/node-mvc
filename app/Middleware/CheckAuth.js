@@ -35,6 +35,10 @@ class CheckAuth {
       )
     }
   }
+
+  async wsHandle(ctx, next) {
+    await next()
+  }
 }
 
 module.exports = CheckAuth

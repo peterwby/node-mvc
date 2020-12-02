@@ -15,6 +15,7 @@
 
 const Ws = use('Ws')
 Ws.channel('notice:*', 'NoticeController')
+//.middleware(['checkAuth'])
 // Ws.channel('chat', ({ socket }) => {
 //   console.log('user joined with %s socket id', socket.id)
 // })
