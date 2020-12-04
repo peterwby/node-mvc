@@ -113,8 +113,6 @@ const FileUtil = {
 
   /**
    * unzip file to specified path
-   * @example
-   * await FileUtil.unzipFile(压缩文件路径, 待解压文件路径)
    */
   unzipFile: function (zipFilePath, unzipPath) {
     return new Promise((resolve, reject) => {
@@ -128,34 +126,41 @@ const FileUtil = {
       })
     })
   },
-
   /**
    * zip file or folder
    * @example
    * await FileUtil.zipFile(待压缩目录路径, 压缩文件路径)
    */
-  zipFile: function (filePath, zipFilePath, folderName) {
+  zipFile: function (filePath, zipFilePath) {
     //读取目录及文件
-    function readDir(obj, nowPath) {
-      let files = fs.readdirSync(nowPath) //读取目录中的所有文件及文件夹（同步操作）
-      files.forEach(function (fileName, index) {
-        //遍历检测目录中的文件
-        let currentFilePath = nowPath + '/' + fileName
-        let file = fs.statSync(currentFilePath) //获取一个文件的属性
-        if (file.isDirectory()) {
-          //如果是目录的话，继续查询
-          let dirlist = obj.folder(fileName) //压缩对象中生成该目录
-          readDir(dirlist, currentFilePath) //重新检索目录文件
-        } else {
-          obj.file(fileName, fs.readFileSync(currentFilePath)) //压缩目录添加文件
-        }
-      })
+    function readPath(obj, nowPath) {
+      let path = fs.statSync(nowPath) //获取一个文件的属性
+      if (path.isDirectory()) {
+        // read directory
+        let files = fs.readdirSync(nowPath) //读取目录中的所有文件及文件夹（同步操作）
+        files.forEach(function (fileName, index) {
+          //遍历检测目录中的文件
+          let currentFilePath = nowPath + '/' + fileName
+          let file = fs.statSync(currentFilePath) //获取一个文件的属性
+          if (file.isDirectory()) {
+            //如果是目录的话，继续查询
+            let dirlist = obj.folder(fileName) //压缩对象中生成该目录
+            readPath(dirlist, currentFilePath) //重新检索目录文件
+          } else {
+            obj.file(fileName, fs.readFileSync(currentFilePath)) //压缩目录添加文件
+          }
+        })
+      } else {
+        // read file
+        let fileName = nowPath.substring(nowPath.lastIndexOf('/') + 1)
+        obj.file(fileName, fs.readFileSync(nowPath)) //压缩目录添加文件
+      }
     }
     return new Promise((resolve, reject) => {
       const zip = new JSZIP()
-      readDir(zip, filePath)
+      readPath(zip, filePath)
       zip
-        .generateNodeStream({ streamFiles: true })
+        .generateNodeStream({ streamFiles: true, compression: 'DEFLATE' })
         .pipe(fs.createWriteStream(zipFilePath))
         .on('finish', function () {
           return resolve(true)
