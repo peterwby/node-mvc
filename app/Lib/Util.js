@@ -6,6 +6,7 @@
 const log = use('Logger')
 const Env = use('Env')
 const Hashids = use('Hashids')
+const _cloneDeep = require('lodash/cloneDeep')
 
 const Util = {
   /************************************************************************
@@ -660,88 +661,7 @@ const Util = {
    * @returns object
    */
   deepClone: function (x) {
-    // Object.create(null) 的对象，没有hasOwnProperty方法
-    function hasOwnProp(obj, key) {
-      return Object.prototype.hasOwnProperty.call(obj, key)
-    }
-
-    // 仅对对象和数组进行深拷贝，其他类型，直接返回
-    function isClone(x) {
-      const t = Util.type(x)
-      return t === 'object' || t === 'array'
-    }
-
-    const t = Util.type(x)
-
-    let root = x
-
-    if (t === 'array') {
-      root = []
-    } else if (t === 'object') {
-      root = {}
-    }
-
-    // 循环数组
-    const loopList = [
-      {
-        parent: root,
-        key: undefined,
-        data: x,
-      },
-    ]
-
-    while (loopList.length) {
-      // 深度优先
-      const node = loopList.pop()
-      const parent = node.parent
-      const key = node.key
-      const data = node.data
-      const tt = Util.type(data)
-
-      // 初始化赋值目标，key为undefined则拷贝到父元素，否则拷贝到子元素
-      let res = parent
-      if (typeof key !== 'undefined') {
-        res = parent[key] = tt === 'array' ? [] : {}
-      }
-
-      if (tt === 'array') {
-        for (let i = 0; i < data.length; i++) {
-          // 避免一层死循环 a.b = a
-          if (data[i] === data) {
-            res[i] = res
-          } else if (isClone(data[i])) {
-            // 下一次循环
-            loopList.push({
-              parent: res,
-              key: i,
-              data: data[i],
-            })
-          } else {
-            res[i] = data[i]
-          }
-        }
-      } else if (tt === 'object') {
-        for (let k in data) {
-          if (hasOwnProp(data, k)) {
-            // 避免一层死循环 a.b = a
-            if (data[k] === data) {
-              res[k] = res
-            } else if (isClone(data[k])) {
-              // 下一次循环
-              loopList.push({
-                parent: res,
-                key: k,
-                data: data[k],
-              })
-            } else {
-              res[k] = data[k]
-            }
-          }
-        }
-      }
-    }
-
-    return root
+    return _cloneDeep(x)
   },
 
   /**
