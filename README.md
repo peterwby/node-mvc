@@ -3,9 +3,9 @@
 ## 简介
 
 - 本项目的地址：https://gitee.com/sh-chanson/node-server.git
-- 基于 Adonis.js 框架，其官方文档地址：https://adonisjs.com/docs/4.1/folder-structure
+- 基于 Adonis.js v4.1 框架，其官方文档地址：https://adonisjs.com/docs/4.1/folder-structure
 - 实际项目一般采用前后端分离开发，View 交给前端处理， 本框架的结构：Router->Controllers->Services->Models
-- models 层使用 query builder，基于 knex，容易上手
+- models 层使用 query builder，基于 knex，不适用 ORM
 - 本框架可以作为纯后端，提供 api 给前端调用。也可以作为全栈框架直接渲染 html 输出到前端
 
 ## 须具备知识
@@ -23,12 +23,12 @@
 
 （windows 下无需 sudo 这 4 个字母）
 
+- adonis 必须的全局包
+  sudo npm i -g @adonisjs/cli
 - 源管理器
   sudo npm i -g nrm
 - 切换国内源
   sudo nrm use taobao
-- adonis 必须的全局包
-  sudo npm i -g @adonisjs/cli
 - 其他全局包
   sudo npm i -g live-server
 
@@ -160,5 +160,7 @@ npm run dev
 ## 常见问题
 
 - 运行失败？
-- 根目录下是否有.env 文件，没有找管理员要
-- 端口被占用
+  1. 根目录下是否有.env 文件，没有找管理员要
+  2. 端口被占用
+- Unexpected token '.'
+  1. 可能是运行环境问题，比如重装 nodejs 环境，或者有安装 nvm 的话，可以切换 nodejs 版本
