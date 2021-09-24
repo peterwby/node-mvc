@@ -6,6 +6,7 @@ const Request = require('@Lib/Request')
 const Util = require('@Lib/Util')
 const BaseService = require('@BaseClass/BaseService')
 const Ws = use('Ws')
+const Redis = use('Redis')
 
 class TestService extends BaseService {
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -216,6 +217,25 @@ class TestService extends BaseService {
         msg: err.message,
         stack: err.stack,
         track: 'service_pushMsg_1605956980',
+      })
+    }
+  }
+
+  async testRedis(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+      await Redis.set('users', 'wuhen')
+      await Redis.connection('db1').set('aa', '11')
+      await Redis.flushdb() // await Redis.flushall()
+      console.log('local:' + (await Redis.get('users')))
+      console.log('db1:' + (await Redis.connection('db1').get('aa')))
+      return Util.end({})
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        track: 'service_testRedis_1632476156',
       })
     }
   }

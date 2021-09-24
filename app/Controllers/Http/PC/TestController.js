@@ -316,6 +316,23 @@ class TestController {
       func
     )}</span></div></div>`
   }
+
+  async testRedis(ctx) {
+    try {
+      let result = {}
+
+      //调用业务逻辑Service
+      result = await testService.testRedis(ctx)
+      //组装从Service返回的数据，返回给前端
+      return Util.end2front({})
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        track: 'controller_testRedis_1632476597',
+      })
+    }
+  }
 }
 
 /**

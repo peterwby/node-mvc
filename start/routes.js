@@ -22,7 +22,7 @@ const Util = require('@Lib/Util')
  ****************************/
 Route.group(() => {
   try {
-    //Route.post('xxx', 'PC/xxx')
+    Route.get('redis', 'PC/TestController.testRedis')
     //Route.get('xxx', 'PC/xxx')
   } catch (err) {
     return Util.end2front({

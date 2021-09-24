@@ -38,6 +38,13 @@ module.exports = {
     db: 0,
     keyPrefix: '',
   },
+  db1: {
+    host: Env.get('REDIS_HOST', '127.0.0.1'),
+    port: Env.get('REDIS_PORT', 6379),
+    password: Env.get('REDIS_PWD', ''),
+    db: 1,
+    keyPrefix: '',
+  },
 
   production: {
     host: Env.get('REDIS_HOST', '127.0.0.1'),
