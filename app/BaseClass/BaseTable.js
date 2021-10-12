@@ -196,7 +196,7 @@ class BaseTable {
       if (Util.isArray(where) && where.length) {
         for (let item of where) {
           if (Util.isArray(item) && item.length >= 2) {
-            table.where('id', '10')
+            table.where(...item)
           } else {
             throw new Error('where应该是个二维数组')
           }
