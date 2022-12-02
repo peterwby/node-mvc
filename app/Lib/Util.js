@@ -7,6 +7,7 @@ const log = use('Logger')
 const Env = use('Env')
 const Hashids = use('Hashids')
 const _cloneDeep = require('lodash/cloneDeep')
+const crypto = require('crypto')
 
 const Util = {
   /************************************************************************
@@ -621,6 +622,18 @@ const Util = {
    ************************************************************************/
 
   /**
+   * 对象的键值按升序排列
+   */
+  objKsort: (params) => {
+    let keys = Object.keys(params).sort()
+    let newParams = {}
+    keys.forEach((key) => {
+      newParams[key] = params[key]
+    })
+    return newParams
+  },
+
+  /**
    * 删除对象的空属性
    * @example
    *
@@ -910,6 +923,29 @@ const Util = {
       .split('')
       .sort((a, b) => a.localeCompare(b))
       .join(''),
+
+  /**
+   * md5
+   */
+  md5: (str) => {
+    if (!str) {
+      return ''
+    }
+    return crypto.createHash('md5').update(str).digest('hex')
+  },
+
+  /**
+   * sha1
+   */
+  sha1(str) {
+    if (!str) {
+      return ''
+    }
+    return crypto
+      .createHash('sha1')
+      .update(str + '', 'binary')
+      .digest('hex')
+  },
 
   /************************************************************************
    * 类型检测与转换

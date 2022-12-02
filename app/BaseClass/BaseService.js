@@ -1,7 +1,6 @@
 'use strict'
 const Redis = use('Redis')
 const Util = require('@Lib/Util')
-const crypto = require('crypto')
 
 class BaseService {
   constructor(obj = {}) {}
@@ -42,7 +41,11 @@ class BaseService {
       if (typeof func !== 'function') {
         throw new Error('func param is required')
       }
-
+      //get func info
+      if (!(await Redis.get('total_cache'))) {
+        await Redis.set('total_cache', 0, 'EX', 3600 * 24)
+      }
+      await Redis.incr('total_cache')
       // check expire
       if (!expire || !Util.isNumber(expire) || parseInt(expire) < 0) {
         expire = 0
@@ -55,14 +58,19 @@ class BaseService {
       }
 
       let url = ctx.request.url()
-      let requestAll = JSON.stringify(ctx.request.all())
+      let requestAll = JSON.stringify(Util.objKsort(ctx.request.all()))
       let originStr = url + '#' + requestAll
-      let key = crypto.createHash('md5').update(originStr).digest('hex').toLowerCase()
+      let key = Util.md5(originStr).toLowerCase()
       let value = await Redis.get(`cache_${key}`)
       if (value) {
         // console.log('cacheCommon: has cache')
         return JSON.parse(value)
       }
+      //get func info
+      if (!(await Redis.get('no_hit_cache'))) {
+        await Redis.set('no_hit_cache', 0, 'EX', 3600 * 24)
+      }
+      await Redis.incr('no_hit_cache')
       // console.log('cacheCommon: no cache')
       let result = await func.call(this, ctx)
       await Redis.set(`cache_${key}`, JSON.stringify(result), 'EX', expire)
@@ -99,9 +107,9 @@ class BaseService {
       }
 
       let url = ctx.request.url()
-      let requestAll = JSON.stringify(ctx.request.all())
+      let requestAll = JSON.stringify(Util.objKsort(ctx.request.all()))
       let originStr = url + '#' + requestAll + '#' + memberInfo.member_id
-      let key = crypto.createHash('md5').update(originStr).digest('hex').toLowerCase()
+      let key = Util.md5(originStr).toLowerCase()
       let value = await Redis.get(`cache_${key}`)
       if (value) {
         // console.log('cacheMember: has cache')

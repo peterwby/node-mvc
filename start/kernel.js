@@ -46,6 +46,7 @@ const namedMiddleware = {
   checkAuth: 'App/Middleware/CheckAuth',
   checkAuthByRedis: 'App/Middleware/CheckAuthByRedis',
   checkAuthByString: 'App/Middleware/CheckAuthByString',
+  noAuth: 'App/Middleware/NoAuth',
   htmlGlobal: 'App/Middleware/HtmlGlobal',
 }
 

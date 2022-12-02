@@ -35,6 +35,12 @@ Route.group(() => {
 /****************************
  * demo
  ****************************/
+
+Route.group(() => {
+  Route.get('heart', () => 'success')
+  Route.get('get-func-info', 'PC/MemberController.getFuncInfo')
+}).middleware(['noAuth']) //无需验证组，任何人都能访问
+
 /**
  * 无需验证的接口组
  */
@@ -43,11 +49,13 @@ Route.group(() => {
     Route.post('member/login', 'PC/MemberController.login')
   } catch (err) {
     return Util.end2front({
-      msg: '服务端无此路由',
-      code: 9999,
+      msg: 'Not found the API',
+      code: 9990,
     })
   }
-}).prefix('api/v1')
+})
+  .prefix('api/v1')
+  .middleware(['noAuth']) //无需验证组，任何人都能访问
 
 /**
  * 需要进行身份验证（用session来判断）
@@ -68,13 +76,27 @@ Route.group(() => {
     Route.post('member/remove', 'PC/MemberController.remove')
   } catch (err) {
     return Util.end2front({
-      msg: '服务端无此路由',
-      code: 9999,
+      msg: 'Not found the API',
+      code: 9991,
     })
   }
 })
   .prefix('api/v1') //统一给这组路由的uri加入前缀
   .middleware(['checkAuth']) //验证身份
+
+//需要key验证
+Route.group(() => {
+  try {
+    Route.get('get-func-info', 'PC/MemberController.getFuncInfo')
+  } catch (err) {
+    return Util.end2front({
+      msg: 'Not found the API',
+      code: 9992,
+    })
+  }
+})
+  .prefix('api') //统一给这组路由的uri加入前缀
+  .middleware(['checkAuthByString']) //验证身份
 
 /****************************
  * 服务端模板渲染输出html
@@ -112,7 +134,7 @@ Route.group(() => {
 //Route.any('*', ({ view }) => view.render('error.404'))
 Route.any('*', () => {
   return Util.end2front({
-    msg: '服务端无此路由',
+    msg: 'Not found the API',
     code: 9999,
   })
 })

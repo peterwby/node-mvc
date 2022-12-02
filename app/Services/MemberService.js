@@ -7,6 +7,7 @@ const log = use('Logger')
 const MemberTable = require('@Table/member')
 const memberTable = new MemberTable()
 const Env = use('Env')
+const Redis = use('Redis')
 
 class Service extends BaseService {
   /**
@@ -287,6 +288,32 @@ class Service extends BaseService {
         msg: err.message,
         stack: err.stack,
         track: 'service_remove_1586354645',
+      })
+    }
+  }
+
+  async getFuncInfo(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+      let total_cache = await Redis.get('total_cache')
+      let no_hit_cache = await Redis.get('no_hit_cache')
+      let keys = await Redis.keys('/api/*')
+      let details = {}
+      for (let item of keys) {
+        details[item] = await Redis.get(item)
+      }
+      const data = {
+        total_cache,
+        no_hit_cache,
+        details,
+      }
+      return Util.end({ data })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        track: 'service_getFuncInfo_1669936675',
       })
     }
   }

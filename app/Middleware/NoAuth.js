@@ -1,27 +1,16 @@
 'use strict'
 const Redis = use('Redis')
-const Util = require('@Lib/Util')
 
-class CheckAuth {
+class NoAuth {
   async handle(ctx, next) {
     try {
-      const session = ctx.session
-      if (!session.get('member')) {
-        //session无效
-        ctx.session.clear()
-        return ctx.response.send(
-          Util.end2front({
-            msg: '身份已过期，请重新登录',
-            code: 1001,
-          })
-        )
-      }
       //get func info
       let url = ctx.request.url()
       if (!(await Redis.get(url))) {
         await Redis.set(url, 0, 'EX', 3600 * 24)
       }
       await Redis.incr(url)
+
       await next()
     } catch (err) {
       let url = ctx.request.url()
@@ -42,10 +31,6 @@ class CheckAuth {
       )
     }
   }
-
-  async wsHandle(ctx, next) {
-    await next()
-  }
 }
 
-module.exports = CheckAuth
+module.exports = NoAuth
