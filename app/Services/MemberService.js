@@ -299,12 +299,14 @@ class Service extends BaseService {
       let total_cache = await Redis.get('total_cache')
       let no_hit_cache = await Redis.get('no_hit_cache')
       let keys = await Redis.keys('/api/*')
+      let keysList = keys.sort()
       let details = {}
-      for (let item of keys) {
+      for (let item of keysList) {
         details[item] = await Redis.get(item)
       }
       const data = {
         total_cache,
+        hit_cache: (parseInt(total_cache) - parseInt(no_hit_cache)).toString(),
         no_hit_cache,
         details,
       }
