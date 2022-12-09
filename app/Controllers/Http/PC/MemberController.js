@@ -285,6 +285,20 @@ class MemberController {
       })
     }
   }
+
+  async getFuncTime(ctx) {
+    try {
+      let result = await memberService.getFuncTime(ctx)
+      //组装从Service返回的数据，返回给前端
+      return Util.end2front({ data: result.data })
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        track: 'controller_getFuncTime_1670497238',
+      })
+    }
+  }
 }
 
 /**

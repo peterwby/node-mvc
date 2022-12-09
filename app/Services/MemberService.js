@@ -298,7 +298,7 @@ class Service extends BaseService {
       const { body } = ctx
       let total_cache = await Redis.get('total_cache')
       let no_hit_cache = await Redis.get('no_hit_cache')
-      let keys = await Redis.keys('/api/*')
+      let keys = await Redis.keys('count_/api/*')
       let keysList = keys.sort()
       let details = {}
       for (let item of keysList) {
@@ -316,6 +316,30 @@ class Service extends BaseService {
         msg: err.message,
         stack: err.stack,
         track: 'service_getFuncInfo_1669936675',
+      })
+    }
+  }
+
+  async getFuncTime(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+      let keys = await Redis.keys('time_/api/*')
+      let keysList = keys.sort()
+      let details = {}
+      for (let item of keysList) {
+        let content = (await Redis.get(item)) || ''
+        details[item] = JSON.parse(content)
+      }
+      const data = {
+        details,
+      }
+      return Util.end({ data })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        track: 'service_getFuncTime_1670497267',
       })
     }
   }

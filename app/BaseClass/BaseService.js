@@ -1,4 +1,5 @@
 'use strict'
+const Env = use('Env')
 const Redis = use('Redis')
 const Util = require('@Lib/Util')
 
@@ -42,10 +43,13 @@ class BaseService {
         throw new Error('func param is required')
       }
       //get func info
-      if (!(await Redis.get('total_cache'))) {
-        await Redis.set('total_cache', 0, 'EX', 3600 * 24)
+      if (Env.get('LOG_API_CALL_COUNT') === '1') {
+        if (!(await Redis.get('total_cache'))) {
+          await Redis.set('total_cache', 0, 'EX', 3600 * 24)
+        }
+        await Redis.incr('total_cache')
       }
-      await Redis.incr('total_cache')
+
       // check expire
       if (!expire || !Util.isNumber(expire) || parseInt(expire) < 0) {
         expire = 0
@@ -67,11 +71,14 @@ class BaseService {
         return JSON.parse(value)
       }
       //get func info
-      if (!(await Redis.get('no_hit_cache'))) {
-        await Redis.set('no_hit_cache', 0, 'EX', 3600 * 24)
+      if (Env.get('LOG_API_CALL_COUNT') === '1') {
+        if (!(await Redis.get('no_hit_cache'))) {
+          await Redis.set('no_hit_cache', 0, 'EX', 3600 * 24)
+        }
+        await Redis.incr('no_hit_cache')
+        console.log('cacheCommon: no cache')
       }
-      await Redis.incr('no_hit_cache')
-      // console.log('cacheCommon: no cache')
+
       let result = await func.call(this, ctx)
       await Redis.set(`cache_${key}`, JSON.stringify(result), 'EX', expire)
       return result

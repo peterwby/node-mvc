@@ -39,6 +39,7 @@ Route.group(() => {
 Route.group(() => {
   Route.get('heart', () => 'success')
   Route.get('get-func-info', 'PC/MemberController.getFuncInfo')
+  Route.get('get-func-time', 'PC/MemberController.getFuncTime')
 }).middleware(['noAuth']) //无需验证组，任何人都能访问
 
 /**
