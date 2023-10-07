@@ -1,5 +1,6 @@
 'use strict'
 const Redis = use('Redis')
+const Util = require('@Lib/Util')
 
 class NoAuth {
   async handle(ctx, next) {
