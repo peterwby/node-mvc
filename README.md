@@ -45,7 +45,7 @@ sudo npm i
 2. 首次运行项目时
 
 ```
-npm run new
+npm run init
 ```
 
 3. 记得把.env 文件复制到项目根目录下

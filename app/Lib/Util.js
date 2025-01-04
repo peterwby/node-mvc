@@ -438,12 +438,6 @@ const Util = {
    */
   arrSum: (arr) => arr.reduce((acc, val) => acc + val, 0),
 
-  /**
-   * 返回给定数组中有多少个数小于或等于给定值的百分比
-   * arrPercentIle([1,2,3,4],3): 62.5
-   */
-  arrPercentIle: (arr, val) => (100 * arr.reduce((acc, v) => acc + (v < val ? 1 : 0) + (v === val ? 0.5 : 0), 0)) / arr.length,
-
   /************************************************************************
    * 日期类
    ************************************************************************/
@@ -533,10 +527,11 @@ const Util = {
    */
   debounce: function (fn, delay = 1000) {
     let timer = null
-    return function () {
+    return function (...args) {
+      const context = this
       if (timer) clearTimeout(timer)
       timer = setTimeout(() => {
-        fn.apply(this, arguments)
+        fn.apply(context, args)
         timer = null
       }, delay)
     }
@@ -635,48 +630,6 @@ const Util = {
    * mathRandomDuration(5,7) 返回随机数：5 <= x <= 7
    */
   mathRandomFloat: (min, max) => Math.random() * (max - min) + min,
-
-  /**
-   * 返回从0开始的斐波那契数列的长度为n的数组
-   * mathFibonacci(5): [0, 1, 1, 2, 3]
-   */
-  mathFibonacci: (n) =>
-    Array(n)
-      .fill(0)
-      .reduce((acc, val, i) => acc.concat(i > 1 ? acc[i - 1] + acc[i - 2] : i), []),
-
-  // isDivisible: 检查第一个数值参数是否可被另一个数字变量整除
-  // 使用模数运算符 (%) 检查余数是否等于0
-  isDivisible: (dividend, divisor) => dividend % divisor === 0,
-
-  // isEven: 如果给定的数字为偶数, 则返回true, 否则为false
-  isEven: (num) => num % 2 === 0,
-
-  /**
-   * 计算最大公约数
-   */
-  mathGCD: (a, b) => {
-    let x = a,
-      y = b
-    let _gcd = (_x, _y) => (!_y ? _x : _gcd(_y, _x % _y))
-    return _gcd(a, b)
-  },
-
-  /**
-   * 计算最小公倍数
-   */
-  mathLCM: (x, y) => {
-    const gcd = (x, y) => (!y ? x : gcd(y, x % y))
-    return Math.abs(x * y) / gcd(x, y)
-  },
-
-  /**
-   * 有小数的话，保留小数点后几位（没有四舍五入）
-   */
-  mathCutOut: (x, y) => {
-    const index = `${x}`.indexOf('.')
-    return index == -1 ? x : parseFloat(`${x}`.substring(0, index + y + 1))
-  },
 
   /************************************************************************
    * 对象类
@@ -1006,6 +959,89 @@ const Util = {
       .createHash('sha1')
       .update(str + '', 'binary')
       .digest('hex')
+  },
+
+  sha256(str, format = 'base64') {
+    if (!str) {
+      return ''
+    }
+    return crypto
+      .createHash('sha256')
+      .update(str + '', 'binary')
+      .digest(format)
+  },
+
+  sha1WithRSA(str, privateKeyPEM, format = 'base64') {
+    // const privateKeyPEM =
+    //     '-----BEGIN PRIVATE KEY-----\n' +
+    //     'MIIEvQIBADA......NBgPSyxc=\n' +
+    //     '-----END PRIVATE KEY-----'
+    // 创建签名对象
+    const signer = crypto.createSign('RSA-SHA1')
+    signer.update(str)
+
+    // 对数据进行签名
+    const signature = signer.sign(privateKeyPEM, format)
+    return signature
+  },
+
+  sha256WithRSA(str, privateKeyPEM, format = 'base64') {
+    // const privateKeyPEM =
+    //     '-----BEGIN PRIVATE KEY-----\n' +
+    //     'MIIEvQIBADA......NBgPSyxc=\n' +
+    //     '-----END PRIVATE KEY-----'
+    // 创建签名对象
+    const signer = crypto.createSign('RSA-SHA256')
+    signer.update(str)
+
+    // 对数据进行签名
+    const signature = signer.sign(privateKeyPEM, format)
+    return signature
+  },
+
+  /**
+   * hmac sha1加密，并返回base64形式的编码
+   * @example
+   *
+   */
+  hmacSha1(str, secret, format = 'base64') {
+    if (!str) {
+      return ''
+    }
+    return crypto.createHmac('sha1', secret).update(str).digest(format)
+  },
+
+  /**
+   * hmac sha256加密，并返回hex形式的编码
+   * @example
+   *
+   */
+  hmacSha256(str, secret, format = 'hex') {
+    if (!str) {
+      return ''
+    }
+    return crypto.createHmac('sha256', secret).update(str).digest(format)
+  },
+
+  /**
+   * hmac sha512加密，并返回hex形式的编码
+   * @example
+   *
+   */
+  hmacSha512(str, secret, format = 'hex') {
+    if (!str) {
+      return ''
+    }
+    return crypto.createHmac('sha512', secret).update(str).digest(format)
+  },
+
+  base64(str) {
+    // create a buffer
+    const buff = Buffer.from(str, 'utf-8')
+    // encode buffer as Base64
+    const base64 = buff.toString('base64')
+
+    return base64
   },
 
   /************************************************************************
