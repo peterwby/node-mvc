@@ -14,6 +14,67 @@ const Util = {
    * 业务
    ************************************************************************/
 
+  saveLog: async (ctx, funcStartTime = null, type = 'info', content = '') => {
+    try {
+      if (Env.get('SAVE_LOG') === '1') {
+        let EndTime = new Date().getTime()
+        let time = moment().format('YYYY-MM-DD HH:mm:ss')
+        let url = ctx.request.url()
+        let ips_whitelist = Env.get('LOGS_WHITELIST', '')
+        let ip = Util.getClientIp(ctx.request)
+        if (ips_whitelist.includes(ip) || ip.startsWith('172.31.')) {
+          return null
+        }
+        let message = `${time},${ip},${url},${content},${funcStartTime ? EndTime - funcStartTime : 0}\n`
+
+        const logFilePath = Helpers.tmpPath(`logs/${type}_${moment().format('YYYYMMDD')}.csv`)
+
+        let writeQueue = Promise.resolve()
+        async function logMessage(message) {
+          writeQueue = writeQueue.then(async () => {
+            try {
+              await fs.appendFileSync(logFilePath, message)
+            } catch (err) {
+              console.error('Writing logs error:', err)
+            }
+          })
+        }
+        logMessage(message)
+      }
+      return true
+    } catch (e) {
+      console.log('Util.saveLog() error:', e.message)
+      return false
+    }
+  },
+
+  /**
+   * 过滤注入
+   * @example
+   * type = 1: 手动过滤指定关键词
+   * type = 2: 使用xss库自动过滤
+   */
+  filterXss: (string, type = 1) => {
+    let new_string = string
+    if (Util.isString(string)) {
+      if (type === 1) {
+        new_string = string
+          .replace(/<script/gi, '')
+          .replace(/eval\(/gi, '')
+          .replace(/\/\//gi, '')
+          .replace(/onerror/gi, '')
+      } else if (type === 2) {
+        new_string = xss(string)
+      }
+    }
+    if (string !== new_string) {
+      //检查是否存在script？替换为已防注入
+      console.log('已防注入:', string)
+      new_string = '已防注入'
+    }
+    return new_string
+  },
+
   /**
    * 每个函数正常结束时，都须调用此函数
    * @example

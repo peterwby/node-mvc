@@ -22,6 +22,6 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  "eslint.run": "onType",
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "python.terminal.activateEnvironment": false
 }

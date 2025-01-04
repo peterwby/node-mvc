@@ -2,6 +2,7 @@
 
 const BaseExceptionHandler = use('BaseExceptionHandler')
 const log = use('Logger')
+const Util = require('@Lib/Util')
 /**
  * This class handles all exceptions thrown during
  * the HTTP request lifecycle.
@@ -20,23 +21,25 @@ class ExceptionHandler extends BaseExceptionHandler {
    *
    * @return {void}
    */
-  async handle(error, { request, response, view }) {
+  async handle(error, ctx) {
+    const { request, response, view } = ctx
     log.notice('handle_error_1092348903409')
     log.error(error)
+    Util.saveLog(ctx, null, 'error', error.message)
     switch (error.name) {
       case 'InvalidSessionException':
-        response.status(error.status).send('请先登录')
+        response.status(error.status).send('Not logged in')
         //response.redirect('login')
         break
       case 'HttpException':
-        response.status(error.status).send('服务端执行出错')
+        response.status(error.status).send('HttpException error')
         break
       default:
         if (' ' + error.message.indexOf('E_MISSING_VIEW') > -1) {
-          response.status(error.status).send('找不到该网址')
+          response.status(error.status).send('Page not found')
           return null
         }
-        response.status(error.status).send('发生出错')
+        response.status(error.status).send('Server error')
       //return super.handle(...arguments)
     }
     return null

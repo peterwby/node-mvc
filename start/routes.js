@@ -14,27 +14,7 @@
 
 /** @type {typeof import('@adonisjs/framework/src/Route/Manager')} */
 const Route = use('Route')
-const log = use('Logger')
 const Util = require('@Lib/Util')
-
-/****************************
- * 考核时用下面的路由组
- ****************************/
-Route.group(() => {
-  try {
-    Route.get('redis', 'PC/TestController.testRedis')
-    //Route.get('xxx', 'PC/xxx')
-  } catch (err) {
-    return Util.end2front({
-      msg: '服务端无此路由',
-      code: 9999,
-    })
-  }
-}).prefix('test')
-
-/****************************
- * demo
- ****************************/
 
 Route.group(() => {
   Route.get('heart', () => 'success')
@@ -42,9 +22,6 @@ Route.group(() => {
   Route.get('get-func-time', 'PC/MemberController.getFuncTime')
 }).middleware(['noAuth']) //无需验证组，任何人都能访问
 
-/**
- * 无需验证的接口组
- */
 Route.group(() => {
   try {
     Route.post('member/login', 'PC/MemberController.login')
@@ -133,7 +110,9 @@ Route.group(() => {
 
 //兜底：如果都匹配不到路由，则转到404页面
 //Route.any('*', ({ view }) => view.render('error.404'))
-Route.any('*', () => {
+Route.any('*', (ctx) => {
+  Util.saveLog(ctx, null, 'error', 'Invalid API route')
+
   return Util.end2front({
     msg: 'Not found the API',
     code: 9999,

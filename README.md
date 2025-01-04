@@ -60,31 +60,32 @@ npm run dev
 
 ## 项目结构说明
 
-- /start/routes.js：此文件用来处理路由，并绑定相应的 Controller
-- /app/Controllers/Http/PC/xxx.js：所有 Controller 文件都放在这里
-- /app/Services/xxx.js：所有 Services 文件都放在这里，且都继承于 BaseService 基类
-- /app/Models/Table/xxx.js：所有的表文件都放在这里，文件名应跟数据库上真实表文件名相同，且都继承于 BaseTable 基类
-- /config/xxx.js：可以对不同模块分别进行配置（一般按默认配置即可）
-- /.env：项目根目录下应该有此文件，用来设置全局配置信息。（重要）
-- /app/Lib/Util.js：常用工具库，包含对数组、对象、字符串、时间等处理的函数
+- 数据的流转的一般顺序是：前端发来请求 -> Router -> Controllers -> Services -> Models
+- /start/routes.js：(Router)此文件用来处理路由，并绑定相应的 Controller
+- /app/Controllers/Http/PC/：(Controller) 所有 Controller 文件都放在这里
+- /app/Services/：(Service) 所有 Services 文件都放在这里，且都继承于 BaseService 基类
+- /app/Models/Table/：(Model) 所有的数据库表信息都放在这里，文件名应跟数据库上真实表文件名相同，且都继承于 BaseTable 基类，BaseTable 基类定义了一组常用的数据库操作。
+- /config/：Adonis 的配置目录，可以对不同模块进行配置
+- /.env：项目的配置文件
+- /app/Lib/Util.js：常用工具库，包含对数组、对象、字符串、时间等处理的函数。优先使用此工具库（而不是安装第三方库）
 - /app/Lib/Request.js：基于 axios.js 的 HTTP 库，用于 get、post 方式访问 url
-- /resources/views/html/ : 存放 html 静态文件模板
+- /resources/views/ : Adonis 框架中用于存放静态文件的目录
 
 ## 代码规范
 
-- 默认 IDE 为 vscode，使用 settings sync 插件同步设置
-- 使用 eslint、prettier 规范代码格式
-- api 接口的 method：全部使用 post，只有下载之类的接口使用 get。比如：
+- 使用 prettier 规范代码格式
+- API 的 method 默认使用 POST，只有少数展示数据的接口或下载类的接口使用 GET。比如：
   Route.get('download/:type/:file', 'PC/DownloadController.download')
   Route.post('entity/edit', 'PC/EntityController.edit')
   Route.post('entity/get-table', 'PC/EntityController.getTable')
   Route.post('entity/get-table-common', 'PC/EntityController.getTableCommon')
-- 类的名称用大驼峰：比如 UserController
-- 函数名称用小驼峰：比如 getUserInfo()
-- url 用连字符：比如 get-user-info
-- 变量、json 里的 key 用下划线：比如 let user_info = { user_name: 'xxx' }
+- Class 的名称用大驼峰风格：比如 UserController
+- 函数名称用小驼峰风格：比如 getUserInfo()
+- 路由、 URL 用连字符：比如 get-user-info
+- 文件名称用下划线连接，比如 hello_world.txt
+- 变量、json、css 里的 key 用下划线连接：比如 let user_info = { user_name: 'xxx' }
 
-## 页面-接口约定
+## 约定
 
 - 常见的页面分为列表页（比如文章列表、用户列表）和详情页（比如文章编辑页、用户信息编辑页）
 - 列表页一般都有 2 个接口，一个是公共接口，比如 get-table-common（返回页面上的一些公共信息），一个是 get-table（返回表格数据）
