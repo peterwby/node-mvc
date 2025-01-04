@@ -88,7 +88,7 @@ const Util = {
    */
   end: (obj) => {
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      throw new Error('end(obj)的obj应该是个对象')
+      throw new Error('The parameter should be an object')
     }
     if (obj.error) {
       //之前出现了异常，则继续抛出
@@ -113,11 +113,11 @@ const Util = {
   error: (obj) => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      throw new Error('error(obj)的obj应该是个对象')
+      throw new Error('The parameter should be an object')
     }
     obj.error = true
     obj.status = !!obj.status || obj.status === 0 ? obj.status : -1
-    obj.msg = obj.msg || '程序执行出错'
+    obj.msg = obj.msg || 'Server error'
     obj.data = obj.data || {}
     obj.track = obj.track || ''
     if (obj.stack) {
@@ -143,7 +143,7 @@ const Util = {
    */
   end2front: (obj) => {
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      throw new Error('end2front(obj)的obj应该是个对象')
+      throw new Error('The parameter should be an object')
     }
     obj.msg = obj.msg || 'success'
     obj.data = obj.data || {}
@@ -154,7 +154,7 @@ const Util = {
   /**
    * 捕捉到异常时，返回给前端的信息
    * @example
-   * error2front({msg:'', code: 9999, track:'随机值'})
+   * error2front({msg:'', code: 500, track:'随机值'})
    * @description
    * 如果要向前端显示真实错误，则{ isShowMsg: true }
    * @returns object
@@ -162,14 +162,14 @@ const Util = {
   error2front: (obj) => {
     //不是object
     if (Object.prototype.toString.call(obj) !== '[object Object]') {
-      throw new Error('error2front(obj)的obj应该是个对象')
+      throw new Error('The parameter should be an object')
     }
     log.notice(obj.track)
     log.error(obj.msg)
     //对前端屏蔽真实错误
-    obj.msg = Env.get('NODE_ENV') === 'development' ? obj.msg : obj.isShowMsg ? obj.msg : '程序执行出错'
+    obj.msg = Env.get('NODE_ENV') === 'development' ? obj.msg : obj.isShowMsg ? obj.msg : 'Server error'
     obj.data = obj.data || {}
-    obj.code = obj.code || 9999
+    obj.code = obj.code || 500
     obj.track = obj.track || ''
 
     if (JSON.stringify(obj.data) !== '{}') {
