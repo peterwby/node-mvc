@@ -8,6 +8,8 @@ const Env = use('Env')
 const Hashids = use('Hashids')
 const _cloneDeep = require('lodash/cloneDeep')
 const crypto = require('crypto')
+const moment = require('moment') //日期格式化插件
+const xss = require('xss')
 
 const Util = {
   /************************************************************************
