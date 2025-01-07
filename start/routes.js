@@ -16,6 +16,27 @@
 const Route = use('Route')
 const Util = require('@Lib/Util')
 
+// 教程示例路由
+Route.group(() => {
+  //基础语法
+  //http://127.0.0.1:3000/tutorial/js-basics
+  Route.get('js-basics', 'PC/TutorialController.jsBasics')
+  //数据库查询
+  //http://127.0.0.1:3000/tutorial/db-select
+  Route.get('db-select', 'PC/TutorialController.dbSelect')
+  //数据库修改
+  //http://127.0.0.1:3000/tutorial/db-modify
+  Route.post('db-modify', 'PC/TutorialController.dbModify')
+  //http请求
+  Route.get('http-request', 'PC/TutorialController.httpRequest')
+  //redis操作
+  Route.get('redis-ops', 'PC/TutorialController.redisOps')
+  //文件操作
+  Route.get('file-ops', 'PC/TutorialController.fileOps')
+})
+  .prefix('tutorial')
+  .middleware(['noAuth'])
+
 Route.group(() => {
   Route.get('heart', () => 'success')
   Route.get('get-func-info', 'PC/MemberController.getFuncInfo')
