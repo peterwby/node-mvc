@@ -7,7 +7,7 @@
 1. 克隆项目到本地
 
 ```bash
-git clone https://gitee.com/sh-chanson/node-server.git
+git clone https://gitee.com/sh-chanson/node-server.git -b tutorial
 cd node-server
 ```
 
