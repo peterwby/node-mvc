@@ -6,6 +6,8 @@ const Request = require('@Lib/Request')
 const Util = require('@Lib/Util')
 const BaseService = require('@BaseClass/BaseService')
 const log = use('Logger')
+const UsersTable = require('@Table/users')
+const usersTable = new UsersTable()
 
 class TutorialService extends BaseService {
   /**
@@ -157,7 +159,10 @@ class TutorialService extends BaseService {
         },
       }
     } catch (err) {
-      throw err
+      return Util.error({
+        msg: err.message,
+        track: 'service_jsBasics_1704612831862',
+      })
     }
   }
 
@@ -167,43 +172,47 @@ class TutorialService extends BaseService {
   async dbSelect(params) {
     try {
       // 1. 基础查询
-      const users = await Database.select('*').from('user').where('status', 1).limit(10)
+      const users = await Database.select('*').from('users').limit(10)
 
       // 2. 多条件查询
-      const orders = await Database.select(['id', 'order_no', 'user_id'])
-        .from('order')
-        .where('status', 1)
-        .where('total_amount', '>', 100)
+      const recentUsers = await Database.select(['id', 'username', 'created_at'])
+        .from('users')
+        .where('created_at', '>', Database.raw('DATE_SUB(NOW(), INTERVAL 7 DAY)'))
         .orderBy('created_at', 'desc')
 
       // 3. 模糊查询
-      const products = await Database.select('*').from('product').where('name', 'like', '%手机%')
+      const searchUsers = await Database.select('*').from('users').where('username', 'like', '%test%')
 
       // 4. IN 查询
-      const memberIds = [1, 2, 3]
-      const members = await Database.select('*').from('member').whereIn('member_id', memberIds)
+      const userIds = [1, 2, 3]
+      const specificUsers = await Database.select('*').from('users').whereIn('id', userIds)
 
-      // 5. 联表查询
-      const orderDetails = await Database.select('order.*', 'user.username').from('order').leftJoin('user', 'order.user_id', 'user.id').where('order.status', 1)
+      // 5. 时间范围查询
+      const timeRangeUsers = await Database.select('*')
+        .from('users')
+        .whereBetween('created_at', [Database.raw('DATE_SUB(NOW(), INTERVAL 30 DAY)'), Database.raw('NOW()')])
 
       // 6. 分组统计
-      const orderStats = await Database.select('user_id')
-        .count('* as order_count')
-        .sum('total_amount as total_amount')
-        .from('order')
-        .groupBy('user_id')
-        .having('order_count', '>', 5)
+      const userStats = await Database.select(Database.raw('DATE(created_at) as date'))
+        .count('* as user_count')
+        .from('users')
+        .groupBy('date')
+        .orderBy('date', 'desc')
+        .limit(7)
 
       return {
         basicQuery: users,
-        multiConditionQuery: orders,
-        likeQuery: products,
-        inQuery: members,
-        joinQuery: orderDetails,
-        statsQuery: orderStats,
+        recentUsers,
+        searchUsers,
+        specificUsers,
+        timeRangeUsers,
+        userStats,
       }
     } catch (err) {
-      throw err
+      return Util.error({
+        msg: err.message,
+        track: 'service_dbSelect_1704612831862',
+      })
     }
   }
 
@@ -212,36 +221,76 @@ class TutorialService extends BaseService {
    */
   async dbModify(params) {
     try {
-      return await Database.transaction(async (trx) => {
-        // 1. 插入单条数据
-        const userId = await trx.table('user').insert({
+      let result = {}
+
+      // 1. 插入单条数据
+      await Database.transaction(async (trx) => {
+        result = await usersTable.create(trx, {
           username: 'test_user',
-          email: 'test@example.com',
-          status: 1,
+          created_at: new Date(),
+          updated_at: new Date(),
+          created_time: new Date(),
+          updated_time: new Date(),
         })
-
-        // 2. 批量插入数据
-        await trx.table('user_log').insert([
-          { user_id: userId, action: 'login', ip: '127.0.0.1' },
-          { user_id: userId, action: 'update_profile', ip: '127.0.0.1' },
-        ])
-
-        // 3. 更新数据
-        await trx
-          .table('user')
-          .where('id', userId)
-          .update({
-            last_login_time: Database.fn.now(),
-            login_count: trx.raw('login_count + 1'),
-          })
-
-        // 4. 删除数据
-        await trx.table('user_log').where('created_at', '<', Database.raw('DATE_SUB(NOW(), INTERVAL 30 DAY)')).delete()
-
-        return { userId }
+        if (result.status === 0) {
+          throw new Error('usersTable.create失败')
+        }
       })
+
+      // 2. 批量插入数据
+      await Database.transaction(async (trx) => {
+        result = await usersTable.createMany(trx, [
+          {
+            username: 'test_user1',
+            created_at: new Date(),
+            updated_at: new Date(),
+            created_time: new Date(),
+            updated_time: new Date(),
+          },
+          {
+            username: 'test_user2',
+            created_at: new Date(),
+            updated_at: new Date(),
+            created_time: new Date(),
+            updated_time: new Date(),
+          },
+        ])
+        if (result.status === 0) {
+          throw new Error('usersTable.createMany失败')
+        }
+      })
+
+      // 3. 更新数据
+      await Database.transaction(async (trx) => {
+        result = await usersTable.updateBy(trx, {
+          where: [['id', '=', result.data.id]],
+          set: {
+            username: 'updated_user',
+            updated_at: new Date(),
+            updated_time: new Date(),
+          },
+        })
+        if (result.status === 0) {
+          throw new Error('usersTable.updateBy失败')
+        }
+      })
+
+      // 4. 删除数据
+      await Database.transaction(async (trx) => {
+        result = await usersTable.deleteBy(trx, {
+          where: [['created_at', '<', Database.raw('DATE_SUB(NOW(), INTERVAL 30 DAY)')]],
+        })
+        if (result.status === 0) {
+          throw new Error('usersTable.deleteBy失败')
+        }
+      })
+
+      return result
     } catch (err) {
-      throw err
+      return Util.error({
+        msg: err.message,
+        track: 'service_dbModify_1704612831862',
+      })
     }
   }
 
@@ -268,7 +317,10 @@ class TutorialService extends BaseService {
         postResult: postResult.data,
       }
     } catch (err) {
-      throw err
+      return Util.error({
+        msg: err.message,
+        track: 'service_httpRequest_1704612831862',
+      })
     }
   }
 
@@ -315,7 +367,10 @@ class TutorialService extends BaseService {
         hashOps: userInfo,
       }
     } catch (err) {
-      throw err
+      return Util.error({
+        msg: err.message,
+        track: 'service_redisOps_1704612831862',
+      })
     }
   }
 
@@ -350,7 +405,10 @@ class TutorialService extends BaseService {
         },
       }
     } catch (err) {
-      throw err
+      return Util.error({
+        msg: err.message,
+        track: 'service_fileOps_1704612831862',
+      })
     }
   }
 }

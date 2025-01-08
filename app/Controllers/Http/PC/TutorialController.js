@@ -18,7 +18,7 @@ class TutorialController {
     } catch (err) {
       return Util.error2front({
         msg: err.message,
-        track: 'controller_jsBasics_1234567',
+        track: 'controller_jsBasics_1704612831862',
       })
     }
   }
@@ -37,7 +37,7 @@ class TutorialController {
     } catch (err) {
       return Util.error2front({
         msg: err.message,
-        track: 'controller_dbSelect_1234567',
+        track: 'controller_dbSelect_1704612831862',
       })
     }
   }
@@ -56,7 +56,7 @@ class TutorialController {
     } catch (err) {
       return Util.error2front({
         msg: err.message,
-        track: 'controller_dbModify_1234567',
+        track: 'controller_dbModify_1704612831862',
       })
     }
   }
@@ -75,7 +75,7 @@ class TutorialController {
     } catch (err) {
       return Util.error2front({
         msg: err.message,
-        track: 'controller_httpRequest_1234567',
+        track: 'controller_httpRequest_1704612831862',
       })
     }
   }
@@ -94,7 +94,7 @@ class TutorialController {
     } catch (err) {
       return Util.error2front({
         msg: err.message,
-        track: 'controller_redisOps_1234567',
+        track: 'controller_redisOps_1704612831862',
       })
     }
   }
@@ -113,7 +113,7 @@ class TutorialController {
     } catch (err) {
       return Util.error2front({
         msg: err.message,
-        track: 'controller_fileOps_1234567',
+        track: 'controller_fileOps_1704612831862',
       })
     }
   }

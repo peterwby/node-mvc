@@ -13,6 +13,8 @@ cd node-server
 
 2. 运行安装脚本
 
+先把 setup.sh 文件复制到项目的根目录，然后运行
+
 ```bash
 chmod +x setup.sh
 ./setup.sh
