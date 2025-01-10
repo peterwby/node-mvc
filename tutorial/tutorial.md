@@ -7,7 +7,7 @@
 1. 克隆项目到本地
 
 ```bash
-git clone https://gitee.com/sh-chanson/node-server.git -b tutorial
+git clone https://gitee.com/sh-chanson/node-server.git
 cd node-server
 ```
 
@@ -526,3 +526,74 @@ class UserService extends BaseService {
 - 确认控制器文件存在且路径正确
 
 如有其他问题，请查看项目文档或咨询开发团队。
+
+## 六、服务器更新流程
+
+### 6.1 更新代码仓库
+
+在 Linux 服务器上，按照以下步骤更新项目代码：
+
+1. 进入项目目录
+
+```bash
+cd /path/to/your/project  # 替换为你的项目实际路径
+```
+
+2. 拉取最新代码
+
+```bash
+git pull origin master    # 或其他分支名
+```
+
+### 6.2 重启项目服务
+
+1. 查看当前运行的 PM2 进程
+
+```bash
+pm2 ls
+```
+
+输出示例：
+
+```
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ node-server        │ fork     │ 0    │ online    │ 0.2%     │ 60.5mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+```
+
+2. 重启对应的项目
+
+```bash
+pm2 restart node-server   # 使用项目名称重启
+# 或者
+pm2 restart 0            # 使用进程 ID 重启
+```
+
+### 6.3 验证更新
+
+1. 检查项目状态和运行日志
+
+```bash
+# 查看进程状态，确认 status 为 online
+pm2 ls
+
+# 查看项目日志
+pm2 logs node-server     # 或使用进程 ID：pm2 logs 0
+```
+
+当服务重启成功时，日志中会显示类似如下信息：
+
+```
+[PM2] App [node-server] launched
+serving app on http://0.0.0.0:3000
+```
+
+这表明：
+
+- 项目已成功启动
+- 服务运行在 3000 端口（端口号可能因配置不同而异）
+- 可以通过该地址访问服务
+
+2. 访问项目接口，确认服务正常运行

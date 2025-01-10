@@ -299,18 +299,39 @@ class TutorialService extends BaseService {
    */
   async httpRequest(params) {
     try {
-      // 1. GET 请求
-      const getResult = await Request.get('https://api.example.com/users', { page: 1, limit: 10 }, { timeout: 5000 })
+      console.log('111')
+      // 1. GET 请求：展示查询参数和重试配置
+      const getResult = await Request.get(
+        'http://127.0.0.1:3000/tutorial/js-basics',
+        { page: 1, limit: 10, sort: 'desc' },
+        {
+          timeout: 1000,
+          retries: 5,
+          headers: {
+            'Accept-Language': 'zh-CN',
+          },
+        }
+      )
+      console.log('222')
 
-      // 2. POST 请求
+      // 2. POST 请求：展示请求体和完整配置
       const postResult = await Request.post(
-        'https://api.example.com/users',
+        'http://127.0.0.1:3000/tutorial/js-basics',
         {
           username: 'test_user',
           email: 'test@example.com',
+          type: 'example',
         },
-        { timeout: 5000 }
+        {
+          timeout: 1000,
+          retries: 2,
+          headers: {
+            'X-Custom-Header': 'test',
+          },
+          noload: true, // 不显示加载动画
+        }
       )
+      console.log('333')
 
       return {
         getResult: getResult.data,
