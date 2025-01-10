@@ -36,6 +36,7 @@
     "adonis-hashids": "^1.0.5",
     "adonis-scheduler": "^3.0.2",
     "axios": "^0.19.0",
+    "axios-retry": "3.2.5",
     "jsonwebtoken": "^8.5.1",
     "jszip": "^3.2.2",
     "lodash": "^4.17.21",
@@ -45,6 +46,5 @@
     "unzip-stream": "^0.3.0",
     "uuid": "^3.3.3",
     "xss": "^1.0.15"
-  },
-  "devDependencies": {}
+  }
 }
