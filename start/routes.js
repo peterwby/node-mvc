@@ -129,6 +129,16 @@ Route.group(() => {
   .prefix('html')
   .middleware(['htmlGlobal']) //中间件，用于定义模板的公共变量
 
+Route.group(() => {
+  try {
+    Route.get('/', 'admin/IndexController.init')
+  } catch (err) {
+    return view.render('error.404')
+  }
+})
+  .prefix('admin')
+  .middleware(['htmlGlobal'])
+
 //兜底：如果都匹配不到路由，则转到404页面
 //Route.any('*', ({ view }) => view.render('error.404'))
 Route.any('*', (ctx) => {

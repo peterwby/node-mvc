@@ -15,7 +15,7 @@ class IndexController {
       //调用业务逻辑Service
       //result = await .init(ctx)
       //组装从Service返回的数据，返回给前端
-      return ctx.view.render('html.index', {})
+      return ctx.view.render('manage.index', {})
     } catch (err) {
       return ctx.view.render('html.index')
     }
