@@ -1,0 +1,10 @@
+/* Keenicons */
+@import '../metronic/vendors/keenicons/duotone/style.css';
+@import '../metronic/vendors/keenicons/filled/style.css';
+@import '../metronic/vendors/keenicons/outline/style.css';
+@import '../metronic/vendors/keenicons/solid/style.css';
+
+/* Metronic styles (includes Tailwind and demo1) */
+@import '../metronic/css/styles.css';
+
+/* Your custom styles below */
