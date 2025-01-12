@@ -17586,20 +17586,6 @@ video {
   }
 }
 
-.container-fluid {
-  width: 100%;
-  flex-grow: 1;
-  padding-inline-start: 1.5rem;
-  padding-inline-end: 1.5rem;
-}
-
-@media (min-width: 1280px) {
-  .container-fluid {
-    padding-inline-start: 1.875rem;
-    padding-inline-end: 1.875rem;
-  }
-}
-
 .image-input {
   display: inline-flex;
   position: relative;

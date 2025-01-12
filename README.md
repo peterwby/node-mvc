@@ -7,6 +7,11 @@
 - 实际项目一般采用前后端分离开发，View 交给前端处理， 本框架的结构：Router->Controllers->Services->Models
 - models 层使用 query builder，基于 knex，不适用 ORM
 - 本框架可以作为纯后端，提供 api 给前端调用。也可以作为全栈框架直接渲染 html 输出到前端
+- 集成了 Metronic v9.1.2 后台管理系统（Tailwind CSS 版本）
+  - 管理系统位于 `/resources/views/admin/**`
+  - 样式源文件位于 `/resources/metronic`
+  - 静态资源位于 `/public/assets`
+  - 使用 Tailwind CLI 进行样式构建
 
 ## 须具备知识
 
