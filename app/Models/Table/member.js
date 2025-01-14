@@ -15,17 +15,17 @@ class MemberTable extends BaseTable {
   /**
    * 检查密码是否正确
    * @example
-   * checkPwdValid({login_name, login_pwd})
+   * checkPwdValid({username, password})
    * @returns object
    */
   async checkPwdValid(obj) {
     try {
       let result = {}
       let is_valid = false
-      result = await Database.select('login_pwd').table(this.tableName).where('login_name', obj.login_name)
+      result = await Database.select('password').table(this.tableName).where('username', obj.username)
       //匹配到账号
       if (result[0]) {
-        let isPwdSame = await Hash.verify(obj.login_pwd, result[0].login_pwd)
+        let isPwdSame = await Hash.verify(obj.password, result[0].password)
         //密码匹配
         if (isPwdSame) {
           is_valid = true
@@ -50,30 +50,30 @@ class MemberTable extends BaseTable {
   /**
    * 登录
    * @example
-   * login({login_name, login_pwd})
+   * signIn({username, password})
    * @returns object
    */
-  async login(obj) {
+  async signIn(obj) {
     try {
-      const { login_name, login_pwd } = obj
+      const { username, password } = obj
       let result = {}
       let msg = ''
       let data = {}
       let status = 0
 
-      result = await Database.select('member_id', 'member_name', 'login_pwd', 'email')
+      result = await Database.select('member_id', 'nickname', 'password', 'email')
         .table(this.tableName)
-        .where('login_name', login_name)
+        .where('username', username)
         .where('member_status_id', 1)
       //匹配到账号
       if (result[0]) {
-        let isPwdSame = await Hash.verify(login_pwd, result[0].login_pwd)
+        let isPwdSame = await Hash.verify(password, result[0].password)
         //密码匹配
         if (isPwdSame) {
           data = {
-            login_name,
+            username,
             member_id: result[0].member_id,
-            member_name: result[0].member_name,
+            nickname: result[0].nickname,
             email: result[0].email,
           }
           msg = '已登录'
@@ -95,7 +95,7 @@ class MemberTable extends BaseTable {
       return Util.error({
         msg: err.message,
         data: { table: this.tableName },
-        track: 'table_login_1586100114',
+        track: 'table_signIn_1586100114',
       })
     }
   }
@@ -108,8 +108,8 @@ class MemberTable extends BaseTable {
   async fetchDetailById(id) {
     try {
       let result = await Database.select(
-        'a.login_name',
-        'a.member_name',
+        'a.username',
+        'a.nickname',
         'a.email',
         'a.cellphone',
         'a.gender_id',
@@ -145,7 +145,7 @@ class MemberTable extends BaseTable {
       let result = {}
       const table = Database.clone()
       table
-        .select('a.member_id', 'a.member_name', 'a.email', 'a.cellphone', 'a.ctime', 'a.member_status_id', 'b.member_status_name')
+        .select('a.member_id', 'a.nickname', 'a.email', 'a.cellphone', 'a.ctime', 'a.member_status_id', 'b.member_status_name')
         .from('member as a')
         .innerJoin('member_status as b', 'a.member_status_id', 'b.member_status_id')
         .orderBy('a.member_id', 'desc')
@@ -154,9 +154,9 @@ class MemberTable extends BaseTable {
       }
       if (obj.search_word) {
         table.where(function () {
-          this.where('a.member_name', 'like', `%${obj.search_word}%`)
+          this.where('a.nickname', 'like', `%${obj.search_word}%`)
             .orWhere('a.email', 'like', `%${obj.search_word}%`)
-            .orWhere('a.login_name', 'like', `%${obj.search_word}%`)
+            .orWhere('a.username', 'like', `%${obj.search_word}%`)
         })
       }
       result = await table.paginate(obj.page, obj.limit)

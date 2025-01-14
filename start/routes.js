@@ -45,7 +45,8 @@ Route.group(() => {
 
 Route.group(() => {
   try {
-    Route.post('member/login', 'PC/MemberController.login')
+    Route.post('member/sign-in', 'PC/MemberController.signIn')
+    Route.post('member/sign-up', 'PC/MemberController.signUp')
   } catch (err) {
     return Util.end2front({
       msg: 'Not found the API',
@@ -53,7 +54,7 @@ Route.group(() => {
     })
   }
 })
-  .prefix('api/v1')
+  .prefix('api')
   .middleware(['noAuth']) //无需验证组，任何人都能访问
 
 /**
@@ -80,64 +81,32 @@ Route.group(() => {
     })
   }
 })
-  .prefix('api/v1') //统一给这组路由的uri加入前缀
+  .prefix('api') //统一给这组路由的uri加入前缀
   .middleware(['checkAuth']) //验证身份
 
-//需要key验证
+// View层 - 需要验证身份的路由
 Route.group(() => {
   try {
-    Route.get('get-func-info', 'PC/MemberController.getFuncInfo')
-  } catch (err) {
-    return Util.end2front({
-      msg: 'Not found the API',
-      code: 9992,
-    })
-  }
-})
-  .prefix('api') //统一给这组路由的uri加入前缀
-  .middleware(['checkAuthByString']) //验证身份
-
-/****************************
- * 服务端模板渲染输出html
- ****************************/
-
-Route.group(() => {
-  try {
-    Route.post('/save-token', 'html/MemberController.saveToken')
-    Route.post('/remove-token', 'html/MemberController.removeToken')
-
-    Route.get('/index', 'html/IndexController.init')
-    Route.get('test-login', ({ view }) => view.render('html.test-login'))
-
-    Route.get('*', ({ view, params, request, session, response }) => {
-      //前端：如果没登录则跳到登录页
-      if (!session.get('token')) {
-        return response.redirect('/html/test-login')
-      }
-      const url = request.url()
-      let tpl_src = url.replace(/\//g, '.').replace('.html.', 'html.')
-
-      if (tpl_src.endsWith('.edge')) {
-        tpl_src = tpl_src.substring(0, tpl_src.lastIndexOf('.edge'))
-      }
-      return view.render(tpl_src)
-    })
-  } catch (err) {
-    return view.render('error.404')
-  }
-})
-  .prefix('html')
-  .middleware(['htmlGlobal']) //中间件，用于定义模板的公共变量
-
-Route.group(() => {
-  try {
-    Route.get('/', 'admin/IndexController.init')
+    Route.get('/', 'admin/IndexController.home')
+    Route.get('/', 'admin/MemberController.list')
   } catch (err) {
     return view.render('error.404')
   }
 })
   .prefix('admin')
-  .middleware(['htmlGlobal'])
+  .middleware(['checkAuth'])
+
+// View层 - 无需验证身份的路由
+Route.group(() => {
+  try {
+    Route.get('sign-in', 'admin/authController.signIn')
+    Route.get('sign-up', 'admin/authController.signUp')
+  } catch (err) {
+    return view.render('error.404')
+  }
+})
+  .prefix('admin/auth')
+  .middleware(['noAuth'])
 
 //兜底：如果都匹配不到路由，则转到404页面
 //Route.any('*', ({ view }) => view.render('error.404'))

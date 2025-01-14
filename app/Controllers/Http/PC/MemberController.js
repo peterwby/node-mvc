@@ -11,14 +11,14 @@ const memberService = new MemberService()
 class MemberController {
   constructor() {}
 
-  async login(ctx) {
+  async signIn(ctx) {
     try {
       let result = {}
       //检查参数合法性
-      const resultValid = await loginValid(ctx)
+      const resultValid = await signInValid(ctx)
       if (resultValid) return resultValid
       //调用业务逻辑Service
-      result = await memberService.login(ctx)
+      result = await memberService.signIn(ctx)
       if (result.status === 0) {
         return Util.end2front({
           msg: result.msg,
@@ -28,7 +28,7 @@ class MemberController {
       //组装从Service返回的数据，返回给前端
       const { member_info, token } = result.data
       let member = {
-        member_name: member_info.member_name,
+        nickname: member_info.nickname,
         member_id: Util.encode(member_info.member_id),
       }
       const data = {
@@ -44,7 +44,7 @@ class MemberController {
       return Util.error2front({
         //isShowMsg: true,
         msg: err.message,
-        track: 'controller_login_1586096752',
+        track: 'controller_signIn_1586096752',
       })
     }
   }
@@ -160,14 +160,14 @@ class MemberController {
     }
   }
 
-  async create(ctx) {
+  async signUp(ctx) {
     try {
       let result = {}
       //检查参数合法性
-      const resultValid = await createValid(ctx)
+      const resultValid = await signUpValid(ctx)
       if (resultValid) return resultValid
       //调用业务逻辑Service
-      result = await memberService.create(ctx)
+      result = await memberService.signUp(ctx)
       if (result.status === 0) {
         return Util.end2front({
           msg: result.msg,
@@ -184,7 +184,7 @@ class MemberController {
       return Util.error2front({
         //isShowMsg: true,
         msg: err.message,
-        track: 'controller_create_1586096715',
+        track: 'controller_signUp_1586096715',
       })
     }
   }
@@ -304,7 +304,7 @@ class MemberController {
 /**
  * 登录：校验合法性
  */
-async function loginValid(ctx) {
+async function signInValid(ctx) {
   try {
     //组装处理参数
     await paramsHandle()
@@ -320,11 +320,11 @@ async function loginValid(ctx) {
       let body = {}
       for (let k in requestAll) {
         switch (k.toLowerCase()) {
-          case 'login_name':
-            body.login_name = requestAll[k]
+          case 'username':
+            body.username = requestAll[k]
             break
-          case 'login_pwd':
-            body.login_pwd = requestAll[k]
+          case 'password':
+            body.password = requestAll[k]
             break
         }
       }
@@ -333,14 +333,14 @@ async function loginValid(ctx) {
 
     async function paramsValid() {
       const rules = {
-        login_name: 'required',
-        login_pwd: 'required|min:6|max:16',
+        username: 'required',
+        password: 'required|min:6|max:16',
       }
       const messages = {
-        'login_name.required': '账号为必填项',
-        'login_pwd.required': '密码为必填项',
-        'login_pwd.min': '密码最少需6位',
-        'login_pwd.max': '密码最多不超过16位',
+        'username.required': '账号为必填项',
+        'password.required': '密码为必填项',
+        'password.min': '密码最少需6位',
+        'password.max': '密码最多不超过16位',
       }
       const validation = await validate(ctx.body, rules, messages)
       if (validation.fails()) {
@@ -356,7 +356,7 @@ async function loginValid(ctx) {
       isShowMsg: true,
       msg: err.message,
       code: 9000,
-      track: 'valid_loginValid_1586097764',
+      track: 'valid_signInValid_1586097764',
     })
   }
 }
@@ -483,7 +483,7 @@ async function getCreateCommonValid(ctx) {
 /**
  * 新增
  */
-async function createValid(ctx) {
+async function signUpValid(ctx) {
   try {
     //组装处理参数
     await paramsHandle()
@@ -499,20 +499,17 @@ async function createValid(ctx) {
       let body = {}
       for (let k in requestAll) {
         switch (k.toLowerCase()) {
-          case 'member_name':
-            body.member_name = requestAll[k]
+          case 'nickname':
+            body.nickname = requestAll[k]
             break
-          case 'email':
-            body.email = requestAll[k]
+          case 'username':
+            body.username = requestAll[k]
             break
-          case 'cellphone':
-            body.cellphone = requestAll[k]
+          case 'password':
+            body.password = requestAll[k]
             break
-          case 'login_name':
-            body.login_name = requestAll[k]
-            break
-          case 'login_pwd':
-            body.login_pwd = requestAll[k]
+          case 're_pwd':
+            body.re_pwd = requestAll[k]
             break
         }
       }
@@ -521,19 +518,19 @@ async function createValid(ctx) {
 
     async function paramsValid() {
       const rules = {
-        member_name: 'required|max:20',
-        login_name: 'required',
-        login_pwd: 'required|min:6|max:16',
-        rePassword: 'same:login_pwd',
+        nickname: 'required|max:20',
+        username: 'required',
+        password: 'required|min:6|max:16',
+        re_pwd: 'same:password',
       }
       const messages = {
-        'member_name.required': '昵称为必填项',
-        'member_name.max': '昵称不能超过20个字',
-        'login_name.required': '账号为必填项',
-        'login_pwd.required': '密码为必填项',
-        'login_pwd.min': '密码最少需6位',
-        'login_pwd.max': '密码最多不超过16位',
-        'rePassword.same': '两次密码输入不一致',
+        'nickname.required': '昵称为必填项',
+        'nickname.max': '昵称不能超过20个字',
+        'username.required': '账号为必填项',
+        'password.required': '密码为必填项',
+        'password.min': '密码最少需6位',
+        'password.max': '密码最多不超过16位',
+        're_pwd.same': '两次密码输入不一致',
       }
       const validation = await validate(ctx.body, rules, messages)
       if (validation.fails()) {
@@ -549,7 +546,7 @@ async function createValid(ctx) {
       isShowMsg: true,
       msg: err.message,
       code: 9000,
-      track: 'valid_createValid_1586097992',
+      track: 'valid_signUpValid_1586097992',
     })
   }
 }
@@ -695,11 +692,11 @@ async function editValid(ctx) {
               if (tmp) body.member_id = tmp
             }
             break
-          case 'member_name':
-            body.member_name = requestAll[k]
+          case 'nickname':
+            body.nickname = requestAll[k]
             break
-          case 'login_pwd':
-            body.login_pwd = requestAll[k]
+          case 'password':
+            body.password = requestAll[k]
             break
           case 'cellphone':
             body.cellphone = requestAll[k]
@@ -721,12 +718,12 @@ async function editValid(ctx) {
     async function paramsValid() {
       const rules = {
         member_id: 'required',
-        member_name: 'required|max:20',
+        nickname: 'required|max:20',
       }
       const messages = {
         'member_id.required': 'member_id为必填项',
-        'member_name.required': '昵称为必填项',
-        'member_name.max': '昵称不能超过20个字',
+        'nickname.required': '昵称为必填项',
+        'nickname.max': '昵称不能超过20个字',
       }
       const validation = await validate(ctx.body, rules, messages)
       if (validation.fails()) {

@@ -8,16 +8,21 @@ moment.locale('zh-cn') //设为北京时区
 
 class IndexController {
   constructor() {}
-  async init(ctx) {
+
+  async home(ctx) {
     try {
       let result = {}
-
+      //检查参数合法性
+      // const resultValid = await homeValid(ctx)
+      // if (resultValid) return resultValid
       //调用业务逻辑Service
-      //result = await .init(ctx)
+      //result = await .home(ctx)
       //组装从Service返回的数据，返回给前端
-      return ctx.view.render('admin.index', {})
+      let member_info = ctx.session.get('member') || {}
+      return ctx.view.render('admin.index', { username: member_info.nickname })
     } catch (err) {
-      return ctx.view.render('admin.index')
+      console.log(err)
+      return ctx.view.render('error.404')
     }
   }
 }

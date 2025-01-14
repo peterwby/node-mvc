@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html class="h-full" data-theme="true" data-theme-mode="light" dir="ltr" lang="en">
+
+<head>
+  <base href="../../" />
+  <title>Chanson Management</title>
+  <meta charset="utf-8" />
+  <meta content="follow, index" name="robots" />
+  <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport" />
+  <meta content="Chanson Management" name="description" />
+  <link href="assets/media/app/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180" />
+  <link href="assets/media/app/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png" />
+  <link href="assets/media/app/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png" />
+  <link href="assets/media/app/favicon.ico" rel="shortcut icon" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="assets/vendors/apexcharts/apexcharts.css" rel="stylesheet" />
+  <link href="assets/vendors/keenicons/styles.bundle.css" rel="stylesheet" />
+  <link href="assets/css/app.css" rel="stylesheet" />
+  <!-- 在 content 之前引入 axios -->
+  <script src="assets/vendors/axios/axios.min.js"></script>
+  <!-- 添加 axios 拦截器配置 -->
+  <script>
+    // 添加请求拦截器
+    axios.interceptors.request.use(function (config) {
+      // 从 localStorage 获取 token
+      const token = localStorage.getItem('token')
+      // 如果存在token，则添加到请求头中
+      if (token) {
+        config.headers.token = token
+      }
+      return config
+    }, function (error) {
+      return Promise.reject(error)
+    })
+  </script>
+</head>
+
+<body class="antialiased flex h-full text-base text-gray-700 dark:bg-coal-500">
+  <!-- Theme Mode -->
+  <script>
+    const defaultThemeMode = 'light' // light|dark|system
+    let themeMode
+
+    if (document.documentElement) {
+      if (localStorage.getItem('theme')) {
+        themeMode = localStorage.getItem('theme')
+      } else if (document.documentElement.hasAttribute('data-theme-mode')) {
+        themeMode = document.documentElement.getAttribute('data-theme-mode')
+      } else {
+        themeMode = defaultThemeMode
+      }
+
+      if (themeMode === 'system') {
+        themeMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+
+      document.documentElement.classList.add(themeMode)
+    }
+  </script>
+  <!-- End of Theme Mode -->
+  <!-- Page -->
+  @!section('content')
+  <!-- End of Page -->
+  <!-- Scripts -->
+  <script src="assets/js/core.bundle.js"></script>
+  <script src="assets/vendors/apexcharts/apexcharts.min.js"></script>
+  <!-- End of Scripts -->
+  @!section('scripts')
+</body>
+
+</html>
