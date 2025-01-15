@@ -1,13 +1,18 @@
-# editorconfig.org
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
 root = true
 
+# Unix-style newlines with a newline ending every file
 [*]
-indent_size = 2
-indent_style = space
 end_of_line = lf
+insert_final_newline = true
 charset = utf-8
 trim_trailing_whitespace = true
-insert_final_newline = true
 
-[*.md]
-trim_trailing_whitespace = false
+# Edge Template files
+[*.edge]
+insert_final_newline = true
+trim_trailing_whitespace = true
+# 禁用自动格式化，防止破坏模板语法
+max_line_length = off

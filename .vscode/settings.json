@@ -17,11 +17,13 @@
     "editor.defaultFormatter": "vscode.html-language-features"
   },
   "[edge]": {
-    "editor.defaultFormatter": "vscode.html-language-features"
+    "editor.defaultFormatter": null,
+    "editor.formatOnSave": false
   },
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
   "editor.tabSize": 2,
-  "python.terminal.activateEnvironment": false
+  "python.terminal.activateEnvironment": false,
+  "html.validate.scripts": false
 }

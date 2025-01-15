@@ -84,16 +84,16 @@
 
     try {
       const formData = new FormData(form);
-      console.log(Object.fromEntries(formData))
       const response = await axios.post('/api/member/sign-in', Object.fromEntries(formData));
       if (response.data.code == 0) {
-        showSuccessModal('登录成功！');
+        localStorage.setItem('token', response.data.data.token)
+        Util.successMsg('登录成功！');
         window.location.href = '/admin/';
         return null
       }
       throw new Error(response.data.msg)
     } catch (e) {
-      showErrorModal(e.message || '发生错误，请稍后重试');
+      Util.errorMsg(e.message || '发生错误，请稍后重试');
     } finally {
       // 恢复按钮状态
       submitButton.querySelector('.indicator-label').classList.remove('hidden');
@@ -119,16 +119,6 @@
     }
 
     return true;
-  }
-
-  // 显示成功提示
-  function showSuccessModal(message) {
-    alert(message)
-  }
-
-  // 显示错误提示
-  function showErrorModal(message) {
-    alert(message)
   }
 
 

@@ -1,0 +1,107 @@
+@layout('common/layouts')
+
+@section('content')
+
+<!-- Container -->
+<main class="grow content pt-5" id="content" role="content">
+  <div class="container-fixed">
+    <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
+      <div class="flex flex-col justify-center gap-2">
+        <h1 class="text-xl font-medium leading-none text-gray-900">
+          编辑用户
+        </h1>
+      </div>
+      <div class="flex items-center gap-2.5">
+        <button type="button" class="btn btn-sm btn-light" onclick="window.history.back()">
+          返回
+        </button>
+        <button type="submit" class="btn btn-sm btn-primary" form="edit_form" id="submit_btn">
+          <span class="indicator-label">保存</span>
+          <span class="indicator-progress hidden">
+            <span
+              class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
+              role="status" aria-label="loading"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="container-fixed">
+    <div class="grid gap-5 lg:gap-7.5">
+      <div class="card min-w-full">
+        <div class="card-body">
+          <form id="edit_form" class="grid gap-5" method="POST">
+            <input type="hidden" name="member_id" value="{{ member_info.member_id }}">
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                昵称
+              </label>
+              <input id="nickname" name="nickname" class="input" placeholder="请输入昵称" type="text"
+                value="{{ member_info.nickname }}" required />
+            </div>
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                邮箱
+              </label>
+              <input id="email" name="email" class="input" placeholder="请输入邮箱" type="text"
+                value="{{ member_info.email || '' }}" />
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<!-- End of Container -->
+@endsection
+
+@section('scripts')
+<script>
+  const form = document.getElementById('edit_form');
+  const submitButton = document.getElementById('submit_btn');
+
+  // 防止重复提交
+  let isSubmitting = false;
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    if (isSubmitting) return;
+
+    // 显示加载状态
+    submitButton.querySelector('.indicator-label').classList.add('hidden');
+    submitButton.querySelector('.indicator-progress').classList.remove('hidden');
+    submitButton.disabled = true;
+    isSubmitting = true;
+
+    try {
+      const formData = new FormData(form);
+      const response = await axios.post('/api/member/update-info', Object.fromEntries(formData), {
+        headers: {
+          'token': localStorage.getItem('token')
+        }
+      });
+
+      if (response.data.code === 0) {
+        Util.successMsg('保存成功');
+        window.location.href = '/admin/member/list';
+      } else {
+        throw new Error(response.data.msg || '保存失败');
+      }
+    } catch (err) {
+      console.error(err);
+      Util.errorMsg(err.message || '保存失败');
+    } finally {
+      // 恢复按钮状态
+      submitButton.querySelector('.indicator-label').classList.remove('hidden');
+      submitButton.querySelector('.indicator-progress').classList.add('hidden');
+      submitButton.disabled = false;
+      isSubmitting = false;
+    }
+  });
+
+</script>
+@endsection

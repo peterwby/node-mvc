@@ -119,7 +119,7 @@ class MemberTable extends BaseTable {
         'a.remark'
       )
         .from('member as a')
-        .innerJoin('member_status as b', 'a.member_status_id', 'b.member_status_id')
+        .innerJoin('dict_member_status as b', 'a.member_status_id', 'b.member_status_id')
         .where('a.member_id', id)
       let data = result[0] || {}
       return Util.end({
@@ -138,25 +138,23 @@ class MemberTable extends BaseTable {
   /**
    * 列表信息
    * @example
-   * fetchListBy({ status_id, search_word, page, limit })
+   * fetchListBy({ status_id, search, page, limit })
    */
   async fetchListBy(obj) {
     try {
       let result = {}
       const table = Database.clone()
       table
-        .select('a.member_id', 'a.nickname', 'a.email', 'a.cellphone', 'a.ctime', 'a.member_status_id', 'b.member_status_name')
+        .select('a.member_id', 'a.nickname', 'a.username', 'a.email', 'a.created_at', 'a.member_status_id', 'b.member_status_name')
         .from('member as a')
-        .innerJoin('member_status as b', 'a.member_status_id', 'b.member_status_id')
+        .innerJoin('dict_member_status as b', 'a.member_status_id', 'b.member_status_id')
         .orderBy('a.member_id', 'desc')
       if (obj.member_status_id) {
         table.where('a.member_status_id', '=', obj.member_status_id)
       }
-      if (obj.search_word) {
+      if (obj.search) {
         table.where(function () {
-          this.where('a.nickname', 'like', `%${obj.search_word}%`)
-            .orWhere('a.email', 'like', `%${obj.search_word}%`)
-            .orWhere('a.username', 'like', `%${obj.search_word}%`)
+          this.where('a.nickname', 'like', `%${obj.search}%`).orWhere('a.username', 'like', `%${obj.search}%`)
         })
       }
       result = await table.paginate(obj.page, obj.limit)

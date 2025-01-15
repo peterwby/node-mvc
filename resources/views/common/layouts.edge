@@ -2,7 +2,7 @@
 <html class="h-full" data-theme="true" data-theme-mode="light" dir="ltr" lang="en">
 
 <head>
-  <base href="../../" />
+  <base href="/" />
   <title>Chanson Management</title>
   <meta charset="utf-8" />
   <meta content="follow, index" name="robots" />
@@ -16,6 +16,23 @@
   <link href="assets/vendors/apexcharts/apexcharts.css" rel="stylesheet" />
   <link href="assets/vendors/keenicons/styles.bundle.css" rel="stylesheet" />
   <link href="assets/css/app.css" rel="stylesheet" />
+  <!-- 在 content 之前引入 axios -->
+  <script src="assets/vendors/axios/axios.min.js"></script>
+  <!-- 添加 axios 拦截器配置 -->
+  <script>
+    // 添加请求拦截器
+    axios.interceptors.request.use(function (config) {
+      // 从 localStorage 获取 token
+      const token = localStorage.getItem('token')
+      // 如果存在token，则添加到请求头中
+      if (token) {
+        config.headers.token = token
+      }
+      return config
+    }, function (error) {
+      return Promise.reject(error)
+    })
+  </script>
 </head>
 
 <body
@@ -54,10 +71,9 @@
       @include('common/header')
       <!-- End of Header -->
       <!-- Content -->
-      <main class="grow content pt-5" id="content" role="content">
-        <!-- section content -->
-        @!section('content')
-      </main>
+
+      @!section('content')
+
       <!-- End of Content -->
       <!-- Footer -->
       @include('common/footer')
@@ -1105,11 +1121,31 @@
   <!-- End of Page -->
   <!-- Scripts -->
   <script src="assets/js/core.bundle.js"></script>
-  <script src="assets/vendors/apexcharts/apexcharts.min.js"></script>
+  <!-- <script src="assets/vendors/apexcharts/apexcharts.min.js"></script> -->
   <script src="assets/js/widgets/general.js"></script>
   <script src="assets/js/layouts/demo1.js"></script>
+  <script src="assets/js/dayjs.min.js"></script>
+  <script src="assets/js/js.cookie.min.js"></script>
+  <script src="assets/js/tools.js"></script>
   <!-- End of Scripts -->
+
+  <script>
+    // 局部声明需要使用的工具
+    const { Util, dayjs, cookie } = window.Tools;
+
+    async function handleLogout() {
+      const response = await axios.post('/api/member/logout');
+      if (response.data.code == 1001) {
+        localStorage.removeItem('token')
+        Util.successMsg('已退出系统！');
+        window.location.href = '/admin/auth/sign-in';
+        return null
+      }
+    }
+  </script>
+
   @!section('scripts')
+
 </body>
 
 </html>

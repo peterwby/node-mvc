@@ -20,33 +20,33 @@ const Util = require('@Lib/Util')
 Route.group(() => {
   //基础语法
   //http://127.0.0.1:3000/tutorial/js-basics
-  Route.get('js-basics', 'PC/TutorialController.jsBasics')
+  Route.get('js-basics', 'TutorialController.jsBasics')
   //数据库查询
   //http://127.0.0.1:3000/tutorial/db-select
-  Route.get('db-select', 'PC/TutorialController.dbSelect')
+  Route.get('db-select', 'TutorialController.dbSelect')
   //数据库修改
   //http://127.0.0.1:3000/tutorial/db-modify
-  Route.post('db-modify', 'PC/TutorialController.dbModify')
+  Route.post('db-modify', 'TutorialController.dbModify')
   //http请求
-  Route.get('http-request', 'PC/TutorialController.httpRequest')
+  Route.get('http-request', 'TutorialController.httpRequest')
   //redis操作
-  Route.get('redis-ops', 'PC/TutorialController.redisOps')
+  Route.get('redis-ops', 'TutorialController.redisOps')
   //文件操作
-  Route.get('file-ops', 'PC/TutorialController.fileOps')
+  Route.get('file-ops', 'TutorialController.fileOps')
 })
   .prefix('tutorial')
   .middleware(['noAuth'])
 
 Route.group(() => {
   Route.get('heart', () => 'success')
-  Route.get('get-func-info', 'PC/MemberController.getFuncInfo')
-  Route.get('get-func-time', 'PC/MemberController.getFuncTime')
+  Route.get('get-func-info', 'MemberController.getFuncInfo')
+  Route.get('get-func-time', 'MemberController.getFuncTime')
 }).middleware(['noAuth']) //无需验证组，任何人都能访问
 
 Route.group(() => {
   try {
-    Route.post('member/sign-in', 'PC/MemberController.signIn')
-    Route.post('member/sign-up', 'PC/MemberController.signUp')
+    Route.post('member/sign-in', 'MemberController.signIn')
+    Route.post('member/sign-up', 'MemberController.signUp')
   } catch (err) {
     return Util.end2front({
       msg: 'Not found the API',
@@ -63,17 +63,13 @@ Route.group(() => {
 Route.group(() => {
   try {
     //菜单
-    Route.post('menu/get-menu', 'PC/MenuController.getMenu')
+    Route.post('menu/get-menu', 'MenuController.getMenu')
     //用户
-    Route.post('member/get-table-common', 'PC/MemberController.getTableCommon')
-    Route.post('member/get-table', 'PC/MemberController.getTable')
-    Route.post('member/logout', 'PC/MemberController.logout')
-    Route.post('member/edit-password', 'PC/MemberController.editPassword')
-    Route.post('member/get-edit-common', 'PC/MemberController.getEditCommon')
-    Route.post('member/edit', 'PC/MemberController.edit')
-    Route.post('member/get-create-common', 'PC/MemberController.getCreateCommon')
-    Route.post('member/create', 'PC/MemberController.create')
-    Route.post('member/remove', 'PC/MemberController.remove')
+    Route.post('member/get-list', 'MemberController.getList')
+    Route.post('member/logout', 'MemberController.logout')
+    Route.post('member/update-password', 'MemberController.updatePassword')
+    Route.post('member/update-info', 'MemberController.updateInfo')
+    Route.post('member/remove', 'MemberController.remove')
   } catch (err) {
     return Util.end2front({
       msg: 'Not found the API',
@@ -87,8 +83,13 @@ Route.group(() => {
 // View层 - 需要验证身份的路由
 Route.group(() => {
   try {
-    Route.get('/', 'admin/IndexController.home')
-    Route.get('/', 'admin/MemberController.list')
+    Route.get('/', 'HomeController.home')
+    Route.get('member/list', 'MemberController.list')
+    Route.get('member/view/:member_id', 'MemberController.view')
+    Route.get('member/edit/:member_id', 'MemberController.edit')
+    Route.post('member/edit-password', 'MemberController.updatePassword')
+    Route.post('member/edit-info', 'MemberController.editInfo')
+    Route.post('member/logout', 'MemberController.logout')
   } catch (err) {
     return view.render('error.404')
   }
@@ -99,8 +100,8 @@ Route.group(() => {
 // View层 - 无需验证身份的路由
 Route.group(() => {
   try {
-    Route.get('sign-in', 'admin/authController.signIn')
-    Route.get('sign-up', 'admin/authController.signUp')
+    Route.get('sign-in', 'AuthController.signIn')
+    Route.get('sign-up', 'AuthController.signUp')
   } catch (err) {
     return view.render('error.404')
   }

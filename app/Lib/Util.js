@@ -801,7 +801,7 @@ const Util = {
   /**
    * url参数转换为对象
    * @example
-   * Util.query2obj('http://abc.com?search_word=中国')
+   * Util.query2obj('http://abc.com?search=中国')
    */
   query2obj: function (url) {
     var reg_url = /^[^\?]+\?([\w\W]+)$/,

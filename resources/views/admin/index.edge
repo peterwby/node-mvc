@@ -1,21 +1,45 @@
 @layout('common/layouts')
-
+<!-- 内容 -->
 @section('content')
 <!-- Container -->
-<div class="container-fixed" id="content_container"></div>
-<!-- End of Container -->
-<!-- Container -->
-<div class="container-fixed">
-  <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
-    <div class="flex flex-col justify-center gap-2">
-      <h1 class="text-xl font-medium leading-none text-gray-900">Dashboard</h1>
-      <div class="flex items-center gap-2 text-sm font-normal text-gray-700">Welcome, {{ username }}</div>
+<main class="grow content pt-5" id="content" role="content">
+  <div class="container-fixed" id="content_container"></div>
+  <!-- End of Container -->
+  <!-- Container -->
+  <div class="container-fixed">
+    <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
+      <div class="flex flex-col justify-center gap-2">
+        <h1 class="text-xl font-medium leading-none text-gray-900">Dashboard</h1>
+        <div class="flex items-center gap-2 text-sm font-normal text-gray-700">Welcome, {{ username }}</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2.5">
+      <a class="btn btn-sm btn-light" href="admin/public-profile/profiles/default"> View Profile </a>
     </div>
   </div>
-  <div class="flex items-center gap-2.5">
-    <a class="btn btn-sm btn-light" href="admin/public-profile/profiles/default"> View Profile </a>
-  </div>
-</div>
-</div>
+</main>
+
 <!-- End of Container -->
+@endsection
+<!-- 脚本 -->
+@section('scripts')
+<script>
+
+  // 示例：使用其他工具方法
+  console.log(Util.isObj({ a: 1 }));
+  console.log(dayjs().format('YYYY-MM-DD HH:mm:ss'));
+
+  // // 设置 cookie
+  // cookie.set('name', 'value', {
+  //   path: '/',           // cookie 路径
+  //   expires: 7,          // 过期天数
+  //   secure: true,        // 仅通过 https 传输
+  //   sameSite: 'strict'   // Cookie 的 SameSite 属性
+  // });
+
+  // // 获取 cookie
+  // console.log(cookie.get('name'))
+  // cookie.remove('name', { path: '/' });
+
+</script>
 @endsection

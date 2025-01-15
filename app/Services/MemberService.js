@@ -85,27 +85,24 @@ class Service extends BaseService {
     }
   }
 
-  async getTableCommon(ctx) {
+  async list(ctx) {
     try {
       let result = {}
       const { body } = ctx
 
       //状态下拉框
-      const MemberStatusTable = require('@Table/member_status')
-      const memberStatusTable = new MemberStatusTable()
-      result = await memberStatusTable.fetchAll({
+      const DictMemberStatusTable = require('@Table/dict_member_status')
+      const dictMemberStatusTable = new DictMemberStatusTable()
+      result = await dictMemberStatusTable.fetchAll({
         orderBy: [['sequence', 'asc']],
       })
       const status_list = result.data.data.map((item) => ({
         member_status_id: item.member_status_id,
         member_status_name: item.member_status_name,
       }))
-      //公共信息
-      const common_info = {}
 
       const data = {
         status_list,
-        common_info,
       }
       return Util.end({
         data,
@@ -113,12 +110,49 @@ class Service extends BaseService {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: 'getTableCommon_15814365260',
+        stack: err.stack,
+        track: 'service_list_1736864844',
       })
     }
   }
 
-  async getTable(ctx) {
+  /**
+   * 获取列表公共信息
+   */
+  async getListCommon(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+
+      //状态下拉框
+      const DictMemberStatusTable = require('@Table/dict_member_status')
+      const dictMemberStatusTable = new DictMemberStatusTable()
+      result = await dictMemberStatusTable.fetchAll({
+        orderBy: [['sequence', 'asc']],
+      })
+      const status_list = result.data.data.map((item) => ({
+        member_status_id: item.member_status_id,
+        member_status_name: item.member_status_name,
+      }))
+
+      const data = {
+        status_list,
+      }
+      return Util.end({
+        data,
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        track: 'getListCommon_15814365260',
+      })
+    }
+  }
+
+  /**
+   * 获取列表
+   */
+  async getList(ctx) {
     try {
       let result = {}
       const { body } = ctx
@@ -129,7 +163,7 @@ class Service extends BaseService {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: 'getTable_1581436968',
+        track: 'getList_1581436968',
       })
     }
   }
@@ -206,10 +240,10 @@ class Service extends BaseService {
   /**
    * 修改密码
    * @example
-   * editPassword({old_pwd, new_pwd})
+   * updatePassword({old_pwd, new_pwd})
    * @returns object
    */
-  async editPassword(ctx) {
+  async updatePassword(ctx) {
     try {
       let result = {}
       let column = {}
@@ -243,7 +277,7 @@ class Service extends BaseService {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: 'editPassword_989jiokl9j',
+        track: 'updatePassword_989jiokl9j',
       })
     }
   }
@@ -277,7 +311,7 @@ class Service extends BaseService {
     }
   }
 
-  async edit(ctx) {
+  async updateInfo(ctx) {
     try {
       let result = {}
       let column = {}
@@ -297,7 +331,7 @@ class Service extends BaseService {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: 'edit_1581237428',
+        track: 'updateInfo_1581237428',
       })
     }
   }
@@ -373,6 +407,68 @@ class Service extends BaseService {
         msg: err.message,
         stack: err.stack,
         track: 'service_getFuncTime_1670497267',
+      })
+    }
+  }
+
+  /**
+   * 获取会员详情
+   */
+  async view(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+      const { member_id } = body
+
+      //获取会员信息
+      result = await memberTable.fetchOneById(member_id)
+      if (!result.data) {
+        return Util.end({
+          status: 0,
+          msg: '会员不存在',
+        })
+      }
+
+      return Util.end({
+        data: {
+          member_info: result.data,
+        },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        track: 'service_view_' + Date.now(),
+      })
+    }
+  }
+
+  /**
+   * 获取会员编辑信息
+   */
+  async edit(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+      const { member_id } = body
+
+      //获取会员信息
+      result = await memberTable.fetchOneById(member_id)
+      if (!result.data) {
+        return Util.end({
+          status: 0,
+          msg: '会员不存在',
+        })
+      }
+
+      return Util.end({
+        data: {
+          member_info: result.data,
+        },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        track: 'service_edit_' + Date.now(),
       })
     }
   }
