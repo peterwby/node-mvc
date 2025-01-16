@@ -136,12 +136,12 @@ class MemberController {
         })
       }
       //组装从Service返回的数据，返回给前端
-      const { member_info } = result.data
+      const { member_info, status_list } = result.data
       member_info.member_id = Util.encode(member_info.member_id)
       member_info.created_at = moment(member_info.created_at).format('YYYY-MM-DD')
 
       //渲染视图
-      return ctx.view.render('admin.member.edit', { member_info })
+      return ctx.view.render('admin.member.edit', { member_info, status_list })
     } catch (err) {
       return Util.error2front({
         msg: err.message,
@@ -239,6 +239,7 @@ class MemberController {
 
   async updateInfo(ctx) {
     try {
+      await Util.sleep(5000)
       let result = {}
       //检查参数合法性
       const resultValid = await updateInfoValid(ctx)
@@ -532,6 +533,17 @@ async function updateInfoValid(ctx) {
     return null
 
     async function paramsHandle() {
+      const file = ctx.request.file('file')
+      if (file) {
+        if (file.size > 1024 * 1024 * 100) {
+          throw new Error('文件大小不能超过100M')
+        }
+        // if (file.extname !== 'csv' && file.extname !== 'xlsx') {
+        //   throw new Error('只接受csv或xlsx文件')
+        // }
+        ctx.file = file
+      }
+
       const requestAll = ctx.request.all()
       let body = {}
       for (let k in requestAll) {
@@ -548,17 +560,11 @@ async function updateInfoValid(ctx) {
           case 'password':
             body.password = requestAll[k]
             break
-          case 'cellphone':
-            body.cellphone = requestAll[k]
+          case 'member_status_id':
+            body.member_status_id = requestAll[k]
             break
           case 'email':
             body.email = requestAll[k]
-            break
-          case 'gender_id':
-            body.gender_id = requestAll[k]
-            break
-          case 'remark':
-            body.remark = requestAll[k]
             break
         }
       }
@@ -666,7 +672,6 @@ async function listValid(ctx) {
 
     async function paramsHandle() {
       const requestAll = ctx.request.all()
-      console.log('list requestAll:', requestAll)
       let body = {}
       // 只接收以下参数
       for (let k in requestAll) {
@@ -724,7 +729,6 @@ async function getListValid(ctx) {
 
     async function paramsHandle() {
       const requestAll = ctx.request.all()
-      console.log('getList requestAll:', requestAll)
       let body = {}
       for (let k in requestAll) {
         switch (k.toLowerCase()) {

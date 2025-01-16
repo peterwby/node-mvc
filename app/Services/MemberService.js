@@ -3,6 +3,8 @@
 const Database = use('Database')
 const BaseService = require('@BaseClass/BaseService')
 const Util = require('@Lib/Util')
+const FileUtil = require('@Lib/FileUtil')
+const Helpers = use('Helpers')
 const log = use('Logger')
 const MemberTable = require('@Table/member')
 const memberTable = new MemberTable()
@@ -317,10 +319,26 @@ class Service extends BaseService {
       let column = {}
       const { body } = ctx
 
+      //如果有上传文件
+      if (ctx.file) {
+        console.log('开始处理上传的文件')
+        const filename = `file_${ctx.file.clientName}`
+        const fileDir = Helpers.tmpPath('files')
+        await FileUtil.checkAndPrepareFilePath(fileDir)
+        await ctx.file.move(fileDir, {
+          name: filename,
+          overwrite: true,
+        })
+        if (!ctx.file.moved()) {
+          console.log('文件上传失败')
+        }
+        console.log('上传 文件保存成功')
+      }
+
       await Database.transaction(async (trx) => {
         result = await memberTable.updateBy(trx, {
           where: [['member_id', '=', body.member_id]],
-          set: { nickname: body.nickname, email: body.email, cellphone: body.cellphone, remark: body.remark, gender_id: body.gender_id },
+          set: { nickname: body.nickname, email: body.email, member_status_id: body.member_status_id },
         })
         if (result.status === 0) {
           throw new Error('保存失败')
@@ -451,6 +469,17 @@ class Service extends BaseService {
       const { body } = ctx
       const { member_id } = body
 
+      //状态下拉框
+      const DictMemberStatusTable = require('@Table/dict_member_status')
+      const dictMemberStatusTable = new DictMemberStatusTable()
+      result = await dictMemberStatusTable.fetchAll({
+        orderBy: [['sequence', 'asc']],
+      })
+      const status_list = result.data.data.map((item) => ({
+        member_status_id: item.member_status_id,
+        member_status_name: item.member_status_name,
+      }))
+
       //获取会员信息
       result = await memberTable.fetchOneById(member_id)
       if (!result.data) {
@@ -459,10 +488,12 @@ class Service extends BaseService {
           msg: '会员不存在',
         })
       }
+      const member_info = result.data
 
       return Util.end({
         data: {
-          member_info: result.data,
+          status_list,
+          member_info,
         },
       })
     } catch (err) {

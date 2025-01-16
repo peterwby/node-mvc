@@ -17,8 +17,8 @@
     "editor.defaultFormatter": "vscode.html-language-features"
   },
   "[edge]": {
-    "editor.defaultFormatter": null,
-    "editor.formatOnSave": false
+    "editor.defaultFormatter": "luongnd.edge",
+    "editor.formatOnSave": true
   },
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"

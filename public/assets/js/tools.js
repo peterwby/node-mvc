@@ -944,6 +944,138 @@ class Tools {
       errorMsg: function (msg) {
         alert(msg)
       },
+
+      /************************************************************************
+       * 表单处理
+       ************************************************************************/
+
+      /**
+       * 通用表单提交处理函数
+       * @param {string} formSelector - 表单选择器
+       * @param {string} btnSelector - 提交按钮选择器
+       * @param {Function} submitCallback - 异步回调函数，处理实际的提交逻辑
+       * @param {Object} options - 可选配置项
+       * @param {Function} options.onSuccess - 成功回调函数
+       * @param {Function} options.onError - 错误回调函数
+       * @param {boolean} options.useOverlay - 是否使用全屏遮罩,默认false
+       * @example
+       * Util.handleFormSubmit('#myForm', '#submitBtn', async (formData) => {
+       *   const response = await axios.post('/api/save', formData);
+       *   return response.data;
+       * }, { useOverlay: true });
+       */
+      handleFormSubmit: (formSelector, btnSelector, submitCallback, options = {}) => {
+        const form = document.querySelector(formSelector)
+        const submitBtn = document.querySelector(btnSelector)
+
+        if (!form || !submitBtn) {
+          console.error('表单或提交按钮未找到')
+          return
+        }
+
+        // 防止重复提交标志
+        let isSubmitting = false
+
+        // 获取按钮内的加载指示器元素
+        const indicatorLabel = submitBtn.querySelector('.indicator-label')
+        const indicatorProgress = submitBtn.querySelector('.indicator-progress')
+
+        // 创建全屏遮罩
+        let overlay
+        if (options.useOverlay) {
+          overlay = document.createElement('div')
+          overlay.className = 'fixed inset-0 flex items-center justify-center z-50 hidden'
+          overlay.style.cssText = 'background-color: rgba(0, 0, 0, 0.2);'
+          overlay.innerHTML = `
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              <div class="flex items-center gap-2 px-4 py-2 font-medium leading-none text-2sm border border-gray-200 shadow-default rounded-md text-gray-500 bg-light">
+                <svg class="animate-spin -ml-1 h-5 w-5 text-gray-600" fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3">
+                </circle>
+                <path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor">
+                </path>
+                </svg>
+              </div>
+            </div>
+          `
+          document.body.appendChild(overlay)
+        }
+
+        // 创建提交处理函数
+        const handleSubmit = async function (e) {
+          e.preventDefault()
+
+          // 防止重复提交
+          if (isSubmitting) return
+
+          try {
+            // 显示加载状态
+            if (indicatorLabel && indicatorProgress) {
+              indicatorLabel.classList.add('hidden')
+              indicatorProgress.classList.remove('hidden')
+            }
+            submitBtn.disabled = true
+            isSubmitting = true
+
+            // 显示遮罩
+            if (overlay) {
+              overlay.classList.remove('hidden')
+            }
+
+            // 收集表单数据
+            const formData = new FormData(form)
+
+            // 移除空文件
+            for (let [key, value] of formData.entries()) {
+              if (value instanceof File && value.size === 0) {
+                formData.delete(key)
+              }
+            }
+
+            const result = await submitCallback(formData)
+
+            // 调用成功回调
+            if (options.onSuccess) {
+              options.onSuccess(result)
+            }
+          } catch (err) {
+            console.error(err)
+            // 调用错误回调
+            if (options.onError) {
+              options.onError(err)
+            } else {
+              // 默认错误处理
+              Util.errorMsg(err.message || '操作失败')
+            }
+          } finally {
+            // 恢复按钮状态
+            if (indicatorLabel && indicatorProgress) {
+              indicatorLabel.classList.remove('hidden')
+              indicatorProgress.classList.add('hidden')
+            }
+            submitBtn.disabled = false
+            isSubmitting = false
+
+            // 隐藏遮罩
+            if (overlay) {
+              overlay.classList.add('hidden')
+            }
+          }
+        }
+
+        // 添加事件监听器
+        form.addEventListener('submit', handleSubmit)
+
+        // 添加页面卸载时的清理
+        const cleanup = () => {
+          form.removeEventListener('submit', handleSubmit)
+          if (overlay) {
+            overlay.remove()
+          }
+          window.removeEventListener('unload', cleanup)
+        }
+        window.addEventListener('unload', cleanup)
+      },
     }
   }
 }

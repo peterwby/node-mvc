@@ -9,27 +9,23 @@
     <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
       <div class="flex flex-col justify-center gap-2">
         <h1 class="text-xl font-medium leading-none text-gray-900">
-          用户管理
+          会员列表
         </h1>
 
       </div>
       <div class="flex items-center gap-2.5">
-        <a class="btn btn-sm btn-light" href="#">
-          Import CSV
-        </a>
+        <button id="batch_delete_btn" class="btn btn-sm btn-danger" disabled>
+          批量删除
+        </button>
       </div>
     </div>
   </div>
   <!-- End of Container -->
   <!-- Container -->
   <div class="container-fixed">
-
     <div class="grid gap-5 lg:gap-7.5">
       <div class="card card-grid min-w-full">
         <div class="card-header flex-wrap gap-2">
-          <!-- <h3 class="card-title font-medium text-sm">
-            用户管理
-          </h3> -->
           <div class="flex flex-wrap gap-2 lg:gap-5">
             <form id="filter_form" class="flex flex-wrap gap-2 lg:gap-5" method="GET" action="/admin/member/list">
               <div class="flex">
@@ -44,7 +40,8 @@
                 <select class="select select-sm w-28" name="member_status_id">
                   <option value="">状态</option>
                   @each(status in status_list)
-                  <option value="{{ status.member_status_id }}" {{ request.input('member_status_id') + '' === status.member_status_id + '' ? 'selected' : '' }}>
+                  <option value="{{ status.member_status_id }}"
+                    {{ request.input('member_status_id') + '' === status.member_status_id + '' ? 'selected' : '' }}>
                     {{ status.member_status_name }}
                   </option>
                   @endeach
@@ -52,7 +49,11 @@
                 <button type="submit" class="btn btn-sm btn-outline btn-primary">
                   <i class="ki-filled ki-setting-4">
                   </i>
-                  Filters
+                  搜索
+                </button>
+                <button type="button" id="reset_filter_btn" class="btn btn-sm btn-outline btn-secondary">
+                  <i class="ki-filled ki-arrows-circle"></i>
+                  重置
                 </button>
               </div>
             </form>
@@ -94,6 +95,15 @@
                         </span>
                       </span>
                     </th>
+                    <th class="min-w-[100px]">
+                      <span class="sort asc">
+                        <span class="sort-label font-normal text-gray-700">
+                          状态
+                        </span>
+                        <span class="sort-icon">
+                        </span>
+                      </span>
+                    </th>
                     <th class="w-[60px]">
                     </th>
                   </tr>
@@ -115,7 +125,6 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
@@ -145,24 +154,43 @@
       'token': localStorage.getItem('token')
     },
     apiEndpoint: window.location.origin + '/api/member/get-list',
-    stateSave: false,
+    stateSave: true,
     info: "第{start} - {end} / 共{total}条",
     infoEmpty: "没有数据",
-    pageSizes: [10, 20, 50, 100],
-    pageSize: 10, //defalut size perPage
+    pageSizes: [5, 10, 20, 50, 100],
+    pageSize: 5, //defalut size perPage
     pageMore: "更多",
     pageMoreLimit: 5,
     mapRequest: (params) => {
-      // 获取筛选参数
-      const searchValue = document.querySelector('input[name="search"]').value;
-      const statusValue = document.querySelector('select[name="member_status_id"]').value;
+      //设置自定义筛选参数
 
-      if (searchValue) {
-        params.set('search', searchValue);
+
+
+      // 定义允许的参数白名单
+      const allowedParams = ['search', 'member_status_id'];
+
+      // 获取表单元素
+      const form = document.getElementById('filter_form');
+      const formData = new FormData(form);
+
+      // 遍历表单数据，只添加白名单中的非空参数
+      for (const [key, value] of formData.entries()) {
+        if (allowedParams.includes(key) && value && value.trim()) {
+          params.set(key, value.trim());
+        }
       }
-      if (statusValue) {
-        params.set('member_status_id', statusValue);
-      }
+
+      // 如果需要列排序，则要自定义排序字段映射
+      // const sortFieldMapping = {
+      //   1: 'nickname',
+      //   2: 'email',
+      //   3: 'created_at',
+      //   // 添加其他字段映射
+      // }
+      // const sortField = params.get('sortField');
+      // if (sortField && sortFieldMapping[sortField]) {
+      //   params.set('sortField', sortFieldMapping[sortField]);
+      // }
 
       return params;
     },
@@ -174,10 +202,25 @@
       },
       nickname: {
         render: (item, data, context) => {
-          return '<div class="font-semibold">' + item + '</div>';
+          return '<div class="flex items-center gap-3">' +
+            '<div class="symbol symbol-35px">' +
+            '<img src="/assets/media/avatars/300-2.png" alt="avatar" class="w-[35px] h-[35px] rounded-full">' +
+            '</div>' +
+            '<div class="font-semibold">' + item + '</div>' +
+            '</div>';
         },
       },
-      email: {},
+      email: {
+        render: (item, data, context) => {
+          return '<div>' + (item || '暂无') + '</div><div><a class="text-blue-500" href="http://www.google.com" target="_blank">跳转</a></div>';
+        },
+      },
+      member_status_name: {
+        render: (item, data, context) => {
+          const statusClass = item === '启用' ? 'text-success' : 'text-danger';
+          return '<div class="' + statusClass + ' font-medium">' + item + '</div>';
+        },
+      },
       created_at: {},
       action: {
         title: '操作',
@@ -189,6 +232,7 @@
             '</i>' +
             '</button>' +
             '<div class="menu-dropdown menu-default w-full max-w-[120px]" data-menu-dismiss="true">' +
+
             '<div class="menu-item">' +
             '<a class="menu-link" href="/admin/member/view/' + data.member_id + '">' +
             '<span class="menu-title">' +
@@ -245,7 +289,18 @@
     datatable.reload();
   });
 
-  // 使用事件委托处理删除按钮点击
+  // 处理重置按钮点击
+  document.getElementById('reset_filter_btn').addEventListener('click', function() {
+    const form = document.getElementById('filter_form');
+    // 重置所有输入框和选择框
+    form.querySelectorAll('input, select').forEach(element => {
+      element.value = '';
+    });
+    // 重新加载数据表格
+    datatable.reload();
+  });
+
+  // 处理单行删除按钮点击
   document.addEventListener('click', async function(e) {
     const btn = e.target.closest('.remove-btn');
     if (!btn) return;
@@ -285,6 +340,60 @@
       // 恢复按钮状态
       loadingEl.textContent = originalText;
       btn.disabled = false;
+    }
+  });
+
+  // 处理批量删除
+  const batchDeleteBtn = document.getElementById('batch_delete_btn');
+
+  // 监听表格的选择变化
+  document.addEventListener('change', function(e) {
+    const checkbox = e.target.closest('[data-datatable-row-check="true"], [data-datatable-check="true"]');
+    if (!checkbox) return;
+
+    // 使用setTimeout确保在checkbox状态更新后再获取选中的行
+    setTimeout(() => {
+      const checkedRows = datatable.getChecked();
+      batchDeleteBtn.disabled = checkedRows.length === 0;
+    }, 0);
+  });
+
+  // 批量删除按钮点击事件
+  batchDeleteBtn.addEventListener('click', async function() {
+    const checkedRows = datatable.getChecked();
+    if (checkedRows.length === 0) return;
+
+    if (!confirm('确定要删除选中的 ' + checkedRows.length + ' 个会员吗？')) {
+      return;
+    }
+
+    // 显示加载状态
+    const originalText = this.textContent;
+    this.textContent = '删除中...';
+    this.disabled = true;
+
+    try {
+      const response = await axios.post('/api/member/remove', {
+        ids: checkedRows
+      });
+
+      if (response.data.code === 0) {
+        // 显示成功提示
+        Util.successMsg('批量删除成功');
+        // 刷新表格
+        datatable.reload();
+      } else {
+        // 显示错误提示
+        Util.errorMsg(response.data.message || '批量删除失败');
+      }
+    } catch (error) {
+      console.error('批量删除失败:', error);
+      // 显示错误提示
+      Util.errorMsg('批量删除失败，请稍后重试');
+    } finally {
+      // 恢复按钮状态
+      this.textContent = originalText;
+      this.disabled = false;
     }
   });
 </script>

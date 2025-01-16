@@ -8,7 +8,7 @@
     <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
       <div class="flex flex-col justify-center gap-2">
         <h1 class="text-xl font-medium leading-none text-gray-900">
-          编辑用户
+          编辑信息
         </h1>
       </div>
       <div class="flex items-center gap-2.5">
@@ -49,6 +49,77 @@
                 value="{{ member_info.email || '' }}" />
             </div>
 
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                状态
+              </label>
+              <select id="member_status_id" name="member_status_id" class="select w-28" required>
+                @each(status in status_list)
+                <option value="{{ status.member_status_id }}"
+                  {{ member_info.member_status_id + ''===status.member_status_id + '' ? 'selected' : '' }}>
+                  {{ status.member_status_name }}
+                </option>
+                @endeach
+              </select>
+            </div>
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                性别
+              </label>
+              <div class="flex items-center gap-5">
+                <label class="form-label flex items-center gap-2.5 text-nowrap">
+                  <input checked="" class="radio" name="radio2" type="radio" value="1" />
+                  男
+                </label>
+                <label class="form-label flex items-center gap-2.5 text-nowrap">
+                  <input class="radio" name="radio2" type="radio" value="1" />
+                  女
+                </label>
+              </div>
+            </div>
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                开关
+              </label>
+              <div class="flex items-center gap-5">
+                <label class="switch">
+                  <input name="check" type="checkbox" value="1" />
+                </label>
+              </div>
+            </div>
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                多选
+              </label>
+              <div class="flex items-center gap-5">
+                <label class="form-label flex items-center gap-2.5 min-w-[80px]">
+                  <input class="checkbox" name="check" type="checkbox" value="1" />
+                  选项1
+                </label>
+                <label class="form-label flex items-center gap-2.5 min-w-[80px]">
+                  <input checked="" class="checkbox" name="check" type="checkbox" value="1" />
+                  选项2
+                </label>
+              </div>
+            </div>
+            {{--  <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                附件
+              </label>
+              <input class="file-input" type="file" name="file" />
+            </div>  --}}
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                备注
+              </label>
+              <textarea class="textarea" name="memo" placeholder="输入备注" rows="6"></textarea>
+            </div>
+
+
           </form>
         </div>
       </div>
@@ -60,48 +131,20 @@
 
 @section('scripts')
 <script>
-  const form = document.getElementById('edit_form');
-  const submitButton = document.getElementById('submit_btn');
-
-  // 防止重复提交
-  let isSubmitting = false;
-
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    if (isSubmitting) return;
-
-    // 显示加载状态
-    submitButton.querySelector('.indicator-label').classList.add('hidden');
-    submitButton.querySelector('.indicator-progress').classList.remove('hidden');
-    submitButton.disabled = true;
-    isSubmitting = true;
-
-    try {
-      const formData = new FormData(form);
-      const response = await axios.post('/api/member/update-info', Object.fromEntries(formData), {
-        headers: {
-          'token': localStorage.getItem('token')
-        }
-      });
-
-      if (response.data.code === 0) {
-        Util.successMsg('保存成功');
-        window.location.href = '/admin/member/list';
-      } else {
-        throw new Error(response.data.msg || '保存失败');
+  Util.handleFormSubmit('#edit_form', '#submit_btn', async (formData) => {
+    const response = await axios.post('/api/member/update-info', formData, {
+      headers: {
+        'token': localStorage.getItem('token')
       }
-    } catch (err) {
-      console.error(err);
-      Util.errorMsg(err.message || '保存失败');
-    } finally {
-      // 恢复按钮状态
-      submitButton.querySelector('.indicator-label').classList.remove('hidden');
-      submitButton.querySelector('.indicator-progress').classList.add('hidden');
-      submitButton.disabled = false;
-      isSubmitting = false;
+    });
+
+    if (response.data.code === 0) {
+      Util.successMsg('保存成功');
+      window.location.href = '/admin/member/list';
+      return response.data;
+    } else {
+      throw new Error(response.data.msg || '保存失败');
     }
   });
-
 </script>
 @endsection

@@ -8,7 +8,7 @@
     <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
       <div class="flex flex-col justify-center gap-2">
         <h1 class="text-xl font-medium leading-none text-gray-900">
-          用户详情
+          查看详情
         </h1>
       </div>
       <div class="flex items-center gap-2.5">
@@ -48,6 +48,14 @@
               </td>
               <td class="py-2 text-gray-700 font-normal text-sm">
                 {{ member_info.nickname }}
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 text-gray-600 font-normal">
+                状态
+              </td>
+              <td class="py-2 text-gray-700 font-normal text-sm">
+                {{ member_info.member_status_name }}
               </td>
             </tr>
             <tr>
