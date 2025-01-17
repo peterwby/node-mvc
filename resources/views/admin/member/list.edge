@@ -147,6 +147,69 @@
   const urlParams = new URLSearchParams(window.location.search);
 
   const datatableEl = document.querySelector('#primary_table');
+
+  // 更新URL参数的函数
+  function updateUrlParams(params) {
+    const url = new URL(window.location.href);
+    // 移除所有现有参数
+    url.search = '';
+    // 添加新参数
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) {
+        url.searchParams.set(key, value);
+      }
+    });
+    // 确保页码不超过最大值
+    const totalPages = datatable.getState().totalPages;
+    if (params.page > totalPages) {
+        params.page = totalPages || 1;
+    }
+    // 更新URL，不刷新页面
+    window.history.pushState({}, '', url);
+  }
+
+  // 从URL获取参数并设置到表单
+  function setFormFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const form = document.getElementById('filter_form');
+
+    // 设置表单值
+    form.querySelectorAll('input, select').forEach(element => {
+      const value = urlParams.get(element.name);
+      if (value) {
+        element.value = value;
+      }
+    });
+
+    return {
+      page: parseInt(urlParams.get('page')) || 1,
+      pageSize: parseInt(urlParams.get('size')) || 5
+    };
+  }
+
+  // 获取当前所有参数（包括分页和筛选）
+  function getAllParams() {
+    const form = document.getElementById('filter_form');
+    const formData = new FormData(form);
+    const params = {};
+
+    // 获取表单数据
+    for (const [key, value] of formData.entries()) {
+      if (value) {
+        // 先 trim，再进行 XSS 防护
+        const cleanValue = value.trim();
+        params[key] = cleanValue ? encodeURIComponent(cleanValue) : '';
+      }
+    }
+
+    // 添加分页信息
+    const state = datatable.getState();
+    params.page = state.page;
+    params.size = state.pageSize;
+
+    return params;
+  }
+
   const options = {
     requestMethod: 'POST',
     requestHeaders: {
@@ -158,12 +221,11 @@
     info: "第{start} - {end} / 共{total}条",
     infoEmpty: "没有数据",
     pageSizes: [5, 10, 20, 50, 100],
-    pageSize: 5, //defalut size perPage
+    pageSize: 5,
     pageMore: "更多",
     pageMoreLimit: 5,
     mapRequest: (params) => {
       //在这里设置自定义筛选参数
-
       // 获取表单元素
       const form = document.getElementById('filter_form');
       const formData = new FormData(form);
@@ -276,25 +338,67 @@
       content: ''
     },
   };
+
+  // 初始化：从URL读取参数
+  const initialState = setFormFromUrl();
+  options.pageSize = initialState.pageSize;
+  // 设置初始页码
+  options._state = {
+    page: initialState.page
+  };
+
   const datatable = new KTDataTable(datatableEl, options);
+
+  // 监听分页变化
+  datatable.on('pagination', (event) => {
+    // 等待一下确保状态已更新
+    setTimeout(() => {
+      updateUrlParams(getAllParams());
+    }, 0);
+  });
+
+  // 监听每页条数变化
+  document.querySelector('[data-datatable-size="true"]').addEventListener('change', function(e) {
+    const newSize = parseInt(e.target.value);
+    // 先更新URL中的size参数
+    const params = getAllParams();
+    params.size = newSize;
+    params.page = 1; // 切换每页条数时重置为第1页
+    updateUrlParams(params);
+  });
 
   // 处理筛选表单提交
   document.getElementById('filter_form').addEventListener('submit', function(e) {
     e.preventDefault();
-    // 重置页码为1
-    datatable.goPage(1);
+    // 只需要调用 reload，内部会重置到第1页
     datatable.reload();
+    updateUrlParams(getAllParams());
   });
 
   // 处理重置按钮点击
   document.getElementById('reset_filter_btn').addEventListener('click', function() {
     const form = document.getElementById('filter_form');
-    // 重置所有输入框和选择框
+    // 重置所有表单元素
     form.querySelectorAll('input, select').forEach(element => {
-      element.value = '';
+      if (element.type === 'checkbox' || element.type === 'radio') {
+        element.checked = false;
+      } else {
+        element.value = '';
+      }
     });
+    // 重置表格状态
+    datatable._config._state = {
+      page: 1,
+      pageSize: options.pageSize,
+      sortField: null,
+      sortOrder: '',
+      filters: [],
+      search: ''
+    };
     // 重新加载数据表格
     datatable.reload();
+    // 清除URL参数
+    window.history.pushState({}, '', window.location.pathname);
   });
 
   // 处理单行删除按钮点击
