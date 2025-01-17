@@ -63,7 +63,16 @@
   <!-- End of Page -->
   <!-- Scripts -->
   <script src="assets/js/core.bundle.js"></script>
-  <script src="assets/vendors/apexcharts/apexcharts.min.js"></script>
+  {{--  <script src="assets/vendors/apexcharts/apexcharts.min.js"></script>  --}}
+  <script src="assets/js/dayjs.min.js"></script>
+  <script src="assets/js/js.cookie.min.js"></script>
+  <script src="assets/js/tools.js"></script>
+
+  <script>
+    // 局部声明需要使用的工具
+    const { Util, dayjs, cookie } = window.Tools;
+
+  </script>
   <!-- End of Scripts -->
   @!section('scripts')
 </body>

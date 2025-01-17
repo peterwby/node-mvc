@@ -154,7 +154,7 @@
       'token': localStorage.getItem('token')
     },
     apiEndpoint: window.location.origin + '/api/member/get-list',
-    stateSave: true,
+    stateSave: false,
     info: "第{start} - {end} / 共{total}条",
     infoEmpty: "没有数据",
     pageSizes: [5, 10, 20, 50, 100],
@@ -162,20 +162,15 @@
     pageMore: "更多",
     pageMoreLimit: 5,
     mapRequest: (params) => {
-      //设置自定义筛选参数
-
-
-
-      // 定义允许的参数白名单
-      const allowedParams = ['search', 'member_status_id'];
+      //在这里设置自定义筛选参数
 
       // 获取表单元素
       const form = document.getElementById('filter_form');
       const formData = new FormData(form);
 
-      // 遍历表单数据，只添加白名单中的非空参数
+      // 遍历表单数据，只添加非空参数
       for (const [key, value] of formData.entries()) {
-        if (allowedParams.includes(key) && value && value.trim()) {
+        if (value && value.trim()) {
           params.set(key, value.trim());
         }
       }
@@ -286,6 +281,8 @@
   // 处理筛选表单提交
   document.getElementById('filter_form').addEventListener('submit', function(e) {
     e.preventDefault();
+    // 重置页码为1
+    datatable.goPage(1);
     datatable.reload();
   });
 
