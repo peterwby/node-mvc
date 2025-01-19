@@ -74,6 +74,14 @@
                 {{ member_info.updated_at }}
               </td>
             </tr>
+            <tr>
+              <td class="py-3 text-gray-600 font-normal">
+                备注
+              </td>
+              <td class="py-3 text-gray-700 text-sm font-normal">
+                <div id="remark" class="h-[150px]"></div>
+              </td>
+            </tr>
           </table>
         </div>
       </div>
@@ -85,6 +93,22 @@
 @endsection
 
 @section('scripts')
+<script src="/assets/js/rich_editor/rich_editor.js"></script>
 <script>
+  document.addEventListener('DOMContentLoaded', async function() {
+    try {
+      // 创建只读编辑器实例
+      const editor = await new RichEditor('#remark', 'readonly');
+
+      // 如果有备注内容，则设置到编辑器中
+      const remarkData = {{{ member_info.remark || null }}};
+      if (remarkData) {
+        editor.setContents(remarkData);
+      }
+    } catch (error) {
+      console.error('编辑器初始化失败:', error);
+      Util.errorMsg('编辑器加载失败，请刷新页面重试');
+    }
+  });
 </script>
 @endsection

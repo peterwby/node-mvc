@@ -37,7 +37,7 @@
               <label class="form-label max-w-56">
                 昵称
               </label>
-              <input id="nickname" name="nickname" class="input" placeholder="请输入昵称" type="text"
+              <input id="nickname" name="nickname" class="input max-w-[300px]" placeholder="请输入昵称" type="text"
                 value="{{ member_info.nickname }}" required />
             </div>
 
@@ -45,7 +45,7 @@
               <label class="form-label max-w-56">
                 邮箱
               </label>
-              <input id="email" name="email" class="input" placeholder="请输入邮箱" type="text"
+              <input id="email" name="email" class="input max-w-[300px]" placeholder="请输入邮箱" type="text"
                 value="{{ member_info.email || '' }}" />
             </div>
 
@@ -53,7 +53,7 @@
               <label class="form-label max-w-56">
                 状态
               </label>
-              <select id="member_status_id" name="member_status_id" class="select w-28" required>
+              <select id="member_status_id" name="member_status_id" class="select max-w-[300px]" required>
                 @each(status in status_list)
                 <option value="{{ status.member_status_id }}"
                   {{ member_info.member_status_id + ''===status.member_status_id + '' ? 'selected' : '' }}>
@@ -109,14 +109,15 @@
               <label class="form-label max-w-56">
                 附件
               </label>
-              <input class="file-input" type="file" name="file" />
+              <input class="file-input max-w-[300px]" type="file" name="file" />
             </div>
-
-            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5 h-[400px] content-start">
               <label class="form-label max-w-56">
                 备注
               </label>
-              <textarea class="textarea" name="memo" placeholder="输入备注" rows="6"></textarea>
+              <div class="grow h-[250px] max-w-[800px]">
+                <div id="remark"></div>
+              </div>
             </div>
 
 
@@ -130,20 +131,49 @@
 @endsection
 
 @section('scripts')
+<script src="/assets/js/rich_editor/rich_editor.js"></script>
 <script>
-  Util.handleFormSubmit('#edit_form', '#submit_btn', async (formData) => {
-    const response = await axios.post('/api/member/update-info', formData, {
-      headers: {
-        'token': localStorage.getItem('token')
-      }
-    });
+  // 声明为全局变量
+  var editor;
 
-    if (response.data.code === 0) {
-      Util.successMsg('保存成功');
-      window.location.href = '/admin/member/list';
-      return response.data;
-    } else {
-      throw new Error(response.data.msg || '保存失败');
+  document.addEventListener('DOMContentLoaded', async function() {
+    try {
+      // 创建编辑器实例（不再需要显式初始化）
+      editor = await new RichEditor('#remark', 'simple');
+
+      // 如果有初始数据，设置到编辑器中
+      const remarkData = {{{ member_info.remark || null }}};
+      if (remarkData) {
+        editor.setContents(remarkData);
+      }
+    } catch (error) {
+      console.error('编辑器初始化失败:', error);
+      Util.errorMsg('编辑器加载失败，请刷新页面重试');
+    }
+  });
+
+  Util.handleFormSubmit('#edit_form', '#submit_btn', async (formData) => {
+    try {
+      // 获取富文本框内容并添加到表单数据
+      const remarkContent = editor.getContents();
+      formData.append('remark', JSON.stringify(remarkContent));
+
+      const response = await axios.post('/api/member/update-info', formData, {
+        headers: {
+          'token': localStorage.getItem('token')
+        }
+      });
+
+      if (response.data.code === 0) {
+        Util.successMsg('保存成功');
+        window.location.href = '/admin/member/list';
+        return response.data;
+      } else {
+        throw new Error(response.data.msg || '保存失败');
+      }
+    } catch (error) {
+      console.error('保存失败:', error);
+      throw error;
     }
   });
 </script>

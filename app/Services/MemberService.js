@@ -338,7 +338,7 @@ class Service extends BaseService {
       await Database.transaction(async (trx) => {
         result = await memberTable.updateBy(trx, {
           where: [['member_id', '=', body.member_id]],
-          set: { nickname: body.nickname, email: body.email, member_status_id: body.member_status_id },
+          set: { nickname: body.nickname, email: body.email, member_status_id: body.member_status_id, remark: body.remark },
         })
         if (result.status === 0) {
           throw new Error('保存失败')

@@ -566,6 +566,9 @@ async function updateInfoValid(ctx) {
           case 'email':
             body.email = requestAll[k]
             break
+          case 'remark':
+            body.remark = requestAll[k]
+            break
         }
       }
       ctx.body = Util.deepClone(body)

@@ -62,8 +62,7 @@ Route.group(() => {
  */
 Route.group(() => {
   try {
-    //菜单
-    Route.post('menu/get-menu', 'MenuController.getMenu')
+    Route.post('upload/image', 'CommonController.uploadImage')
     //用户
     Route.post('member/get-list', 'MemberController.getList')
     Route.post('member/logout', 'MemberController.logout')
