@@ -1,0 +1,180 @@
+@layout('common/layouts')
+
+@section('content')
+
+<!-- Container -->
+<main class="grow content pt-5" id="content" role="content">
+  <div class="container-fixed">
+    <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
+      <div class="flex flex-col justify-center gap-2">
+        <h1 class="text-xl font-medium leading-none text-gray-900">
+          编辑信息
+        </h1>
+      </div>
+      <div class="flex items-center gap-2.5">
+        <button type="button" class="btn btn-sm btn-light" onclick="window.history.back()">
+          返回
+        </button>
+        <button type="submit" class="btn btn-sm btn-primary" form="edit_form" id="submit_btn">
+          <span class="indicator-label">保存</span>
+          <span class="indicator-progress hidden">
+            <span
+              class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
+              role="status" aria-label="loading"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="container-fixed">
+    <div class="grid gap-5 lg:gap-7.5">
+      <div class="card min-w-full">
+        <div class="card-body">
+          <form id="edit_form" class="grid gap-5" method="POST">
+            <input type="hidden" name="member_id" value="{{ member_info.member_id }}">
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                昵称
+              </label>
+              <input id="nickname" name="nickname" class="input max-w-[300px]" placeholder="请输入昵称" type="text"
+                value="{{ member_info.nickname }}" required />
+            </div>
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                邮箱
+              </label>
+              <input id="email" name="email" class="input max-w-[300px]" placeholder="请输入邮箱" type="text"
+                value="{{ member_info.email || '' }}" />
+            </div>
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                状态
+              </label>
+              <select id="member_status_id" name="member_status_id" class="select max-w-[300px]" required>
+                @each(status in status_list)
+                <option value="{{ status.member_status_id }}"
+                  {{ member_info.member_status_id + ''===status.member_status_id + '' ? 'selected' : '' }}>
+                  {{ status.member_status_name }}
+                </option>
+                @endeach
+              </select>
+            </div>
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                性别
+              </label>
+              <div class="flex items-center gap-5">
+                <label class="form-label flex items-center gap-2.5 text-nowrap">
+                  <input checked="" class="radio" name="radio2" type="radio" value="1" />
+                  男
+                </label>
+                <label class="form-label flex items-center gap-2.5 text-nowrap">
+                  <input class="radio" name="radio2" type="radio" value="1" />
+                  女
+                </label>
+              </div>
+            </div>
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                开关
+              </label>
+              <div class="flex items-center gap-5">
+                <label class="switch">
+                  <input name="check" type="checkbox" value="1" />
+                </label>
+              </div>
+            </div>
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                多选
+              </label>
+              <div class="flex items-center gap-5">
+                <label class="form-label flex items-center gap-2.5 min-w-[80px]">
+                  <input class="checkbox" name="check" type="checkbox" value="1" />
+                  选项1
+                </label>
+                <label class="form-label flex items-center gap-2.5 min-w-[80px]">
+                  <input checked="" class="checkbox" name="check" type="checkbox" value="1" />
+                  选项2
+                </label>
+              </div>
+            </div>
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                附件
+              </label>
+              <input class="file-input max-w-[300px]" type="file" name="file" />
+            </div>
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5 h-[400px] content-start">
+              <label class="form-label max-w-56">
+                备注
+              </label>
+              <div class="grow h-[250px] max-w-[800px]">
+                <div id="remark"></div>
+              </div>
+            </div>
+
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<!-- End of Container -->
+@endsection
+
+@section('scripts')
+<script src="/assets/js/rich_editor/rich_editor.js"></script>
+<script>
+  // 声明为全局变量
+  var editor;
+
+  document.addEventListener('DOMContentLoaded', async function() {
+    try {
+      // 创建编辑器实例（不再需要显式初始化）
+      editor = await new RichEditor('#remark', 'simple');
+
+      // 如果有初始数据，设置到编辑器中
+      const remarkData = {{{ member_info.remark || null }}};
+      if (remarkData) {
+        editor.setContents(remarkData);
+      }
+    } catch (error) {
+      console.error('编辑器初始化失败:', error);
+      Util.errorMsg('编辑器加载失败，请刷新页面重试');
+    }
+  });
+
+  Util.handleFormSubmit('#edit_form', '#submit_btn', async (formData) => {
+    try {
+      // 获取富文本框内容并添加到表单数据
+      const remarkContent = editor.getContents();
+      formData.append('remark', JSON.stringify(remarkContent));
+
+      const response = await axios.post('/api/member/update-info', formData, {
+        headers: {
+          'token': localStorage.getItem('token')
+        }
+      });
+
+      if (response.data.code === 0) {
+        Util.successMsg('保存成功');
+        window.location.href = '/admin/member/list';
+        return response.data;
+      } else {
+        throw new Error(response.data.msg || '保存失败');
+      }
+    } catch (error) {
+      console.error('保存失败:', error);
+      throw error;
+    }
+  });
+</script>
+@endsection

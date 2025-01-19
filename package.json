@@ -6,10 +6,13 @@
   "main": "server.js",
   "scripts": {
     "init": "bash init.sh",
-    "start": "node server.js",
+    "start": "pnpm css:prod && node server.js",
     "debug": "node --inspect-brk=5858 server.js",
     "test": "node ace test",
-    "dev": "adonis serve --dev"
+    "dev": "concurrently \"adonis serve --dev\" \"pnpm css:watch\"",
+    "css:build": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css",
+    "css:watch": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css --watch",
+    "css:prod": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css --minify"
   },
   "keywords": [
     "chanshon"
@@ -33,18 +36,29 @@
     "@adonisjs/validator": "^5.0.6",
     "@adonisjs/vow": "^1.0.17",
     "@adonisjs/websocket": "^1.0.12",
+    "@popperjs/core": "^2.11.8",
     "adonis-hashids": "^1.0.5",
     "adonis-scheduler": "^3.0.2",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "axios-retry": "3.2.5",
     "jsonwebtoken": "^8.5.1",
     "jszip": "^3.2.2",
     "lodash": "^4.17.21",
+    "mini-svg-data-uri": "^1.4.4",
     "moment": "^2.30.1",
     "mysql": "^2.18.1",
     "node-require-alias": "^1.0.1",
     "unzip-stream": "^0.3.0",
     "uuid": "^3.3.3",
     "xss": "^1.0.15"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.2",
+    "postcss": "^8.4.49",
+    "postcss-import": "^16.1.0",
+    "postcss-nesting": "^13.0.1",
+    "postcss-preset-env": "^10.1.3",
+    "tailwindcss": "^3.4.17"
   }
 }

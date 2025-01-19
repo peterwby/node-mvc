@@ -7,6 +7,11 @@
 - 实际项目一般采用前后端分离开发，View 交给前端处理， 本框架的结构：Router->Controllers->Services->Models
 - models 层使用 query builder，基于 knex，不适用 ORM
 - 本框架可以作为纯后端，提供 api 给前端调用。也可以作为全栈框架直接渲染 html 输出到前端
+- 集成了 Metronic v9.1.2 后台管理系统（Tailwind CSS 版本）
+  - 管理系统位于 `/resources/views/admin/**`
+  - 样式源文件位于 `/resources/metronic`
+  - 静态资源位于 `/public/assets`
+  - 使用 Tailwind CLI 进行样式构建
 
 ## 须具备知识
 
@@ -62,7 +67,7 @@ npm run dev
 
 - 数据的流转的一般顺序是：前端发来请求 -> Router -> Controllers -> Services -> Models
 - /start/routes.js：(Router)此文件用来处理路由，并绑定相应的 Controller
-- /app/Controllers/Http/PC/：(Controller) 所有 Controller 文件都放在这里
+- /app/Controllers/Http/api/：(Controller) 所有 Controller 文件都放在这里
 - /app/Services/：(Service) 所有 Services 文件都放在这里，且都继承于 BaseService 基类
 - /app/Models/Table/：(Model) 所有的数据库表信息都放在这里，文件名应跟数据库上真实表文件名相同，且都继承于 BaseTable 基类，BaseTable 基类定义了一组常用的数据库操作。
 - /config/：Adonis 的配置目录，可以对不同模块进行配置
@@ -75,10 +80,10 @@ npm run dev
 
 - 使用 prettier 规范代码格式
 - API 的 method 默认使用 POST，只有少数展示数据的接口或下载类的接口使用 GET。比如：
-  Route.get('download/:type/:file', 'PC/DownloadController.download')
-  Route.post('entity/edit', 'PC/EntityController.edit')
-  Route.post('entity/get-table', 'PC/EntityController.getTable')
-  Route.post('entity/get-table-common', 'PC/EntityController.getTableCommon')
+  Route.get('download/:type/:file', 'api/DownloadController.download')
+  Route.post('entity/edit', 'api/EntityController.edit')
+  Route.post('entity/get-table', 'api/EntityController.getList')
+  Route.post('entity/get-table-common', 'api/EntityController.getListCommon')
 - Class 的名称用大驼峰风格：比如 UserController
 - 函数名称用小驼峰风格：比如 getUserInfo()
 - 路由、 URL 用连字符：比如 get-user-info

@@ -143,14 +143,14 @@ user.email = 'test@test.com' // 设置值
 
 ```javascript
 Route.group(() => {
-  Route.get('user-info', 'PC/UserController.getInfo')
-  Route.post('update-user', 'PC/UserController.update')
+  Route.get('user-info', 'api/UserController.getInfo')
+  Route.post('update-user', 'api/UserController.update')
 }).prefix('api/v1')
 ```
 
 ### 3.2 控制器 (Controller)
 
-文件位置：`app/Controllers/Http/PC/UserController.js`
+文件位置：`app/Controllers/Http/api/UserController.js`
 
 ```javascript
 const { validate } = use('Validator')
@@ -333,10 +333,10 @@ module.exports = UserTable
 ```javascript
 // start/routes.js
 Route.group(() => {
-  Route.post('create-user', 'PC/UserController.create')
-  Route.get('get-user', 'PC/UserController.getInfo')
-  Route.post('update-user', 'PC/UserController.update')
-  Route.post('delete-user', 'PC/UserController.delete')
+  Route.post('create-user', 'api/UserController.create')
+  Route.get('get-user', 'api/UserController.getInfo')
+  Route.post('update-user', 'api/UserController.update')
+  Route.post('delete-user', 'api/UserController.delete')
 }).prefix('api/v1')
 ```
 

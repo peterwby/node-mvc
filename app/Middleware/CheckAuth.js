@@ -10,12 +10,13 @@ class CheckAuth {
       if (!session.get('member')) {
         //session无效
         ctx.session.clear()
-        return ctx.response.send(
-          Util.end2front({
-            msg: '身份已过期，请重新登录',
-            code: 1001,
-          })
-        )
+        return ctx.response.redirect('/admin/auth/sign-in')
+        // return ctx.response.send(
+        //   Util.end2front({
+        //     msg: '身份已过期，请重新登录',
+        //     code: 1001,
+        //   })
+        // )
       }
       //get func info
       if (Env.get('LOG_API_CALL_COUNT') === '1') {

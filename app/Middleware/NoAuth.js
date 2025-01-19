@@ -14,6 +14,7 @@ class NoAuth {
 
       await next()
     } catch (err) {
+      console.log(err)
       let url = ctx.request.url()
       if (err.message && err.message.indexOf('E_UNDEFINED_METHOD') != -1) {
         return ctx.response.send(
