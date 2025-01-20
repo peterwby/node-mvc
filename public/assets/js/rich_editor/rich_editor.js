@@ -1,34 +1,308 @@
 /**
- * RichEditor 类 - 基于 Quill 的富文本编辑器封装
+ * RichEditor 类 - 基于 Quill v2.0 的富文本编辑器封装
  * @class
  */
 class RichEditor {
   static _initialized = false
+
+  /**
+   * 注册插件到 Quill
+   * @private
+   */
+  static _registerPlugins() {
+    // 注册图片处理插件
+    Quill.register('modules/imageHandler', ImageHandler)
+  }
+
   static _presets = {
     simple: {
       modules: {
         toolbar: [[{ header: [1, 2, false] }], ['bold', 'italic', 'underline'], ['image', 'code-block'], ['clean']],
+        imageHandler: {
+          uploadUrl: '/api/upload/image', // 自定义上传地址
+        },
       },
       placeholder: '请输入内容',
-      theme: 'snow', // 必须设置 theme 才会显示工具栏
+      theme: 'snow',
     },
     full: {
       modules: {
-        toolbar: [
-          ['bold', 'italic', 'underline', 'strike'], // 文字格式
-          ['blockquote', 'code-block'], // 引用和代码块
-          [{ header: 1 }, { header: 2 }], // 标题
-          [{ list: 'ordered' }, { list: 'bullet' }], // 列表
-          [{ indent: '-1' }, { indent: '+1' }], // 缩进
-          [{ direction: 'rtl' }], // 文字方向
-          [{ size: ['small', false, 'large', 'huge'] }], // 字体大小
-          [{ header: [1, 2, 3, 4, 5, 6, false] }], // 标题大小
-          ['link', 'image', 'video'], // 链接、图片、视频
-          [{ color: [] }, { background: [] }], // 字体颜色、背景颜色
-          [{ font: [] }], // 字体
-          [{ align: [] }], // 对齐方式
-          ['clean'], // 清除格式
-        ],
+        toolbar: {
+          container: [
+            [{ font: [] }], // 字体
+            [{ header: [1, 2, 3, 4, 5, 6, false] }], // 标题
+            ['bold', 'italic', 'underline', 'strike'], // 文字格式
+            [{ color: [] }, { background: [] }], // 颜色
+            [{ script: 'super' }, { script: 'sub' }], // 上下标
+            ['blockquote', 'code-block'], // 引用和代码块
+            [{ list: 'ordered' }, { list: 'bullet' }], // 列表
+            [{ indent: '-1' }, { indent: '+1' }], // 缩进
+            [{ direction: 'rtl' }], // 文字方向
+            [{ align: [] }], // 对齐
+            ['link', 'image', 'video'], // 链接、图片、视频
+            ['table'], // 表格
+            ['clean'], // 清除格式
+          ],
+          handlers: {
+            table: function (value) {
+              const tableModule = this.quill.getModule('table')
+              if (!tableModule) return
+
+              // 创建表格选择UI
+              const container = document.createElement('div')
+              container.className = 'ql-table-picker'
+              container.style.cssText = `
+                position: absolute;
+                background: white;
+                border: 1px solid #e4e6ef;
+                padding: 1rem;
+                border-radius: 0.475rem;
+                box-shadow: 0 0 50px 0 rgb(82 63 105 / 15%);
+                z-index: 1000;
+                min-width: 300px;
+              `
+
+              // 添加标题
+              const title = document.createElement('div')
+              title.textContent = '插入表格'
+              title.style.cssText = `
+                margin-bottom: 1rem;
+                font-weight: 500;
+                font-size: 1.075rem;
+                color: #181c32;
+              `
+              container.appendChild(title)
+
+              // 添加行列输入
+              const inputContainer = document.createElement('div')
+              inputContainer.style.cssText = `
+                display: flex;
+                gap: 1rem;
+                margin-bottom: 1rem;
+              `
+
+              // 行数输入
+              const rowInput = document.createElement('div')
+              rowInput.style.flex = '1'
+              rowInput.innerHTML = `
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #3f4254;">行数</label>
+                <input type="number" min="1" max="10" value="3" class="row-input" style="
+                  width: 80%;
+                  padding: 0.75rem 1rem;
+                  font-size: 0.875rem;
+                  font-weight: 400;
+                  line-height: 1.5;
+                  color: #181c32;
+                  background-color: #ffffff;
+                  background-clip: padding-box;
+                  border: 1px solid #e4e6ef;
+                  appearance: none;
+                  border-radius: 0.475rem;
+                  box-shadow: none;
+                  transition: border-color 0.15s ease-in-out;
+                ">
+              `
+
+              // 列数输入
+              const colInput = document.createElement('div')
+              colInput.style.flex = '1'
+              colInput.innerHTML = `
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #3f4254;">列数</label>
+                <input type="number" min="1" max="10" value="3" class="col-input" style="
+                  width: 80%;
+                  padding: 0.75rem 1rem;
+                  font-size: 0.875rem;
+                  font-weight: 400;
+                  line-height: 1.5;
+                  color: #181c32;
+                  background-color: #ffffff;
+                  background-clip: padding-box;
+                  border: 1px solid #e4e6ef;
+                  appearance: none;
+                  border-radius: 0.475rem;
+                  box-shadow: none;
+                  transition: border-color 0.15s ease-in-out;
+                ">
+              `
+
+              inputContainer.appendChild(rowInput)
+              inputContainer.appendChild(colInput)
+              container.appendChild(inputContainer)
+
+              // 添加按钮
+              const buttonContainer = document.createElement('div')
+              buttonContainer.style.cssText = `
+                display: flex;
+                gap: 0.5rem;
+                justify-content: flex-end;
+              `
+
+              const cancelBtn = document.createElement('button')
+              cancelBtn.textContent = '取消'
+              cancelBtn.className = 'ql-table-picker-btn'
+              cancelBtn.style.cssText = `
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                line-height: 1.5;
+                color: #3f4254;
+                text-align: center;
+                vertical-align: middle;
+                cursor: pointer;
+                user-select: none;
+                background-color: transparent;
+                border: 1px solid #e4e6ef;
+                border-radius: 0.475rem;
+                transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+                min-height: 38px;
+              `
+
+              const insertBtn = document.createElement('button')
+              insertBtn.textContent = '插入'
+              insertBtn.className = 'ql-table-picker-btn'
+              insertBtn.style.cssText = `
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                line-height: 1.5;
+                color: #ffffff;
+                text-align: center;
+                vertical-align: middle;
+                cursor: pointer;
+                user-select: none;
+                background-color: #009ef7;
+                border: 1px solid #009ef7;
+                border-radius: 0.475rem;
+                transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+                min-height: 38px;
+              `
+
+              buttonContainer.appendChild(cancelBtn)
+              buttonContainer.appendChild(insertBtn)
+              container.appendChild(buttonContainer)
+
+              // 获取工具栏位置
+              const toolbar = this.quill.getModule('toolbar')
+              const tableButton = toolbar.container.querySelector('.ql-table')
+              const rect = tableButton.getBoundingClientRect()
+
+              // 定位选择器
+              container.style.left = `${rect.left}px`
+              container.style.top = `${rect.bottom + 5}px`
+
+              // 添加到文档
+              document.body.appendChild(container)
+
+              // 事件处理
+              const closeDialog = () => {
+                document.body.removeChild(container)
+                document.removeEventListener('click', handleOutsideClick)
+              }
+
+              const handleOutsideClick = (e) => {
+                if (!container.contains(e.target) && !tableButton.contains(e.target)) {
+                  closeDialog()
+                }
+              }
+
+              // 延迟添加点击监听，避免立即触发
+              setTimeout(() => {
+                document.addEventListener('click', handleOutsideClick)
+              })
+
+              // 取消按钮
+              cancelBtn.onclick = closeDialog
+
+              // 插入按钮
+              insertBtn.onclick = () => {
+                try {
+                  // 使用类选择器准确获取行列输入框
+                  const rowsInput = container.querySelector('.row-input')
+                  const colsInput = container.querySelector('.col-input')
+
+                  // 获取输入值，如果无效则使用默认值
+                  let rows = 3,
+                    cols = 3
+
+                  if (rowsInput && !isNaN(rowsInput.value) && rowsInput.value !== '') {
+                    rows = parseInt(rowsInput.value)
+                  }
+
+                  if (colsInput && !isNaN(colsInput.value) && colsInput.value !== '') {
+                    cols = parseInt(colsInput.value)
+                  }
+
+                  // 限制行列数范围
+                  rows = Math.min(Math.max(rows, 1), 10)
+                  cols = Math.min(Math.max(cols, 1), 10)
+
+                  // 确保焦点在编辑器内
+                  this.quill.focus()
+
+                  // 获取当前选区
+                  const range = this.quill.getSelection(true)
+
+                  // 如果没有选区，设置到末尾
+                  if (!range) {
+                    this.quill.setSelection(this.quill.getLength(), 0)
+                  }
+
+                  // 插入表格：确保行列顺序正确
+                  setTimeout(() => {
+                    console.log(`插入表格：${rows}行 x ${cols}列`)
+                    tableModule.insertTable(rows, cols)
+                  }, 0)
+
+                  // 关闭对话框
+                  closeDialog()
+                } catch (error) {
+                  console.error('插入表格失败:', error)
+                  closeDialog()
+                }
+              }
+            },
+          },
+        },
+        table: {
+          // 表格模块配置
+          operationMenu: {
+            insertColumnRight: true, // 右侧插入列
+            insertColumnLeft: true, // 左侧插入列
+            insertRowUp: true, // 上方插入行
+            insertRowDown: true, // 下方插入行
+            deleteColumn: true, // 删除列
+            deleteRow: true, // 删除行
+            deleteTable: true, // 删除表格
+          },
+          resizable: {
+            enabled: true, // 允许调整表格大小
+          },
+        },
+        keyboard: {
+          bindings: {
+            // 添加表格相关的快捷键
+            tab: {
+              key: 9,
+              handler: function (range, context) {
+                if (context.format.table) {
+                  // 在表格中按Tab键时移动到下一个单元格
+                  return true
+                }
+                return false
+              },
+            },
+          },
+        },
+        // 启用图片处理插件（可选自定义配置）
+        imageHandler: {
+          uploadUrl: '/api/upload/image', // 自定义上传地址
+        },
       },
       placeholder: '请输入内容',
       theme: 'snow',
@@ -52,6 +326,8 @@ class RichEditor {
     try {
       // 加载必要的CSS
       await this._loadCSS('/assets/js/rich_editor/rich_editor.css')
+      // 注册插件
+      this._registerPlugins()
       this._initialized = true
     } catch (error) {
       console.error('RichEditor初始化失败:', error)

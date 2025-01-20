@@ -322,7 +322,8 @@ class Service extends BaseService {
       //如果有上传文件
       if (ctx.file) {
         console.log('开始处理上传的文件')
-        const filename = `file_${ctx.file.clientName}`
+        const member_info = ctx.session.get('member')
+        const filename = `file_${member_info.member_id}_${ctx.file.clientName}`
         const fileDir = Helpers.tmpPath('files')
         await FileUtil.checkAndPrepareFilePath(fileDir)
         await ctx.file.move(fileDir, {

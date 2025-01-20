@@ -50,6 +50,8 @@ async function uploadImageValid(ctx) {
           throw new Error('只接受图片格式文件(jpg/jpeg/png/gif/webp)')
         }
         ctx.file = file
+      } else {
+        throw new Error('请上传图片, 确认input的name=file')
       }
     }
 

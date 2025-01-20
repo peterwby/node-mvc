@@ -16,9 +16,18 @@ class CommonService extends BaseService {
     try {
       let result = {}
       const { file } = ctx
-
+      const member_info = ctx.session.get('member')
+      const file_name = `editor_${member_info.member_id}_${Date.now()}.${file.subtype}`
+      await file.move(Helpers.publicPath('upload/images'), {
+        name: file_name,
+        overwrite: true,
+      })
+      if (!file.moved()) {
+        throw new Error('upload file failed')
+      }
+      // console.log(file.subtype, file.type, file.extname, file.fieldName, file.fileName, file.clientName)
       const data = {
-        url: '/upload/images/a.png',
+        url: `/upload/images/${file_name}`,
       }
       return Util.end({ data })
     } catch (err) {

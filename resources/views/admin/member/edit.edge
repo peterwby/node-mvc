@@ -152,11 +152,19 @@
     }
   });
 
+  /**
+   * 通用表单提交处理函数
+   * @param {string} formSelector - 表单选择器
+   * @param {string} btnSelector - 提交按钮选择器
+   * @param {Function} submitCallback - 异步回调函数，处理实际的提交逻辑
+   */
   Util.handleFormSubmit('#edit_form', '#submit_btn', async (formData) => {
     try {
       // 获取富文本框内容并添加到表单数据
-      const remarkContent = editor.getContents();
-      formData.append('remark', JSON.stringify(remarkContent));
+      if (editor) {
+        const remarkContent = editor.getContents();
+        formData.append('remark', JSON.stringify(remarkContent));
+      }
 
       const response = await axios.post('/api/member/update-info', formData, {
         headers: {

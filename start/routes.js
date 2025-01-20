@@ -39,9 +39,12 @@ Route.group(() => {
 
 Route.group(() => {
   Route.get('heart', () => 'success')
+}).middleware(['noAuth']) //无需验证组，任何人都能访问
+
+Route.group(() => {
   Route.get('get-func-info', 'MemberController.getFuncInfo')
   Route.get('get-func-time', 'MemberController.getFuncTime')
-}).middleware(['noAuth']) //无需验证组，任何人都能访问
+}).middleware(['checkAuthByString'])
 
 Route.group(() => {
   try {
@@ -62,6 +65,7 @@ Route.group(() => {
  */
 Route.group(() => {
   try {
+    //通用
     Route.post('upload/image', 'CommonController.uploadImage')
     //用户
     Route.post('member/get-list', 'MemberController.getList')

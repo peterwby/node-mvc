@@ -239,7 +239,6 @@ class MemberController {
 
   async updateInfo(ctx) {
     try {
-      await Util.sleep(5000)
       let result = {}
       //检查参数合法性
       const resultValid = await updateInfoValid(ctx)
@@ -538,8 +537,8 @@ async function updateInfoValid(ctx) {
         if (file.size > 1024 * 1024 * 100) {
           throw new Error('文件大小不能超过100M')
         }
-        // if (file.extname !== 'csv' && file.extname !== 'xlsx') {
-        //   throw new Error('只接受csv或xlsx文件')
+        // if (!['csv', 'txt', 'md', 'pdf'].includes(file.extname.toLowerCase())) {
+        //   throw new Error('只接受文件格式为(。。。。)')
         // }
         ctx.file = file
       }
