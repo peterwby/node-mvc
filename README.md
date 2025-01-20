@@ -2,11 +2,10 @@
 
 ## 简介
 
-- 本项目的地址：https://gitee.com/sh-chanson/node-server.git
-- 基于 Adonis.js v4.1 框架，其官方文档地址：https://adonisjs.com/docs/4.1/folder-structure
+- 本项目基于 Adonis.js v4.1 框架，官方文档地址：https://adonisjs.com/docs/4.1/folder-structure
 - 实际项目一般采用前后端分离开发，View 交给前端处理， 本框架的结构：Router->Controllers->Services->Models
 - models 层使用 query builder，基于 knex，不适用 ORM
-- 本框架可以作为纯后端，提供 api 给前端调用。也可以作为全栈框架直接渲染 html 输出到前端
+- 本框架可以作为纯后端，提供 API 给前端调用。也可以作为全栈框架直接渲染 html 输出到前端
 - 集成了 Metronic v9.1.2 后台管理系统（Tailwind CSS 版本）
   - 管理系统位于 `/resources/views/admin/**`
   - 样式源文件位于 `/resources/metronic`
@@ -15,10 +14,10 @@
 
 ## 须具备知识
 
-- node.js（最好用过类似 express、koa、egg.js 等框架）
+- Node.js
 - 熟悉 MVC 知识
-- 熟悉 es6 语法
-- 熟悉 sql 语法
+- 熟悉 ES6 语法
+- 熟悉 SQL 语法
 
 ## 准备工作
 
@@ -30,12 +29,6 @@
 
 - adonis 必须的全局包
   sudo npm i -g @adonisjs/cli
-- 源管理器
-  sudo npm i -g nrm
-- 切换国内源
-  sudo nrm use taobao
-- 其他全局包
-  sudo npm i -g live-server
 
 ## 项目安装
 
@@ -89,12 +82,6 @@ npm run dev
 - 路由、 URL 用连字符：比如 get-user-info
 - 文件名称用下划线连接，比如 hello_world.txt
 - 变量、json、css 里的 key 用下划线连接：比如 let user_info = { user_name: 'xxx' }
-
-## 约定
-
-- 常见的页面分为列表页（比如文章列表、用户列表）和详情页（比如文章编辑页、用户信息编辑页）
-- 列表页一般都有 2 个接口，一个是公共接口，比如 get-table-common（返回页面上的一些公共信息），一个是 get-table（返回表格数据）
-- 详情页一般都有 2 个接口，一个是公共接口 get-edit-common（返回页面上的一些公共信息），一个是提交接口，比如 edit、create 等
 
 ## 常用操作
 
@@ -169,4 +156,4 @@ npm run dev
   1. 根目录下是否有.env 文件，没有找管理员要
   2. 端口被占用
 - Unexpected token '.'
-  1. 可能是运行环境问题，比如重装 nodejs 环境，或者有安装 nvm 的话，可以切换 nodejs 版本
+  1. 可能是运行环境问题，比如重装 nodejs 环境，或者切换 nodejs 版本
