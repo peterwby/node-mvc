@@ -1076,6 +1076,391 @@ class Tools {
         }
         window.addEventListener('unload', cleanup)
       },
+
+      /************************************************************************
+       * URL 参数处理
+       ************************************************************************/
+
+      /**
+       * 获取当前URL中的所有参数
+       * @returns {Object} 参数对象
+       */
+      getUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search)
+        const params = {}
+        for (const [key, value] of urlParams.entries()) {
+          if (value) {
+            params[key] = value
+          }
+        }
+        return params
+      },
+
+      /**
+       * 更新URL参数
+       * @param {Object} params - 要更新的参数对象
+       */
+      updateUrlParams(params) {
+        const url = new URL(window.location.href)
+        // 移除所有现有参数
+        url.search = ''
+        // 添加新参数
+        Object.entries(params).forEach(([key, value]) => {
+          if (value) {
+            url.searchParams.set(key, value)
+          }
+        })
+        // 更新URL，不刷新页面
+        window.history.pushState({}, '', url)
+      },
+
+      /**
+       * 清除所有URL参数
+       */
+      clearUrlParams() {
+        window.history.pushState({}, '', window.location.pathname)
+      },
+
+      /**
+       * 根据URL参数设置表单值
+       * @param {string} formSelector - 表单选择器
+       * @returns {Object} 包含page和pageSize的对象
+       */
+      setFormFromUrl(formSelector) {
+        const urlParams = new URLSearchParams(window.location.search)
+        const form = document.querySelector(formSelector)
+
+        if (!form) return { page: 1, pageSize: 5 }
+
+        // 设置表单值
+        form.querySelectorAll('input, select').forEach((element) => {
+          const value = urlParams.get(element.name)
+          if (value) {
+            element.value = value
+          }
+        })
+
+        return {
+          page: parseInt(urlParams.get('page')) || 1,
+          pageSize: parseInt(urlParams.get('size')) || 5,
+        }
+      },
+
+      /************************************************************************
+       * 数据表格工具
+       ************************************************************************/
+
+      /**
+       * 初始化数据表格
+       * @param {string} selector - 表格选择器
+       * @param {Object} options - 配置项
+       */
+      initDataTable(selector, options) {
+        const defaultOptions = {
+          requestMethod: 'POST',
+          requestHeaders: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            token: localStorage.getItem('token'),
+          },
+          stateSave: false,
+          info: '第{start} - {end} / 共{total}条',
+          infoEmpty: '没有数据',
+          pageSizes: [5, 10, 20, 50, 100],
+          pageSize: 5,
+          pageMore: '更多',
+          pageMoreLimit: 5,
+          mapRequest: function (params) {
+            // 获取表单元素
+            const form = document.querySelector('form')
+            if (!form) return params
+
+            const formData = new FormData(form)
+            // 遍历表单数据，只添加非空参数
+            for (const [key, value] of formData.entries()) {
+              if (value && typeof value === 'string' && value.trim()) {
+                params.set(key, value.trim())
+              }
+            }
+
+            // 如果需要列排序，则要自定义排序字段映射
+            // const sortFieldMapping = {
+            //   1: 'nickname',
+            //   2: 'email',
+            //   3: 'created_at',
+            //   // 添加其他字段映射
+            // }
+            // const sortField = params.get('sortField');
+            // if (sortField && sortFieldMapping[sortField]) {
+            //   params.set('sortField', sortFieldMapping[sortField]);
+            // }
+
+            return params
+          },
+          loading: {
+            template:
+              '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">' +
+              '<div class="flex items-center gap-2 px-4 py-2 font-medium leading-none text-2sm border border-gray-200 shadow-default rounded-md text-gray-500 bg-light">' +
+              '<svg class="animate-spin -ml-1 h-5 w-5 text-gray-600" fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">' +
+              '<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3">' +
+              '</circle>' +
+              '<path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor">' +
+              '</path>' +
+              '</svg>' +
+              '{content}' +
+              '</div>' +
+              '</div>',
+            content: '',
+          },
+        }
+
+        // 合并配置
+        const finalOptions = Object.assign({}, defaultOptions, options)
+
+        // 设置初始页码
+        if (finalOptions.initialPage) {
+          finalOptions._state = {
+            page: finalOptions.initialPage,
+          }
+        }
+
+        const datatableEl = document.querySelector(selector)
+        if (!datatableEl) return null
+
+        const datatable = new KTDataTable(datatableEl, finalOptions)
+
+        // 监听分页变化
+        datatable.on('pagination', () => {
+          // 等待一下确保状态已更新
+          setTimeout(() => {
+            this.updateUrlParams(this.getAllTableParams(datatable))
+          }, 0)
+        })
+
+        // 监听每页条数变化
+        const pageSizeSelect = datatableEl.querySelector('[data-datatable-size="true"]')
+        if (pageSizeSelect) {
+          pageSizeSelect.addEventListener('change', (e) => {
+            const newSize = parseInt(e.target.value)
+            if (!isNaN(newSize)) {
+              // 先更新URL中的size参数
+              const params = this.getAllTableParams(datatable)
+              params.size = newSize
+              params.page = 1 // 切换每页条数时重置为第1页
+              this.updateUrlParams(params)
+            }
+          })
+        }
+
+        return datatable
+      },
+
+      /**
+       * 处理单行删除
+       * @param {Object} options - 配置项
+       */
+      handleRowDelete(options) {
+        const tableId = options.tableId
+        const deleteApi = options.deleteApi
+        const onSuccess = options.onSuccess
+
+        // 处理删除按钮点击
+        document.addEventListener('click', async function (e) {
+          const btn = e.target.closest('.remove-btn')
+          if (!btn) return
+
+          if (!confirm('确定要删除这条记录吗？')) {
+            return
+          }
+
+          // 获取按钮元素
+          const loadingEl = btn.querySelector('.menu-title')
+          if (!loadingEl) return
+
+          const originalText = loadingEl.textContent
+          const id = btn.dataset.id
+
+          // 显示加载状态
+          loadingEl.textContent = '删除中...'
+          btn.disabled = true
+
+          try {
+            const response = await axios.post(deleteApi, {
+              ids: [id],
+            })
+
+            if (response.data.code === 0) {
+              Util.successMsg('删除成功')
+              if (onSuccess) onSuccess()
+            } else {
+              Util.errorMsg(response.data.message || '删除失败')
+            }
+          } catch (error) {
+            console.error('删除失败:', error)
+            Util.errorMsg('删除失败，请稍后重试')
+          } finally {
+            // 恢复按钮状态
+            loadingEl.textContent = originalText
+            btn.disabled = false
+          }
+        })
+      },
+
+      /**
+       * 处理批量删除
+       * @param {Object} options - 配置项
+       */
+      handleBatchDelete(options) {
+        const tableId = options.tableId
+        const deleteApi = options.deleteApi
+        const buttonId = options.buttonId
+        const confirmMessage = options.confirmMessage
+        const onSuccess = options.onSuccess
+        const datatable = options.datatable
+
+        const datatableEl = document.querySelector(tableId)
+        if (!datatableEl) return
+
+        const batchDeleteBtn = document.querySelector(buttonId)
+        if (!batchDeleteBtn) return
+
+        // 监听表格的选择变化
+        document.addEventListener('change', function (e) {
+          const checkbox = e.target.closest('[data-datatable-row-check="true"], [data-datatable-check="true"]')
+          if (!checkbox) return
+
+          // 使用setTimeout确保在checkbox状态更新后再获取选中的行
+          setTimeout(() => {
+            const checkedRows = datatable.getChecked()
+            batchDeleteBtn.disabled = checkedRows.length === 0
+          }, 0)
+        })
+
+        // 批量删除按钮点击事件
+        batchDeleteBtn.addEventListener('click', async function () {
+          const checkedRows = datatable.getChecked()
+          if (checkedRows.length === 0) return
+
+          const message = typeof confirmMessage === 'function' ? confirmMessage(checkedRows.length) : '确定要删除选中的 ' + checkedRows.length + ' 条记录吗？'
+
+          if (!confirm(message)) return
+
+          // 显示加载状态
+          const originalText = this.textContent
+          this.textContent = '删除中...'
+          this.disabled = true
+
+          try {
+            const response = await axios.post(deleteApi, {
+              ids: checkedRows,
+            })
+
+            if (response.data.code === 0) {
+              Util.successMsg('批量删除成功')
+              if (onSuccess) onSuccess()
+            } else {
+              Util.errorMsg(response.data.message || '批量删除失败')
+            }
+          } catch (error) {
+            console.error('批量删除失败:', error)
+            Util.errorMsg('批量删除失败，请稍后重试')
+          } finally {
+            // 恢复按钮状态
+            this.textContent = originalText
+            this.disabled = false
+          }
+        })
+      },
+
+      /**
+       * 处理表格筛选
+       * @param {string} formSelector - 表单选择器
+       * @param {Object} options - 配置项
+       * @param {Object} datatable - 数据表格实例
+       */
+      handleTableFilter(formSelector, options, datatable) {
+        const onSubmit = options.onSubmit
+        const onReset = options.onReset
+
+        const form = document.querySelector(formSelector)
+        if (!form) return
+
+        const resetBtn = document.getElementById('reset_filter_btn')
+
+        // 处理表单提交
+        form.addEventListener('submit', function (e) {
+          e.preventDefault()
+          // 重置表格状态，设置页码为1
+          if (datatable) {
+            datatable._config._state = {
+              page: 1,
+              pageSize: datatable.getState().pageSize,
+              sortField: null,
+              sortOrder: '',
+              filters: [],
+              search: '',
+            }
+          }
+          if (onSubmit) onSubmit()
+        })
+
+        // 处理重置按钮点击
+        if (resetBtn) {
+          resetBtn.addEventListener('click', function () {
+            // 重置所有表单元素
+            form.querySelectorAll('input, select').forEach((element) => {
+              if (element.type === 'checkbox' || element.type === 'radio') {
+                element.checked = false
+              } else {
+                element.value = ''
+              }
+            })
+            // 重置表格状态，设置页码为1
+            if (datatable) {
+              datatable._config._state = {
+                page: 1,
+                pageSize: datatable.getState().pageSize,
+                sortField: null,
+                sortOrder: '',
+                filters: [],
+                search: '',
+              }
+            }
+            if (onReset) onReset()
+          })
+        }
+      },
+
+      /**
+       * 获取表格当前所有参数
+       * @param {Object} datatable - 数据表格实例
+       * @returns {Object} 参数对象
+       */
+      getAllTableParams(datatable) {
+        if (!datatable) return {}
+
+        const form = document.querySelector('form')
+        if (!form) return {}
+
+        const formData = new FormData(form)
+        const params = {}
+
+        // 获取表单数据
+        for (const [key, value] of formData.entries()) {
+          if (value && typeof value === 'string') {
+            const cleanValue = value.trim()
+            params[key] = cleanValue ? encodeURIComponent(cleanValue) : ''
+          }
+        }
+
+        // 添加分页信息
+        const state = datatable.getState()
+        if (state) {
+          params.page = state.page || 1
+          params.size = state.pageSize || 5
+        }
+
+        return params
+      },
     }
   }
 }
