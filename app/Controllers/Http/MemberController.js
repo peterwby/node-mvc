@@ -355,13 +355,11 @@ async function signInValid(ctx) {
     async function paramsValid() {
       const rules = {
         username: 'required',
-        password: 'required|min:6|max:16',
+        password: 'required',
       }
       const messages = {
         'username.required': '账号为必填项',
         'password.required': '密码为必填项',
-        'password.min': '密码最少需6位',
-        'password.max': '密码最多不超过16位',
       }
       const validation = await validate(ctx.body, rules, messages)
       if (validation.fails()) {

@@ -3,13 +3,70 @@
 const Database = use('Database')
 const log = use('Logger')
 const Env = use('Env')
+const Redis = use('Redis')
 const Helpers = use('Helpers')
 const BaseService = require('@BaseClass/BaseService')
 const Util = require('@Lib/Util')
+const Request = require('@Lib/Request')
+const DictLanguagesTable = require('@Table/dict_languages')
+const dictLanguagesTable = new DictLanguagesTable()
 
 class CommonService extends BaseService {
   constructor(props) {
     super(props)
+  }
+
+  async refreshCurrentLanguage() {
+    try {
+      //如果手工指定了语言
+      const selectedLanguage = await Redis.get('selectedLanguage')
+      console.log('selectedLanguage', selectedLanguage)
+
+      let result = await dictLanguagesTable.fetchAll()
+      let langList = result.data.data.map((item) => {
+        if (selectedLanguage) {
+          if (selectedLanguage === item.lang_id) {
+            item.is_selected = 1
+          }
+        } else {
+          //默认设置的语言
+          if (item.is_default === 1) {
+            item.is_selected = 1
+          }
+        }
+
+        return item
+      })
+
+      let currentLangInfo = langList.find((item) => item.is_selected === 1)
+      if (!currentLangInfo) {
+        throw new Error('No selected or default language found')
+      }
+      const transResponse = await Request.get(currentLangInfo.url)
+      if (!transResponse || !transResponse.data) {
+        throw new Error('Invalid translation data')
+      }
+      const transData = transResponse.data
+
+      // 筛选出 node# 开头的翻译
+      const filterTransData = {}
+      Object.keys(transData).forEach(function (key) {
+        if (key.startsWith('node#')) {
+          filterTransData[key] = transData[key]
+        }
+      })
+
+      // 将翻译数据存储到 Redis
+      await Redis.set('translation', JSON.stringify(filterTransData))
+
+      return Util.end({})
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        track: 'service_refreshCurrentLanguage_1737460952',
+      })
+    }
   }
 
   async uploadImage(ctx) {

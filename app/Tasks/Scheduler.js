@@ -5,7 +5,7 @@ const log = use('Logger')
 
 class Scheduler extends Task {
   static get schedule() {
-    return '* * * * 1 *'
+    return '0 0 0 0 1 *'
   }
 
   async handle() {
