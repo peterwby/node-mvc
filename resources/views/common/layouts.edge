@@ -1138,7 +1138,30 @@
 
   <script>
     // 局部声明需要使用的工具
-    const { Util, dayjs, cookie } = window.Tools;
+    const { Util, dayjs, cookie, trans } = window.Tools;
+
+    // 在页面加载时
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        //如果localStorage中没有translation，则从API获取
+        const translation = localStorage.getItem('translation')
+        if (!translation) {
+          // 获取翻译数据（示例：从API获取）
+          const response = await axios.post('/api/get-translation')
+          const translations = response.data.data.translation
+          localStorage.setItem('translation', translations)
+          // 设置翻译数据并移除加载遮罩
+          Util.setTranslation(translations)
+          return null
+        }
+        // 设置翻译数据并移除加载遮罩
+        Util.setTranslation()
+
+      } catch (error) {
+        console.error('Failed to load translations:', error)
+        // 处理错误情况
+      }
+    })
 
     async function handleLogout() {
       const response = await axios.post('/api/member/logout');
@@ -1148,6 +1171,23 @@
         window.location.href = '/admin/auth/sign-in';
         return null
       }
+    }
+
+    // 初始化主题设置
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeToggle = document.querySelector('[data-theme-toggle="true"]');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+
+        // 根据存储的主题设置复选框状态
+        if (themeToggle) {
+            themeToggle.checked = currentTheme === 'dark';
+        }
+    });
+
+    // 处理主题切换
+    function handleThemeChange(checkbox) {
+        const theme = checkbox.checked ? 'dark' : 'light';
+        localStorage.setItem('theme', theme);
     }
   </script>
 

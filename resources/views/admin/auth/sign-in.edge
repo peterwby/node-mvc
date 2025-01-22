@@ -76,6 +76,11 @@
 
     if (isSubmitting) return;
 
+    // 验证表单
+    if (!validateForm()) {
+      return;
+    }
+
     // 显示加载状态
     submitButton.querySelector('.indicator-label').classList.add('hidden');
     submitButton.querySelector('.indicator-progress').classList.remove('hidden');
@@ -109,12 +114,12 @@
     const password = form.querySelector('[name="password"]').value;
 
     if (!username) {
-      showErrorModal('请输入用户名');
+      Util.errorMsg('请输入用户名');
       return false;
     }
 
     if (!password) {
-      showErrorModal('请输入密码');
+      Util.errorMsg('请输入密码');
       return false;
     }
 

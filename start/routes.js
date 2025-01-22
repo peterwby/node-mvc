@@ -50,6 +50,7 @@ Route.group(() => {
   try {
     Route.post('member/sign-in', 'MemberController.signIn')
     Route.post('member/sign-up', 'MemberController.signUp')
+    Route.post('get-translation', 'CommonController.getTranslation')
   } catch (err) {
     return Util.end2front({
       msg: 'Not found the API',

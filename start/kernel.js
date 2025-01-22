@@ -14,6 +14,11 @@ const Server = use('Server')
 //const Scheduler = use('Adonis/Addons/Scheduler')
 //Scheduler.run()
 
+// 刷新翻译数据
+const CommonService = require(`@Services/CommonService`)
+const commonService = new CommonService()
+commonService.refreshCurrentLanguage()
+
 /*
 |--------------------------------------------------------------------------
 | Global Middleware//匹配到路由之后才按顺序执行

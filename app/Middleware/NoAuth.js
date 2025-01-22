@@ -12,6 +12,14 @@ class NoAuth {
       }
       await Redis.incr(url)
 
+      //view注入公共函数
+      ctx.view.share({
+        trans: (source) => {
+          console.log('trans:', Util.trans(source))
+          return Util.trans(source)
+        },
+      })
+
       await next()
     } catch (err) {
       console.log(err)

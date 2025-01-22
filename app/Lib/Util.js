@@ -10,7 +10,7 @@ const _cloneDeep = require('lodash/cloneDeep')
 const crypto = require('crypto')
 const moment = require('moment') //日期格式化插件
 const xss = require('xss')
-const Redis = use('Redis')
+const Cache = require('@Lib/Cache')
 
 const Util = {
   /************************************************************************
@@ -19,20 +19,13 @@ const Util = {
 
   // 翻译
   // 使用方法 await Util.trans('login')
-  trans: async (source, params) => {
+  trans: (source, params) => {
     try {
-      let transString = await Redis.get('translation')
-      if (!transString) {
-        console.log('Redis中没有translation，正在刷新翻译数据')
-        const CommonService = require('@Services/CommonService')
-        const commonService = new CommonService()
-        await commonService.refreshCurrentLanguage()
-        transString = await Redis.get('translation')
-        if (!transString) {
-          return source
-        }
+      let transObj = Cache.get('translation')
+      if (!transObj) {
+        console.log('缓存中没有translation，等待刷新翻译数据')
+        return source
       }
-      const transObj = JSON.parse(transString)
       let result = transObj[`node#${source}`]
       if (!result) {
         console.log('找不到翻译:', source)
@@ -49,12 +42,6 @@ const Util = {
       console.error('翻译出错:', e.message)
       return source
     }
-  },
-
-  // 获取当前所有翻译内容
-  getCurrentTrans: async () => {
-    const transString = await Redis.get('translation')
-    return transString
   },
 
   saveLog: async (ctx, funcStartTime = null, type = 'info', content = '') => {
