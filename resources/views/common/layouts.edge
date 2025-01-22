@@ -1149,6 +1149,23 @@
         return null
       }
     }
+
+    // 初始化主题设置
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeToggle = document.querySelector('[data-theme-toggle="true"]');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+
+        // 根据存储的主题设置复选框状态
+        if (themeToggle) {
+            themeToggle.checked = currentTheme === 'dark';
+        }
+    });
+
+    // 处理主题切换
+    function handleThemeChange(checkbox) {
+        const theme = checkbox.checked ? 'dark' : 'light';
+        localStorage.setItem('theme', theme);
+    }
   </script>
 
   @!section('scripts')
