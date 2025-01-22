@@ -10,6 +10,14 @@ class CheckAuth {
       if (!session.get('member')) {
         //session无效
         ctx.session.clear()
+        // 显式清除 session cookie
+        ctx.response.clearCookie('token', {
+          path: '/',
+          domain: ctx.request.hostname(),
+          secure: true,
+          httpOnly: true,
+          sameSite: 'lax',
+        })
         return ctx.response.redirect('/admin/auth/sign-in')
         // return ctx.response.send(
         //   Util.end2front({
@@ -18,6 +26,7 @@ class CheckAuth {
         //   })
         // )
       }
+
       //get func info
       if (Env.get('LOG_API_CALL_COUNT') === '1') {
         let url = ctx.request.url()
@@ -29,6 +38,14 @@ class CheckAuth {
 
       //get func time
       let from_time = new Date().getTime()
+
+      //view注入公共函数
+      ctx.view.share({
+        trans: (source) => {
+          console.log('trans:', Util.trans(source))
+          return Util.trans(source)
+        },
+      })
 
       await next()
 

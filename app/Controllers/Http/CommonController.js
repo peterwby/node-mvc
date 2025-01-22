@@ -9,6 +9,25 @@ const commonService = new CommonService()
 class CommonController {
   constructor() {}
 
+  async getTranslation(ctx) {
+    try {
+      let result = {}
+      //检查参数合法性
+      const resultValid = await getTranslationValid(ctx)
+      if (resultValid) return resultValid
+      //调用业务逻辑Service
+      result = await commonService.getTranslation(ctx)
+      //组装从Service返回的数据，返回给前端
+      return Util.end2front(result)
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        track: 'controller_getTranslation_1737515386',
+      })
+    }
+  }
+
   async uploadImage(ctx) {
     try {
       let result = {}
@@ -66,6 +85,40 @@ async function uploadImageValid(ctx) {
       msg: err.message,
       code: 9000,
       track: 'valid_Valid_1737261721',
+    })
+  }
+}
+
+async function getTranslationValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {}
+
+    async function authValid() {
+      const session = ctx.session
+    }
+  } catch (err) {
+    return Util.error2front({
+      isShowMsg: true,
+      msg: err.message,
+      code: 9000,
+      track: 'valid_getTranslationValid_1737515404',
     })
   }
 }

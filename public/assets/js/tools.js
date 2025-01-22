@@ -26,34 +26,70 @@ class Tools {
     // 添加翻译状态标志
     this.translationReady = false
 
-    // 初始化翻译加载状态
-    this._initTranslationState()
+    // 初始化翻译方法
+    this.trans = this._initTrans()
+
+    // 初始化加载状态
+    this._initState()
   }
 
   /**
-   * 初始化翻译加载状态
+   * 初始化翻译方法
+   * @private
+   * @returns {Function} 翻译函数
+   */
+  _initTrans() {
+    return (source, params) => {
+      try {
+        const transString = localStorage.getItem('translation')
+        if (!transString) {
+          console.log('not find translation in localStorage:')
+          return source
+        }
+        const trans = JSON.parse(transString)
+        let result = trans[`node#${source}`]
+        if (!result) {
+          console.log('could not find translation for:', source)
+          return source
+        }
+        if (this.Util.isArray(params) && params.length > 0 && result.includes('[[')) {
+          for (let i = 0; i < params.length; i++) {
+            result = result.replace(`[[${i}]]`, params[i])
+          }
+        }
+
+        return result
+      } catch (e) {
+        console.log(e.message)
+        return source
+      }
+    }
+  }
+
+  /**
+   * 初始化加载状态
    * @private
    */
-  _initTranslationState() {
+  _initState() {
     // 添加一个遮罩层到 body
-    // const overlay = document.createElement('div')
-    // overlay.id = 'translation-loading-overlay'
-    // overlay.className = 'fixed inset-0 flex items-center justify-center'
-    // overlay.style.cssText = 'background-color: rgba(0, 0, 0, 0.2); z-index:9999;'
-    // // overlay.style.cssText = 'background-color: #eeeeee; z-index:9999;'
-    // overlay.innerHTML = `
-    //   <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-    //     <div class="flex items-center gap-2 px-4 py-2 font-medium leading-none text-2sm border border-gray-200 shadow-default rounded-md text-gray-500 bg-light">
-    //       <svg class="animate-spin -ml-1 h-5 w-5 text-gray-600" fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    //       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3">
-    //       </circle>
-    //       <path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor">
-    //       </path>
-    //       </svg>
-    //     </div>
-    //   </div>
-    // `
-    // document.body.appendChild(overlay)
+    const overlay = document.createElement('div')
+    overlay.id = 'translation-loading-overlay'
+    overlay.className = 'fixed inset-0 flex items-center justify-center'
+    overlay.style.cssText = 'background-color: rgba(0, 0, 0, 0.2); z-index:9999;'
+    // overlay.style.cssText = 'background-color: #eeeeee; z-index:9999;'
+    overlay.innerHTML = `
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        <div class="flex items-center gap-2 px-4 py-2 font-medium leading-none text-2sm border border-gray-200 shadow-default rounded-md text-gray-500 bg-light">
+          <svg class="animate-spin -ml-1 h-5 w-5 text-gray-600" fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3">
+          </circle>
+          <path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor">
+          </path>
+          </svg>
+        </div>
+      </div>
+    `
+    document.body.appendChild(overlay)
   }
 
   /**
@@ -1499,7 +1535,9 @@ class Tools {
        * @param {Object} translations - 翻译数据对象
        */
       setTranslation(translations) {
-        localStorage.setItem('translation', JSON.stringify(translations))
+        if (translations) {
+          localStorage.setItem('translation', translations)
+        }
         this.translationReady = true
 
         // 移除加载遮罩
@@ -1507,36 +1545,6 @@ class Tools {
         if (overlay) {
           overlay.classList.add('opacity-0')
           setTimeout(() => overlay.remove(), 300) // 添加淡出效果
-        }
-      },
-
-      /**
-       * translate
-       * source:original，params:array
-       * example: trans('today', ['is', 'sunny']);
-       */
-      trans: (source, params) => {
-        try {
-          const transObject = localStorage.getItem('translation')
-          if (!transObject) {
-            console.log('not find translation in localStorage:')
-            return source
-          }
-          const trans = JSON.parse(transObject)
-          let result = trans[`node#${source}`]
-          if (!result) {
-            console.log('could not find translation for:', source)
-            return source
-          }
-          if (Util.isArray(params) && params.length > 0 && result.includes('[[')) {
-            for (let i = 0; i < params.length; i++) {
-              result = result.replace(`[[${i}]]`, params[i])
-            }
-          }
-          return result
-        } catch (e) {
-          console.log(e.message)
-          return source
         }
       },
     }

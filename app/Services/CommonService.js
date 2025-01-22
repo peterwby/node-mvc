@@ -8,6 +8,7 @@ const Helpers = use('Helpers')
 const BaseService = require('@BaseClass/BaseService')
 const Util = require('@Lib/Util')
 const Request = require('@Lib/Request')
+const Cache = require('@Lib/Cache')
 const DictLanguagesTable = require('@Table/dict_languages')
 const dictLanguagesTable = new DictLanguagesTable()
 
@@ -19,8 +20,7 @@ class CommonService extends BaseService {
   async refreshCurrentLanguage() {
     try {
       //如果手工指定了语言
-      const selectedLanguage = await Redis.get('selectedLanguage')
-      console.log('selectedLanguage', selectedLanguage)
+      const selectedLanguage = Cache.get('selectedLanguage')
 
       let result = await dictLanguagesTable.fetchAll()
       let langList = result.data.data.map((item) => {
@@ -56,8 +56,8 @@ class CommonService extends BaseService {
         }
       })
 
-      // 将翻译数据存储到 Redis
-      await Redis.set('translation', JSON.stringify(filterTransData))
+      // 将翻译数据存储到缓存
+      Cache.set('translation', filterTransData)
 
       return Util.end({})
     } catch (err) {
@@ -65,6 +65,32 @@ class CommonService extends BaseService {
         msg: err.message,
         stack: err.stack,
         track: 'service_refreshCurrentLanguage_1737460952',
+      })
+    }
+  }
+
+  async getTranslation(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+      let transObject = Cache.get('translation')
+      if (!transObject) {
+        console.log('缓存中没有translation，正在刷新翻译数据')
+        await this.refreshCurrentLanguage()
+        transObject = Cache.get('translation')
+        if (!transObject) {
+          return Util.end({})
+        }
+      }
+      const data = {
+        translation: JSON.stringify(transObject),
+      }
+      return Util.end({ data })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        track: 'service_getTranslation_1737515421',
       })
     }
   }
