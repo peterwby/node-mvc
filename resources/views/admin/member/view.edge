@@ -8,15 +8,15 @@
     <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
       <div class="flex flex-col justify-center gap-2">
         <h1 class="text-xl font-medium leading-none text-gray-900">
-          查看详情
+          {{ trans('view') }}
         </h1>
       </div>
       <div class="flex items-center gap-2.5">
         <button type="button" class="btn btn-sm btn-light" onclick="window.history.back()">
-          返回
+          {{ trans('back') }}
         </button>
         <a class="btn btn-sm btn-primary" href="/admin/member/edit/{{ member_info.member_id }}">
-          Edit
+          {{ trans('edit') }}
         </a>
       </div>
     </div>
@@ -27,16 +27,8 @@
         <div class="card-table scrollable-x-auto pb-3">
           <table class="table align-middle text-sm text-gray-500">
             <tr>
-              <td class="py-2 min-w-28 text-gray-600 font-normal">
-                ID
-              </td>
-              <td class="py-2 text-gray-700 font-normal text-sm">
-                {{ member_info.member_id }}
-              </td>
-            </tr>
-            <tr>
               <td class="py-2 text-gray-600 font-normal">
-                用户名
+                {{ trans('username') }}
               </td>
               <td class="py-2 text-gray-700 font-normal text-sm">
                 {{ member_info.username }}
@@ -44,7 +36,7 @@
             </tr>
             <tr>
               <td class="py-2 text-gray-600 font-normal">
-                昵称
+                {{ trans('nickname') }}
               </td>
               <td class="py-2 text-gray-700 font-normal text-sm">
                 {{ member_info.nickname }}
@@ -52,7 +44,7 @@
             </tr>
             <tr>
               <td class="py-2 text-gray-600 font-normal">
-                状态
+                {{ trans('status') }}
               </td>
               <td class="py-2 text-gray-700 font-normal text-sm">
                 {{ member_info.member_status_name }}
@@ -60,7 +52,7 @@
             </tr>
             <tr>
               <td class="py-3 text-gray-600 font-normal">
-                创建时间
+                {{ trans('created date') }}
               </td>
               <td class="py-3 text-gray-700 text-sm font-normal">
                 {{ member_info.created_at }}
@@ -68,15 +60,7 @@
             </tr>
             <tr>
               <td class="py-3 text-gray-600 font-normal">
-                更新时间
-              </td>
-              <td class="py-3 text-gray-700 text-sm font-normal">
-                {{ member_info.updated_at }}
-              </td>
-            </tr>
-            <tr>
-              <td class="py-3 text-gray-600 font-normal">
-                备注
+                {{ trans('remark') }}
               </td>
               <td class="py-3 text-gray-700 text-sm font-normal">
                 <div id="remark" class="h-[150px]"></div>
@@ -107,7 +91,7 @@
       }
     } catch (error) {
       console.error('编辑器初始化失败:', error);
-      Util.errorMsg('编辑器加载失败，请刷新页面重试');
+      Util.errorMsg(trans('please refresh the page and try again'));
     }
   });
 </script>

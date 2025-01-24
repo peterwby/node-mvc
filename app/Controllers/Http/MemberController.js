@@ -94,6 +94,25 @@ class MemberController {
     }
   }
 
+  async create(ctx) {
+    try {
+      let result = {}
+      //检查参数合法性
+      const resultValid = await createValid(ctx)
+      if (resultValid) return resultValid
+      //调用业务逻辑Service
+      result = await memberService.create(ctx)
+      //组装从Service返回的数据，返回给前端
+      const data = result.data
+
+      //渲染视图
+      return ctx.view.render('admin.member.create', data)
+    } catch (err) {
+      console.log(err)
+      return ctx.view.render('error.404')
+    }
+  }
+
   async view(ctx) {
     try {
       let result = {}
@@ -260,6 +279,25 @@ class MemberController {
         //isShowMsg: true,
         msg: err.message,
         track: 'controller_updateInfo_1586097585',
+      })
+    }
+  }
+
+  async createInfo(ctx) {
+    try {
+      let result = {}
+      //检查参数合法性
+      const resultValid = await createInfoValid(ctx)
+      if (resultValid) return resultValid
+      //调用业务逻辑Service
+      result = await memberService.createInfo(ctx)
+      //组装从Service返回的数据，返回给前端
+      return Util.end2front({})
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        track: 'controller__1737637027',
       })
     }
   }
@@ -552,7 +590,7 @@ async function updateInfoValid(ctx) {
             }
             break
           case 'nickname':
-            body.nickname = requestAll[k]
+            body.nickname = Util.filterXss(requestAll[k])
             break
           case 'password':
             body.password = requestAll[k]
@@ -561,7 +599,7 @@ async function updateInfoValid(ctx) {
             body.member_status_id = requestAll[k]
             break
           case 'email':
-            body.email = requestAll[k]
+            body.email = Util.filterXss(requestAll[k])
             break
           case 'remark':
             body.remark = requestAll[k]
@@ -868,6 +906,112 @@ async function editValid(ctx) {
       msg: err.message,
       code: 9000,
       track: 'valid_editValid_1736952742',
+    })
+  }
+}
+
+async function createValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.params
+      let body = {}
+
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {}
+
+    async function authValid() {
+      const session = ctx.session
+    }
+  } catch (err) {
+    return Util.error2front({
+      isShowMsg: true,
+      msg: err.message,
+      code: 9000,
+      track: 'valid_createValid_1736952742',
+    })
+  }
+}
+
+async function createInfoValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'username':
+            body.username = Util.filterXss(requestAll[k])
+            break
+          case 'password':
+            body.password = requestAll[k]
+            break
+          case 'nickname':
+            body.nickname = Util.filterXss(requestAll[k])
+            break
+          case 'email':
+            body.email = Util.filterXss(requestAll[k])
+            break
+          case 'member_status_id':
+            body.member_status_id = requestAll[k]
+            break
+          case 'remark':
+            body.remark = requestAll[k]
+            break
+        }
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {
+      const rules = {
+        username: 'required',
+        password: 'required',
+        nickname: 'required',
+        email: 'required',
+        member_status_id: 'required',
+      }
+      const messages = {
+        'username.required': 'username is required',
+        'password.required': 'password is required',
+        'nickname.required': 'nickname is required',
+        'email.required': 'email is required',
+        'member_status_id.required': 'member_status_id is required',
+      }
+      const validation = await validate(ctx.body, rules, messages)
+      if (validation.fails()) {
+        throw new Error(validation.messages()[0].message)
+      }
+    }
+
+    async function authValid() {
+      const session = ctx.session
+    }
+  } catch (err) {
+    return Util.error2front({
+      isShowMsg: true,
+      msg: err.message,
+      code: 9000,
+      track: 'valid_Valid_1737637053',
     })
   }
 }

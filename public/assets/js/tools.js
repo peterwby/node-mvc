@@ -43,13 +43,13 @@ class Tools {
       try {
         const transString = localStorage.getItem('translation')
         if (!transString) {
-          console.log('not find translation in localStorage:')
+          console.log('no translation in localStorage:', source)
           return source
         }
         const trans = JSON.parse(transString)
         let result = trans[`node#${source}`]
         if (!result) {
-          console.log('could not find translation for:', source)
+          console.log('no translation for:', source)
           return source
         }
         if (this.Util.isArray(params) && params.length > 0 && result.includes('[[')) {

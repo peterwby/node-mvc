@@ -42,7 +42,6 @@ class CheckAuth {
       //view注入公共函数
       ctx.view.share({
         trans: (source) => {
-          console.log('trans:', Util.trans(source))
           return Util.trans(source)
         },
       })

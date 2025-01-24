@@ -119,39 +119,6 @@ class Service extends BaseService {
   }
 
   /**
-   * 获取列表公共信息
-   */
-  async getListCommon(ctx) {
-    try {
-      let result = {}
-      const { body } = ctx
-
-      //状态下拉框
-      const DictMemberStatusTable = require('@Table/dict_member_status')
-      const dictMemberStatusTable = new DictMemberStatusTable()
-      result = await dictMemberStatusTable.fetchAll({
-        orderBy: [['sequence', 'asc']],
-      })
-      const status_list = result.data.data.map((item) => ({
-        member_status_id: item.member_status_id,
-        member_status_name: item.member_status_name,
-      }))
-
-      const data = {
-        status_list,
-      }
-      return Util.end({
-        data,
-      })
-    } catch (err) {
-      return Util.error({
-        msg: err.message,
-        track: 'getListCommon_15814365260',
-      })
-    }
-  }
-
-  /**
    * 获取列表
    */
   async getList(ctx) {
@@ -284,35 +251,6 @@ class Service extends BaseService {
     }
   }
 
-  async getEditCommon(ctx) {
-    try {
-      let result = {}
-      const { body } = ctx
-      //common_gender
-      const CommonGenderTable = require('@Table/common_gender')
-      const commonGenderTable = new CommonGenderTable()
-      result = await commonGenderTable.fetchAll()
-      const gender_list = result.data.data.map((item) => ({
-        gender_id: item.gender_id,
-        gender_name: item.gender_name,
-      }))
-      //获取公共信息
-      result = await memberTable.fetchDetailById(body.member_id)
-      const common_info = result.data
-      const data = {
-        gender_list,
-        common_info,
-      }
-      return Util.end({ data })
-    } catch (err) {
-      return Util.error({
-        msg: err.message,
-        stack: err.stack,
-        track: 'service_getEditCommon_1586338878',
-      })
-    }
-  }
-
   async updateInfo(ctx) {
     try {
       let result = {}
@@ -430,6 +368,37 @@ class Service extends BaseService {
     }
   }
 
+  async create(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+
+      //状态下拉框
+      const DictMemberStatusTable = require('@Table/dict_member_status')
+      const dictMemberStatusTable = new DictMemberStatusTable()
+      result = await dictMemberStatusTable.fetchAll({
+        orderBy: [['sequence', 'asc']],
+      })
+      const status_list = result.data.data.map((item) => ({
+        member_status_id: item.member_status_id,
+        member_status_name: item.member_status_name,
+      }))
+
+      const data = {
+        status_list,
+      }
+      return Util.end({
+        data,
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        track: 'service_create_1737635060',
+      })
+    }
+  }
+
   /**
    * 获取会员详情
    */
@@ -501,6 +470,36 @@ class Service extends BaseService {
       return Util.error({
         msg: err.message,
         track: 'service_edit_' + Date.now(),
+      })
+    }
+  }
+
+  async createInfo(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+      //检查账号是否已被占用
+      result = await memberTable.checkExistByColumn({ username: body.username })
+      if (result.data.is_exist) {
+        return Util.end({
+          status: 0,
+          msg: '此账号已被使用',
+        })
+      }
+      //检查通过，开始创建新记录
+      await Database.transaction(async (trx) => {
+        result = await memberTable.create(trx, body)
+        if (result.status === 0) {
+          throw new Error('新增失败')
+        }
+      })
+
+      return Util.end({})
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        track: 'service_creat_1737637094',
       })
     }
   }

@@ -84,7 +84,7 @@ const Util = {
    * type = 1: 手动过滤指定关键词
    * type = 2: 使用xss库自动过滤
    */
-  filterXss: (string, type = 1) => {
+  filterXss: (string, type = 2) => {
     let new_string = string
     if (Util.isString(string)) {
       if (type === 1) {

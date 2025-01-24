@@ -9,13 +9,17 @@
     <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
       <div class="flex flex-col justify-center gap-2">
         <h1 class="text-xl font-medium leading-none text-gray-900">
-          会员列表
+          {{ trans('list') }}
         </h1>
 
       </div>
       <div class="flex items-center gap-2.5">
+        <a href="/admin/member/create" class="btn btn-sm btn-primary">
+          <i class="ki-duotone ki-plus fs-2"></i>
+          {{ trans('create') }}
+        </a>
         <button id="batch_delete_btn" class="btn btn-sm btn-danger" disabled>
-          批量删除
+          {{ trans('batch delete') }}
         </button>
       </div>
     </div>
@@ -32,13 +36,13 @@
                 <label class="input input-sm">
                   <i class="ki-filled ki-magnifier">
                   </i>
-                  <input placeholder="Search users" name="search" type="text"
+                  <input placeholder="{{ trans('search') }}" name="search" type="text"
                     value="{{ request.input('search') || '' }}">
                 </label>
               </div>
               <div class="flex flex-wrap gap-2.5">
                 <select class="select select-sm w-28" name="member_status_id">
-                  <option value="">状态</option>
+                  <option value="">{{ trans('status') }}</option>
                   @each(status in status_list)
                   <option value="{{ status.member_status_id }}"
                     {{ request.input('member_status_id') + '' === status.member_status_id + '' ? 'selected' : '' }}>
@@ -49,11 +53,11 @@
                 <button type="submit" class="btn btn-sm btn-outline btn-primary">
                   <i class="ki-filled ki-setting-4">
                   </i>
-                  搜索
+                  {{ trans('search') }}
                 </button>
                 <button type="button" id="reset_filter_btn" class="btn btn-sm btn-outline btn-secondary">
                   <i class="ki-filled ki-arrows-circle"></i>
-                  重置
+                  {{ trans('reset') }}
                 </button>
               </div>
             </form>
@@ -65,13 +69,13 @@
               <table class="table table-auto table-border " data-datatable-table="true">
                 <thead>
                   <tr>
-                    <th class="w-[60px] text-center">
+                    <th class="w-[44px] text-center">
                       <input class="checkbox checkbox-sm" data-datatable-check="true" type="checkbox" />
                     </th>
                     <th class="min-w-[200px]">
                       <span class="sort asc">
                         <span class="sort-label font-normal text-gray-700">
-                          Nickname
+                          {{ trans('nickname') }}
                         </span>
                         <span class="sort-icon">
                         </span>
@@ -80,7 +84,7 @@
                     <th class="min-w-[200px]">
                       <span class="sort asc">
                         <span class="sort-label font-normal text-gray-700">
-                          Email
+                          {{ trans('email') }}
                         </span>
                         <span class="sort-icon">
                         </span>
@@ -89,7 +93,7 @@
                     <th class="min-w-[200px]">
                       <span class="sort asc">
                         <span class="sort-label font-normal text-gray-700">
-                          Created At
+                          {{ trans('created date') }}
                         </span>
                         <span class="sort-icon">
                         </span>
@@ -98,7 +102,7 @@
                     <th class="min-w-[100px]">
                       <span class="sort asc">
                         <span class="sort-label font-normal text-gray-700">
-                          状态
+                          {{ trans('status') }}
                         </span>
                         <span class="sort-icon">
                         </span>
@@ -113,10 +117,10 @@
             <div
               class="card-footer justify-center md:justify-between flex-col md:flex-row gap-5 text-gray-600 text-2sm font-medium">
               <div class="flex items-center gap-2 order-2 md:order-1">
-                每页
+                {{ trans('per page') }}
                 <select class="select select-sm w-16" data-datatable-size="true" name="perpage">
                 </select>
-                条
+                {{ trans('item') }}
               </div>
               <div class="flex items-center gap-4 order-1 md:order-2">
                 <span data-datatable-info="true"></span>
@@ -166,18 +170,17 @@
       },
       email: {
         render: (item) => {
-          return '<div>' + (item || '暂无') + '</div><div><a class="text-blue-500" href="http://www.google.com" target="_blank">跳转</a></div>'
-        },
-      },
-      member_status_name: {
-        render: (item) => {
-          const statusClass = item === '启用' ? 'text-success' : 'text-danger'
-          return '<div class="' + statusClass + ' font-medium">' + item + '</div>'
+          return '<div>' + (item || trans('no data')) + '</div>'
         },
       },
       created_at: {},
+      member_status_name: {
+        render: (item) => {
+          const statusClass = item === trans('enable') ? 'text-success' : 'text-danger'
+          return '<div class="' + statusClass + ' font-medium">' + item + '</div>'
+        },
+      },
       action: {
-        title: '操作',
         render: (item, data) => {
           return '<div class="menu flex-inline" data-menu="true">' +
             '<div class="menu-item" data-menu-item-offset="0, 10px" data-menu-item-placement="bottom-end" data-menu-item-placement-rtl="bottom-start" data-menu-item-toggle="dropdown" data-menu-item-trigger="click|lg:click">' +
@@ -190,7 +193,7 @@
             '<div class="menu-item">' +
             '<a class="menu-link" href="/admin/member/view/' + data.member_id + '">' +
             '<span class="menu-title">' +
-            '查看' +
+            trans('view') +
             '</span>' +
             '</a>' +
             '</div>' +
@@ -198,7 +201,7 @@
             '<div class="menu-item">' +
             '<a class="menu-link" href="/admin/member/edit/' + data.member_id + '">' +
             '<span class="menu-title">' +
-            '编辑' +
+            trans('edit') +
             '</span>' +
             '</a>' +
             '</div>' +
@@ -209,7 +212,7 @@
             '<div class="menu-item">' +
             '<button type="button" class="menu-link remove-btn" data-id="' + data.member_id + '">' +
             '<span class="menu-title">' +
-            '删除' +
+            trans('delete') +
             '</span>' +
             '</button>' +
             '</div>' +

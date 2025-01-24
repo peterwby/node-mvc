@@ -16,6 +16,11 @@
 const Route = use('Route')
 const Util = require('@Lib/Util')
 
+// 刷新翻译数据
+const CommonService = require(`@Services/CommonService`)
+const commonService = new CommonService()
+commonService.refreshCurrentLanguage()
+
 // 教程示例路由
 Route.group(() => {
   //基础语法
@@ -73,6 +78,7 @@ Route.group(() => {
     Route.post('member/logout', 'MemberController.logout')
     Route.post('member/update-password', 'MemberController.updatePassword')
     Route.post('member/update-info', 'MemberController.updateInfo')
+    Route.post('member/create-info', 'MemberController.createInfo')
     Route.post('member/remove', 'MemberController.remove')
   } catch (err) {
     return Util.end2front({
@@ -93,6 +99,7 @@ Route.group(() => {
     Route.get('member/edit/:member_id', 'MemberController.edit')
     Route.post('member/edit-password', 'MemberController.updatePassword')
     Route.post('member/edit-info', 'MemberController.editInfo')
+    Route.get('member/create', 'MemberController.create')
     Route.post('member/logout', 'MemberController.logout')
   } catch (err) {
     return view.render('error.404')

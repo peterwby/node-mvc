@@ -3,7 +3,7 @@
 const Database = use('Database')
 const log = use('Logger')
 const Env = use('Env')
-const Redis = use('Redis')
+const fs = require('fs').promises
 const Helpers = use('Helpers')
 const BaseService = require('@BaseClass/BaseService')
 const Util = require('@Lib/Util')
@@ -19,9 +19,21 @@ class CommonService extends BaseService {
 
   async refreshCurrentLanguage() {
     try {
+      // 避免此时请求不到翻译内容，先加载本地翻译文件作为备用
+      try {
+        const localTransContent = await fs.readFile(Helpers.appRoot('trans.json'), 'utf8')
+        const localTransData = JSON.parse(localTransContent)
+
+        // 将本地翻译数据存入缓存
+        Cache.set('translation', localTransData)
+      } catch (err) {
+        console.error('加载本地翻译文件失败:', err.message)
+      }
+
+      console.log('开始刷新翻译')
       //如果手工指定了语言
       const selectedLanguage = Cache.get('selectedLanguage')
-
+      // console.log('selectedLanguage', selectedLanguage)
       let result = await dictLanguagesTable.fetchAll()
       let langList = result.data.data.map((item) => {
         if (selectedLanguage) {
@@ -42,6 +54,7 @@ class CommonService extends BaseService {
       if (!currentLangInfo) {
         throw new Error('No selected or default language found')
       }
+      // console.log('currentLangInfo', currentLangInfo)
       const transResponse = await Request.get(currentLangInfo.url)
       if (!transResponse || !transResponse.data) {
         throw new Error('Invalid translation data')
@@ -55,10 +68,10 @@ class CommonService extends BaseService {
           filterTransData[key] = transData[key]
         }
       })
-
+      // console.log('filterTransData', filterTransData)
       // 将翻译数据存储到缓存
       Cache.set('translation', filterTransData)
-
+      console.log('刷新翻译完成')
       return Util.end({})
     } catch (err) {
       return Util.error({

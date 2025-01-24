@@ -8,14 +8,14 @@
     <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
       <div class="flex flex-col justify-center gap-2">
         <h1 class="text-xl font-medium leading-none text-gray-900">
-          {{ trans('edit') }}
+          {{ trans('create') }}
         </h1>
       </div>
       <div class="flex items-center gap-2.5">
         <button type="button" class="btn btn-sm btn-light" onclick="window.history.back()">
           {{ trans('back') }}
         </button>
-        <button type="submit" class="btn btn-sm btn-primary" form="edit_form" id="submit_btn">
+        <button type="submit" class="btn btn-sm btn-primary" form="create_form" id="submit_btn">
           <span class="indicator-label">{{ trans('save') }}</span>
           <span class="indicator-progress hidden">
             <span
@@ -30,23 +30,45 @@
     <div class="grid gap-5 lg:gap-7.5">
       <div class="card min-w-full">
         <div class="card-body">
-          <form id="edit_form" class="grid gap-5" method="POST">
-            <input type="hidden" name="member_id" value="{{ member_info.member_id }}">
+          <form id="create_form" class="grid gap-5" method="POST">
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('username') }}
+              </label>
+              <input id="username" name="username" class="input max-w-[300px]" placeholder="{{ trans('username') }}"
+                type="text" required />
+            </div>
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('password') }}
+              </label>
+              <input id="password" name="password" class="input max-w-[300px]" placeholder="{{ trans('password') }}"
+                type="password" required />
+            </div>
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('password confirm') }}
+              </label>
+              <input id="password_confirm" name="password_confirm" class="input max-w-[300px]"
+                placeholder="{{ trans('password confirm') }}" type="password" required />
+            </div>
 
             <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
               <label class="form-label max-w-56">
                 {{ trans('nickname') }}
               </label>
               <input id="nickname" name="nickname" class="input max-w-[300px]" placeholder="{{ trans('nickname') }}"
-                type="text" value="{{ member_info.nickname }}" required />
+                type="text" required />
             </div>
 
             <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
               <label class="form-label max-w-56">
                 {{ trans('email') }}
               </label>
-              <input id="email" name="email" class="input max-w-[300px]" placeholder="{{ trans('email') }}" type="text"
-                value="{{ member_info.email || '' }}" />
+              <input id="email" name="email" class="input max-w-[300px]" placeholder="{{ trans('email') }}"
+                type="text" />
             </div>
 
             <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
@@ -55,20 +77,14 @@
               </label>
               <select id="member_status_id" name="member_status_id" class="select max-w-[300px]" required>
                 @each(status in status_list)
-                <option value="{{ status.member_status_id }}"
-                  {{ member_info.member_status_id + ''===status.member_status_id + '' ? 'selected' : '' }}>
+                <option value="{{ status.member_status_id }}">
                   {{ status.member_status_name }}
                 </option>
                 @endeach
               </select>
             </div>
 
-            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
-              <label class="form-label max-w-56">
-                附件
-              </label>
-              <input class="file-input max-w-[300px]" type="file" name="file" />
-            </div>
+
             <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5 h-[400px] content-start">
               <label class="form-label max-w-56">
                 {{ trans('remark') }}
@@ -77,7 +93,6 @@
                 <div id="remark"></div>
               </div>
             </div>
-
 
           </form>
         </div>
@@ -93,8 +108,8 @@
 <script src="/assets/vendors/@form-validation/form-validation.bundle.js"></script>
 <script>
   // 声明为全局变量
-  // 声明为全局变量
   var editor;
+
   var validator;
 
   /**
@@ -107,6 +122,43 @@
 
     const validator = FormValidation.formValidation(form, {
       fields: {
+        username: {
+          validators: {
+            notEmpty: {
+              message: trans('please enter in the correct format')
+            },
+            regexp: {
+              regexp: /^[a-zA-Z0-9]+$/,
+              message: trans('please enter in the correct format')
+            },
+
+          }
+        },
+        password: {
+          validators: {
+            notEmpty: {
+              message: trans('please enter in the correct format')
+            },
+            stringLength: {
+              min: 6,
+              max: 16,
+              message: trans('please enter in the correct format')
+            }
+          }
+        },
+        password_confirm: {
+          validators: {
+            notEmpty: {
+              message: trans('please enter in the correct format')
+            },
+            identical: {
+              compare: function() {
+                return form.querySelector('[name="password"]').value;
+              },
+              message: trans('please enter in the correct format')
+            }
+          }
+        },
         nickname: {
           validators: {
             notEmpty: {
@@ -144,19 +196,15 @@
     return validator;
   }
 
+
   document.addEventListener('DOMContentLoaded', async function() {
     try {
-      // 创建编辑器实例（不再需要显式初始化）
+
+      // 创建编辑器实例
       editor = await new RichEditor('#remark', 'simple');
 
-      // 如果有初始数据，设置到编辑器中
-      const remarkData = {{{ member_info.remark || null }}};
-      if (remarkData) {
-        editor.setContents(remarkData);
-      }
-
       // 初始化表单验证
-      validator = initFormValidation('#edit_form');
+      validator = initFormValidation('#create_form');
 
     } catch (error) {
       console.error('编辑器初始化失败:', error);
@@ -166,15 +214,12 @@
 
   /**
    * 通用表单提交处理函数
-   * @param {string} formSelector - 表单选择器
-   * @param {string} btnSelector - 提交按钮选择器
-   * @param {Function} submitCallback - 异步回调函数，处理实际的提交逻辑
    */
-  Util.handleFormSubmit('#edit_form', '#submit_btn', async (formData) => {
+  Util.handleFormSubmit('#create_form', '#submit_btn', async (formData) => {
     try {
       // 进行表单验证
       const isValid = await validator.validate();
-      if (isValid === 'Invalid') {
+      if (isValid==='Invalid') {
         throw new Error(trans('please check the form'));
       }
 
@@ -184,7 +229,7 @@
         formData.append('remark', JSON.stringify(remarkContent));
       }
 
-      const response = await axios.post('/api/member/update-info', formData, {
+      const response = await axios.post('/api/member/create-info', formData, {
         headers: {
           'token': localStorage.getItem('token')
         }
@@ -198,7 +243,7 @@
         throw new Error(response.data.msg || trans('operation failed'));
       }
     } catch (error) {
-      console.error('操作失败:', error);
+      console.error(trans('operation failed') + ':', error);
       throw error;
     }
   });
