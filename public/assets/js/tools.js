@@ -20,6 +20,9 @@ class Tools {
     this.cookie = Cookies
     this.dayjs = dayjs
 
+    // 翻译过期时间（15分钟）
+    this.TRANSLATION_EXPIRE_MINUTES = 15
+
     // 初始化自定义方法库
     this.Util = this._initTools()
 
@@ -39,6 +42,7 @@ class Tools {
    * @returns {Function} 翻译函数
    */
   _initTrans() {
+    const self = this // 保存 Tools 实例的引用
     return (source, params) => {
       try {
         const transString = localStorage.getItem('translation')
@@ -52,7 +56,7 @@ class Tools {
           console.log('no translation for:', source)
           return source
         }
-        if (this.Util.isArray(params) && params.length > 0 && result.includes('[[')) {
+        if (self.Util.isArray(params) && params.length > 0 && result.includes('[[')) {
           for (let i = 0; i < params.length; i++) {
             result = result.replace(`[[${i}]]`, params[i])
           }
@@ -97,7 +101,74 @@ class Tools {
    * @private
    */
   _initTools() {
+    const self = this // 保存 Tools 实例的引用
     return {
+      /************************************************************************
+       * 翻译相关方法
+       ************************************************************************/
+
+      /**
+       * 检查翻译是否需要更新
+       * @returns {Promise<boolean>} 如果需要更新返回true，否则返回false
+       */
+      async checkTranslationUpdate() {
+        try {
+          const translationData = localStorage.getItem('translation')
+          const lastUpdateTime = localStorage.getItem('translation_update_time')
+
+          if (!translationData || !lastUpdateTime) {
+            return true
+          }
+
+          // 检查是否过期（15分钟）
+          const lastUpdate = dayjs(parseInt(lastUpdateTime))
+          const now = dayjs()
+          if (now.diff(lastUpdate, 'minute') >= self.TRANSLATION_EXPIRE_MINUTES) {
+            return true
+          }
+
+          return false
+        } catch (error) {
+          console.error('检查翻译更新失败:', error)
+          return true // 发生错误时建议更新翻译
+        }
+      },
+
+      /**
+       * 从服务器更新翻译
+       * @returns {Promise<void>}
+       */
+      async updateTranslation() {
+        try {
+          const response = await axios.post('/api/get-translation')
+          const translations = response.data.data.translation
+          self.Util.setTranslation(translations)
+        } catch (error) {
+          console.error('更新翻译失败:', error)
+          throw error
+        }
+      },
+
+      /**
+       * 设置翻译数据并标记为就绪
+       * @param {Object} translations - 翻译数据对象
+       */
+      setTranslation(translations) {
+        if (translations) {
+          localStorage.setItem('translation', translations)
+          // 记录更新时间
+          localStorage.setItem('translation_update_time', Date.now().toString())
+        }
+        self.translationReady = true
+
+        // 移除加载遮罩
+        const overlay = document.getElementById('translation-loading-overlay')
+        if (overlay) {
+          overlay.classList.add('opacity-0')
+          setTimeout(() => overlay.remove(), 300) // 添加淡出效果
+        }
+      },
+
       /************************************************************************
        * Arrays
        ************************************************************************/
@@ -1530,22 +1601,69 @@ class Tools {
         return params
       },
 
-      /**
-       * 设置翻译数据并标记为就绪
-       * @param {Object} translations - 翻译数据对象
-       */
-      setTranslation(translations) {
-        if (translations) {
-          localStorage.setItem('translation', translations)
-        }
-        this.translationReady = true
+      /************************************************************************
+       * 菜单处理
+       ************************************************************************/
 
-        // 移除加载遮罩
-        const overlay = document.getElementById('translation-loading-overlay')
-        if (overlay) {
-          overlay.classList.add('opacity-0')
-          setTimeout(() => overlay.remove(), 300) // 添加淡出效果
-        }
+      /**
+       * 处理左侧菜单的激活状态
+       * 根据当前URL激活对应的菜单项
+       */
+      initMenuActive() {
+        // 获取当前URL路径
+        const currentPath = window.location.pathname
+
+        // 获取所有菜单项
+        const menuItems = document.querySelectorAll('.menu-item')
+
+        menuItems.forEach((item) => {
+          // 查找菜单项中的链接
+          const link = item.querySelector('a.menu-link')
+          if (!link) return
+
+          // 获取链接的href属性
+          const href = link.getAttribute('href')
+          if (!href) return
+
+          // 如果当前路径匹配菜单项的href
+          if (currentPath === href || currentPath === '/' + href) {
+            // 1. 为当前菜单项（子菜单）添加 active 类
+            if (!item.classList.contains('menu-item-accordion')) {
+              item.classList.add('active')
+            }
+
+            // 2. 处理所有父级菜单
+            let parent = item.parentElement
+            while (parent) {
+              // 查找父级菜单项
+              const parentMenuItem = parent.closest('.menu-item-accordion')
+              if (!parentMenuItem) break
+
+              // 为父级菜单添加必要的类
+              parentMenuItem.classList.add('here', 'show')
+
+              // 展开子菜单容器
+              const accordion = parentMenuItem.querySelector('.menu-accordion')
+              if (accordion) {
+                accordion.classList.add('show')
+              }
+
+              // 继续向上查找
+              parent = parentMenuItem.parentElement
+            }
+          }
+        })
+
+        // 处理菜单箭头的显示/隐藏（让它由 Tailwind 的类来控制）
+        document.querySelectorAll('.menu-arrow').forEach((arrow) => {
+          const menuItem = arrow.closest('.menu-item')
+          if (menuItem && menuItem.classList.contains('show')) {
+            const plusIcon = arrow.querySelector('.ki-plus')
+            const minusIcon = arrow.querySelector('.ki-minus')
+            if (plusIcon) plusIcon.classList.add('menu-item-show:hidden')
+            if (minusIcon) minusIcon.classList.add('menu-item-show:inline-flex')
+          }
+        })
       },
     }
   }

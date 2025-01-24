@@ -75,20 +75,15 @@
     // 在页面加载时
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        //如果localStorage中没有translation，则从API获取
-        const translation = localStorage.getItem('translation')
-        if (!translation) {
-          // 获取翻译数据（示例：从API获取）
-          const response = await axios.post('/api/get-translation')
-          const translations = response.data.data.translation
-          localStorage.setItem('translation', translations)
-          // 设置翻译数据并移除加载遮罩
-          Util.setTranslation(translations)
-          return null
+        // 检查翻译是否需要更新
+        const needUpdate = await Util.checkTranslationUpdate()
+        if (needUpdate) {
+          // 需要更新翻译
+          await Util.updateTranslation()
+        } else {
+          // 不需要更新，直接设置翻译就绪状态
+          Util.setTranslation()
         }
-        // 设置翻译数据并移除加载遮罩
-        Util.setTranslation()
-
       } catch (error) {
         console.error('Failed to load translations:', error)
         // 处理错误情况
