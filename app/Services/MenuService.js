@@ -6,8 +6,8 @@ const Env = use('Env')
 const Helpers = use('Helpers')
 const BaseService = require('@BaseClass/BaseService')
 const Util = require('@Lib/Util')
-const AdminMenusTable = require('@Table/admin_menus')
-const adminMenusTable = new AdminMenusTable()
+const PrimaryMenusTable = require('@Table/primary_menus')
+const primaryMenusTable = new PrimaryMenusTable()
 const Redis = use('Redis')
 
 class MenuService extends BaseService {
@@ -50,7 +50,7 @@ class MenuService extends BaseService {
       }
 
       // 2. 如果没有缓存，从数据库获取
-      const result = await adminMenusTable.fetchAll({
+      const result = await primaryMenusTable.fetchAll({
         where: [['status', '=', 1]],
         orderBy: [
           ['level', 'asc'],
