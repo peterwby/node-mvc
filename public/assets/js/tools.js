@@ -1076,12 +1076,30 @@ class Tools {
        */
       isBoolean: (val) => Object.prototype.toString.call(val) == '[object Boolean]',
 
-      successMsg: function (msg) {
+      /**
+       * 显示成功消息
+       * @param {string|Object} options - 消息内容或配置对象 { msg: string }
+       * @param {Function} [callback] - 点击确认按钮后的回调函数
+       */
+      successMsg: function (options, callback) {
+        const msg = typeof options === 'string' ? options : options.msg
         alert(msg)
+        if (callback && typeof callback === 'function') {
+          callback()
+        }
       },
 
-      errorMsg: function (msg) {
+      /**
+       * 显示错误消息
+       * @param {string|Object} options - 消息内容或配置对象 { msg: string }
+       * @param {Function} [callback] - 点击确认按钮后的回调函数
+       */
+      errorMsg: function (options, callback) {
+        const msg = typeof options === 'string' ? options : options.msg
         alert(msg)
+        if (callback && typeof callback === 'function') {
+          callback()
+        }
       },
 
       /************************************************************************
@@ -1428,8 +1446,7 @@ class Tools {
             })
 
             if (response.data.code === 0) {
-              Util.successMsg('删除成功')
-              if (onSuccess) onSuccess()
+              Util.successMsg('删除成功', onSuccess)
             } else {
               Util.errorMsg(response.data.message || '删除失败')
             }
@@ -1494,8 +1511,7 @@ class Tools {
             })
 
             if (response.data.code === 0) {
-              Util.successMsg('批量删除成功')
-              if (onSuccess) onSuccess()
+              Util.successMsg('批量删除成功', onSuccess)
             } else {
               Util.errorMsg(response.data.message || '批量删除失败')
             }

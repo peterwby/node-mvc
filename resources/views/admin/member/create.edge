@@ -236,8 +236,9 @@
       });
 
       if (response.data.code === 0) {
-        Util.successMsg(trans('operation success'));
-        window.location.href = '/admin/member/list';
+        Util.successMsg(trans('operation success'), () => {
+          window.location.href = '/admin/member/list';
+        });
         return response.data;
       } else {
         throw new Error(response.data.msg || trans('operation failed'));

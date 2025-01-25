@@ -10,7 +10,7 @@ const Generator = require('./generator')
  */
 async function showGeneratorPage(ctx) {
   try {
-    return ctx.view.render('generator.tool')
+    return ctx.view.render('../../app/Generator/views/tool')
   } catch (err) {
     log.error(err)
     return ctx.view.render('error.404')

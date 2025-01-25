@@ -1165,8 +1165,9 @@
       const response = await axios.post('/api/member/logout');
       if (response.data.code == 1001) {
         localStorage.removeItem('token')
-        Util.successMsg('已退出系统！');
-        window.location.href = '/admin/auth/sign-in';
+        Util.successMsg('已退出系统！', () => {
+          window.location.href = '/admin/auth/sign-in';
+        });
         return null
       }
     }
