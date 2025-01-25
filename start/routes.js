@@ -33,7 +33,7 @@ Route.group(() => {
   //http://127.0.0.1:3000/tutorial/db-modify
   Route.post('db-modify', 'TutorialController.dbModify')
   //http请求
-  Route.get('http-request', 'TutorialController.httpRequest')
+  Route.get('httpRequest', 'TutorialController.httpRequest')
   //redis操作
   Route.get('redis-ops', 'TutorialController.redisOps')
   //文件操作
@@ -118,6 +118,20 @@ Route.group(() => {
   }
 })
   .prefix('admin/auth')
+  .middleware(['noAuth'])
+
+// 页面生成器
+Route.group(() => {
+  try {
+    // 代码生成器路由
+    const Generator = require('../app/Generator')
+    Route.get('/', (ctx) => Generator.showGeneratorPage(ctx))
+    Route.post('generate-code', (ctx) => Generator.generateCode(ctx))
+  } catch (err) {
+    return view.render('error.404')
+  }
+})
+  .prefix('generator')
   .middleware(['noAuth'])
 
 //兜底：如果都匹配不到路由，则转到404页面
