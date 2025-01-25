@@ -64,7 +64,7 @@ class MemberController {
       })
       return Util.end2front({
         msg: 'Logout success',
-        code: 1001,
+        code: 401,
       })
     } catch (err) {
       return Util.error2front({

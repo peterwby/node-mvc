@@ -1163,7 +1163,7 @@
 
     async function handleLogout() {
       const response = await axios.post('/api/member/logout');
-      if (response.data.code == 1001) {
+      if (response.data.code == 401) {
         localStorage.removeItem('token')
         Util.successMsg('已退出系统！', () => {
           window.location.href = '/admin/auth/sign-in';

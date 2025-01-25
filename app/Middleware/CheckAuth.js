@@ -2,6 +2,8 @@
 const Env = use('Env')
 const Redis = use('Redis')
 const Util = require('@Lib/Util')
+const MenuService = require('@Services/MenuService')
+const menuService = new MenuService()
 
 class CheckAuth {
   async handle(ctx, next) {
@@ -22,7 +24,7 @@ class CheckAuth {
         // return ctx.response.send(
         //   Util.end2front({
         //     msg: '身份已过期，请重新登录',
-        //     code: 1001,
+        //     code: 401,
         //   })
         // )
       }
@@ -40,10 +42,12 @@ class CheckAuth {
       let from_time = new Date().getTime()
 
       //view注入公共函数
+      const menuResult = await menuService.getMenuTree()
       ctx.view.share({
         trans: (source) => {
           return Util.trans(source)
         },
+        menus: menuResult.data,
       })
 
       await next()
@@ -98,7 +102,7 @@ class CheckAuth {
       return ctx.response.send(
         Util.error2front({
           msg: err.message,
-          code: 1001,
+          code: 401,
           track: 'handle_' + url,
         })
       )

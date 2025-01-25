@@ -34,7 +34,7 @@ class NoAuth {
       return ctx.response.send(
         Util.error2front({
           msg: err.message,
-          code: 1001,
+          code: 401,
           track: 'handle_' + url,
         })
       )
