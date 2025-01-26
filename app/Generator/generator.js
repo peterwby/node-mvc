@@ -15,6 +15,11 @@ class Generator {
     this.tables = tables
     this.table_fields = table_fields
     this.view_path = path.join('resources/views', menu_path)
+
+    // 从 fields 中提取特殊字段
+    this.has_rich_editor = fields.some((field) => field.type === 'rich_editor')
+    this.rich_editor_fields = this.has_rich_editor ? fields.filter((field) => field.type === 'rich_editor') : []
+    this.select_fields = fields.filter((field) => field.type === 'select')
   }
 
   /**
@@ -106,8 +111,148 @@ class Generator {
    * @returns {string} 替换后的内容
    */
   replaceTemplateVariables(template, type, template_name) {
-    // TODO: 根据不同的文件类型和模板，替换相应的变量
-    return template
+    let content = template
+
+    // 1. 替换通用变量
+    content = content.replace(/\{\{\s*menu_path\s*\}\}/g, this.menu_path)
+
+    // 2. 根据不同的文件类型替换特定变量
+    if (type === 'frontend') {
+      switch (template_name) {
+        case 'list.edge':
+          content = this.replaceListVariables(content)
+          break
+        case 'create.edge':
+          content = this.replaceCreateVariables(content)
+          break
+        case 'edit.edge':
+          content = this.replaceEditVariables(content)
+          break
+        case 'view.edge':
+          content = this.replaceViewVariables(content)
+          break
+      }
+    } else {
+      // backend 文件的变量替换
+      content = this.replaceBackendVariables(content, template_name)
+    }
+
+    return content
+  }
+
+  /**
+   * 替换列表页变量
+   * @param {string} content 模板内容
+   * @returns {string} 替换后的内容
+   */
+  replaceListVariables(content) {
+    let result = content
+
+    // 1. 替换字段相关的变量
+    result = result.replace(/\{\{\s*fields\s*\}\}/g, JSON.stringify(this.fields))
+
+    // 2. 替换表格配置
+    const tableConfig = {
+      // 表格列配置
+      columns: this.fields.map((field) => ({
+        field: field.name,
+        title: `{{ trans("${field.label}") }}`,
+        sortable: true,
+      })),
+      // 搜索配置
+      search: {
+        fields: this.fields
+          .filter((field) => !['password', 'rich_editor'].includes(field.type))
+          .map((field) => ({
+            name: field.name,
+            label: field.label,
+            type: field.html_type,
+          })),
+      },
+      // API 配置
+      api: {
+        list: `{{ route('${this.menu_path}/list') }}`,
+        delete: `{{ route('${this.menu_path}/delete') }}`,
+      },
+    }
+    result = result.replace(/\{\{\s*table_config\s*\}\}/g, JSON.stringify(tableConfig, null, 2))
+
+    // 3. 替换权限检查变量
+    const base_name = path.basename(this.menu_path)
+    result = result.replace(/\{\{\s*permission_create\s*\}\}/g, `${base_name}.create`)
+    result = result.replace(/\{\{\s*permission_edit\s*\}\}/g, `${base_name}.edit`)
+    result = result.replace(/\{\{\s*permission_delete\s*\}\}/g, `${base_name}.delete`)
+    result = result.replace(/\{\{\s*permission_view\s*\}\}/g, `${base_name}.view`)
+
+    return result
+  }
+
+  /**
+   * 替换创建页变量
+   * @param {string} content 模板内容
+   * @returns {string} 替换后的内容
+   */
+  replaceCreateVariables(content) {
+    let result = content
+
+    // 1. 替换字段相关的变量
+    result = result.replace(/\{\{\s*fields\s*\}\}/g, JSON.stringify(this.fields))
+    result = result.replace(/\{\{\s*has_rich_editor\s*\}\}/g, this.has_rich_editor.toString())
+    result = result.replace(/\{\{\s*rich_editor_fields\s*\}\}/g, JSON.stringify(this.rich_editor_fields))
+
+    // 2. 处理 @each 循环
+    // Edge 模板引擎会处理这些循环，所以不需要在这里替换
+
+    // 3. 处理条件语句
+    // Edge 模板引擎会处理这些条件，所以不需要在这里替换
+
+    // 4. 处理验证规则
+    const validationRules = this.fields
+      .map((field) => {
+        if (Object.keys(field.validation).length === 0) return ''
+
+        return `
+        ${field.name}: {
+          validators: ${JSON.stringify(field.validation)}
+        }`
+      })
+      .filter((rule) => rule)
+      .join(',\n')
+
+    result = result.replace(/\{\{\s*validation_rules\s*\}\}/g, validationRules)
+
+    return result
+  }
+
+  /**
+   * 替换编辑页变量
+   * @param {string} content 模板内容
+   * @returns {string} 替换后的内容
+   */
+  replaceEditVariables(content) {
+    // ... 编辑页的变量替换逻辑，类似于创建页 ...
+    return content
+  }
+
+  /**
+   * 替换查看页变量
+   * @param {string} content 模板内容
+   * @returns {string} 替换后的内容
+   */
+  replaceViewVariables(content) {
+    // ... 查看页的变量替换逻辑 ...
+    return content
+  }
+
+  /**
+   * 替换后端文件变量
+   * @param {string} content 模板内容
+   * @param {string} template_name 模板文件名
+   * @returns {string} 替换后的内容
+   */
+  replaceBackendVariables(content, template_name) {
+    // ... 后端文件的变量替换逻辑 ...
+    return content
   }
 
   /**
