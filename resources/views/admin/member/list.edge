@@ -14,13 +14,17 @@
 
       </div>
       <div class="flex items-center gap-2.5">
+        @if(hasPermission('/admin/member/list@create'))
         <a href="/admin/member/create" class="btn btn-sm btn-primary">
           <i class="ki-duotone ki-plus fs-2"></i>
           {{ trans('create') }}
         </a>
+        @endif
+        @if(hasPermission('/admin/member/list@batch-remove'))
         <button id="batch_delete_btn" class="btn btn-sm btn-danger" disabled>
           {{ trans('batch delete') }}
         </button>
+        @endif
       </div>
     </div>
   </div>
@@ -198,24 +202,26 @@
             '</a>' +
             '</div>' +
 
+            (hasPermission('/admin/member/list@edit') ?
             '<div class="menu-item">' +
             '<a class="menu-link" href="/admin/member/edit/' + data.member_id + '">' +
             '<span class="menu-title">' +
             trans('edit') +
             '</span>' +
             '</a>' +
-            '</div>' +
+            '</div>' : '') +
 
             '<div class="menu-separator">' +
             '</div>' +
 
+            (hasPermission('/admin/member/list@remove') ?
             '<div class="menu-item">' +
             '<button type="button" class="menu-link remove-btn" data-id="' + data.member_id + '">' +
             '<span class="menu-title">' +
             trans('delete') +
             '</span>' +
             '</button>' +
-            '</div>' +
+            '</div>' : '') +
 
             '</div>' +
             '</div>' +

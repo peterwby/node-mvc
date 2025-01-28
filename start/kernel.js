@@ -44,6 +44,8 @@ const globalMiddleware = ['Adonis/Middleware/BodyParser', 'Adonis/Middleware/Ses
 */
 const namedMiddleware = {
   checkAuth: 'App/Middleware/CheckAuth',
+  checkApiAuth: 'App/Middleware/CheckApiAuth',
+  checkViewAuth: 'App/Middleware/CheckViewAuth',
   checkAuthByRedis: 'App/Middleware/CheckAuthByRedis',
   checkAuthByString: 'App/Middleware/CheckAuthByString',
   noAuth: 'App/Middleware/NoAuth',

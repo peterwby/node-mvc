@@ -15,6 +15,8 @@
 /** @type {typeof import('@adonisjs/framework/src/Route/Manager')} */
 const Route = use('Route')
 const Util = require('@Lib/Util')
+const Generator = require('../app/Generator')
+const generator = new Generator()
 
 // 刷新翻译数据
 const CommonService = require(`@Services/CommonService`)
@@ -88,7 +90,7 @@ Route.group(() => {
   }
 })
   .prefix('api') //统一给这组路由的uri加入前缀
-  .middleware(['checkAuth']) //验证身份
+  .middleware(['checkApiAuth']) //验证身份
 
 // View层 - 需要验证身份的路由
 Route.group(() => {
@@ -102,11 +104,14 @@ Route.group(() => {
     Route.get('member/create', 'MemberController.create')
     Route.post('member/logout', 'MemberController.logout')
   } catch (err) {
-    return view.render('error.404')
+    return Util.end2front({
+      msg: 'Not found the API',
+      code: 9992,
+    })
   }
 })
   .prefix('admin')
-  .middleware(['checkAuth'])
+  .middleware(['checkViewAuth'])
 
 // View层 - 无需验证身份的路由
 Route.group(() => {
@@ -114,25 +119,46 @@ Route.group(() => {
     Route.get('sign-in', 'AuthController.signIn')
     Route.get('sign-up', 'AuthController.signUp')
   } catch (err) {
-    return view.render('error.404')
+    return Util.end2front({
+      msg: 'Not found the API',
+      code: 9993,
+    })
   }
 })
   .prefix('admin/auth')
   .middleware(['noAuth'])
 
-// 页面生成器
+// 代码生成工具
 Route.group(() => {
   try {
-    // 代码生成器路由
-    const Generator = require('../app/Generator')
-    Route.get('/', (ctx) => Generator.showGeneratorPage(ctx))
-    Route.post('generate-code', (ctx) => Generator.generateCode(ctx))
+    Route.get('tool', async ({ view, session }) => {
+      // 检查是否超级管理员
+
+      const member = session.get('member')
+      if (!member || member.member_id !== 1) {
+        return view.render('error.404')
+      }
+      return generator.tool({ view })
+    })
+
+    Route.post('generate', async ({ request, response, session }) => {
+      // 检查是否超级管理员
+      const member = session.get('member')
+      if (!member || member.member_id !== 1) {
+        return Util.end2front({
+          msg: '只有超级管理员可以使用此功能',
+          code: 9000,
+        })
+      }
+      return generator.generate({ body: request.all(), response })
+    })
   } catch (err) {
-    return view.render('error.404')
+    return Util.end2front({
+      msg: 'Not found the API',
+      code: 9994,
+    })
   }
-})
-  .prefix('generator')
-  .middleware(['noAuth'])
+}).prefix('generator')
 
 //兜底：如果都匹配不到路由，则转到404页面
 //Route.any('*', ({ view }) => view.render('error.404'))

@@ -3,7 +3,10 @@ const Env = use('Env')
 const Redis = use('Redis')
 const Util = require('@Lib/Util')
 
-class CheckAuth {
+class CheckApiAuth {
+  // API 白名单，这些接口不需要权限检查
+  static whiteList = ['/api/member/logout', '/api/get-translation', '/api/upload/image', '/api/member/update-password']
+
   async handle(ctx, next) {
     try {
       const session = ctx.session
@@ -23,6 +26,26 @@ class CheckAuth {
           Util.end2front({
             msg: '身份已过期，请重新登录',
             code: 401,
+          })
+        )
+      }
+
+      // 权限检查
+      const permissions = session.get('permissions') || {}
+      const url = ctx.request.url()
+
+      // 检查是否在白名单中
+      if (CheckApiAuth.whiteList.includes(url)) {
+        await next()
+        return
+      }
+
+      // 检查权限
+      if (!Util.checkPermission(url, permissions)) {
+        return ctx.response.send(
+          Util.end2front({
+            msg: '没有访问权限',
+            code: 403,
           })
         )
       }
@@ -84,7 +107,7 @@ class CheckAuth {
         return ctx.response.send(
           Util.end2front({
             msg: '服务端未定义此方法',
-            code: 9999,
+            code: 401,
           })
         )
       }
@@ -103,4 +126,4 @@ class CheckAuth {
   }
 }
 
-module.exports = CheckAuth
+module.exports = CheckApiAuth

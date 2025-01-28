@@ -10,6 +10,12 @@ const MemberTable = require('@Table/member')
 const memberTable = new MemberTable()
 const Env = use('Env')
 const Redis = use('Redis')
+const RolePermissionTable = require('@Table/role_permissions')
+const rolePermissionTable = new RolePermissionTable()
+const PermissionTable = require('@Table/permissions')
+const permissionTable = new PermissionTable()
+const MemberRoleTable = require('@Table/member_roles')
+const memberRoleTable = new MemberRoleTable()
 
 class Service extends BaseService {
   /**
@@ -30,6 +36,37 @@ class Service extends BaseService {
         })
       }
       let member_info = Util.deepClone(result.data)
+
+      // 获取用户权限
+      let permissions = {}
+
+      // 1. 获取用户的角色ID
+      result = await memberRoleTable.fetchAll({
+        where: [['member_id', '=', member_info.member_id]],
+      })
+      if (result.status === 1 && result.data.data.length > 0) {
+        const roleIds = result.data.data.map((item) => item.role_id)
+        // 2. 获取用户的角色权限
+        result = await rolePermissionTable.fetchAll({
+          where: [['role_id', 'in', roleIds]],
+        })
+        if (result.status === 1 && result.data.data.length > 0) {
+          // 3. 获取权限详情
+          const permissionIds = result.data.data.map((item) => item.permission_id)
+          result = await permissionTable.fetchAll({
+            where: [['permission_id', 'in', permissionIds]],
+          })
+          if (result.status === 1 && result.data.data.length > 0) {
+            // 4. 转换为 permissions 对象 { 'permission_key': true }
+            result.data.data.forEach((item) => {
+              permissions[item.key] = true
+            })
+          }
+        }
+      }
+
+      // 5. 存入 session（无论是否获取成功，都存入 permissions 对象）
+      ctx.session.put('permissions', permissions)
 
       //把账号相关信息存到session，并返回信息到前端
       ctx.session.put('member', member_info)

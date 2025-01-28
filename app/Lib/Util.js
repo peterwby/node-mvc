@@ -97,8 +97,8 @@ const Util = {
         new_string = xss(string)
       }
     }
+    //如果原始内容发生改变，说明检查出了注入，下面简单的把内容替换为"已防注入"
     if (string !== new_string) {
-      //检查是否存在script？替换为已防注入
       console.log('已防注入:', string)
       new_string = '已防注入'
     }
@@ -1072,6 +1072,71 @@ const Util = {
     const base64 = buff.toString('base64')
 
     return base64
+  },
+
+  /**
+   * 检查权限
+   * @param {string} url 请求的URL
+   * @param {Object} permissions 权限对象
+   * @returns {boolean}
+   */
+  checkPermission(url, permissions) {
+    // 1. 直接匹配
+    if (permissions[url]) {
+      return true
+    }
+
+    // 2. 处理带参数的URL
+    // 例如：/admin/member/edit/123 应该匹配 /admin/member/edit/:id
+    const urlParts = url.split('/')
+    for (const key in permissions) {
+      // 如果是元素权限（包含@），跳过URL匹配
+      if (key.includes('@')) {
+        continue
+      }
+
+      const permParts = key.split('/')
+
+      // 长度必须相同
+      if (urlParts.length !== permParts.length) {
+        continue
+      }
+
+      let isMatch = true
+      for (let i = 0; i < permParts.length; i++) {
+        // 如果是参数部分（以:开头），则跳过比较
+        if (permParts[i].startsWith(':')) {
+          continue
+        }
+        // 否则必须完全匹配
+        if (permParts[i] !== urlParts[i]) {
+          isMatch = false
+          break
+        }
+      }
+
+      if (isMatch) {
+        return true
+      }
+    }
+
+    // 3. 处理通配符
+    // 例如：/admin/member/* 应该匹配所有 /admin/member/ 开头的URL
+    for (const key in permissions) {
+      // 跳过元素权限
+      if (key.includes('@')) {
+        continue
+      }
+
+      if (key.endsWith('/*')) {
+        const prefix = key.slice(0, -1) // 去掉末尾的 *
+        if (url.startsWith(prefix)) {
+          return true
+        }
+      }
+    }
+
+    return false
   },
 
   /************************************************************************

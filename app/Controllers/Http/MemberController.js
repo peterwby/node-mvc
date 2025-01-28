@@ -832,7 +832,7 @@ async function viewValid(ctx) {
       let body = {}
       for (let k in requestAll) {
         switch (k.toLowerCase()) {
-          case 'member_id':
+          case 'id':
             {
               const tmp = Util.decode(requestAll[k])
               if (tmp) body.member_id = tmp
@@ -873,7 +873,7 @@ async function editValid(ctx) {
       let body = {}
       for (let k in requestAll) {
         switch (k.toLowerCase()) {
-          case 'member_id':
+          case 'id':
             {
               const tmp = Util.decode(requestAll[k])
               if (tmp) body.member_id = tmp

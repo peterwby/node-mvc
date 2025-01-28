@@ -1,72 +1,62 @@
-@layout('common/layouts')
+@layout('../../app/Generator/views/layouts/generator')
 
 @section('content')
 <!-- Container -->
 <main class="grow content pt-5" id="content" role="content">
-  <!-- Container -->
   <div class="container-fixed">
     <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
       <div class="flex flex-col justify-center gap-2">
         <h1 class="text-xl font-medium leading-none text-gray-900">
-          代码生成工具
+          代码生成器
         </h1>
+      </div>
+      <div class="flex items-center gap-2.5">
+        <button type="submit" class="btn btn-sm btn-primary" form="generator_form" id="submit_btn">
+          <span class="indicator-label">生成代码</span>
+          <span class="indicator-progress">
+            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+          </span>
+        </button>
       </div>
     </div>
   </div>
-  <!-- End of Container -->
-
-  <!-- Container -->
   <div class="container-fixed">
     <div class="grid gap-5 lg:gap-7.5">
       <div class="card min-w-full">
         <div class="card-body">
           <form id="generator_form" class="grid gap-5">
-            <!-- 菜单路径 -->
-            <div class="form-group">
-              <label class="form-label required" for="menu_path">菜单路径</label>
-              <input type="text" class="form-input" id="menu_path" name="menu_path" required
-                placeholder="/admin/orders">
-              <div class="form-help">输入菜单路径，例如：/admin/orders，将在 resources/views 下创建对应的目录</div>
-            </div>
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56 required">
+                菜单路径
+              </label>
 
-            <!-- 主键字段 -->
-            <div class="form-group">
-              <label class="form-label" for="primary_key">主键字段</label>
-              <input type="text" class="form-input" id="primary_key" name="primary_key" placeholder="id">
-              <div class="form-help">
-                输入SQL查询结果中的主键字段名：<br>
-                - 如果SQL中使用了别名（如：tableA.id as record_id），请输入别名（record_id）<br>
-                - 如果没有使用别名，请输入完整字段名（如：tableA.id）<br>
-                - 如果查询结果没有主键字段，可以留空，此时列表页将不显示编辑、删除等操作按钮
+              <div class="flex flex-col w-full gap-1">
+                <input type="text" class="input max-w-[300px]" name="menu_path" placeholder="例如：/admin/orders" />
+                <span class="text-xs text-gray-500">
+                  菜单路径必须以 / 开头，用于确定生成文件的位置
+                </span>
               </div>
             </div>
 
-            <!-- SQL查询 -->
-            <div class="form-group">
-              <label class="form-label required" for="sql_query">SQL查询语句</label>
-              <textarea class="form-textarea" id="sql_query" name="sql_query" rows="8" required></textarea>
-              <div class="form-help">输入用于获取列表页显示字段的SQL查询语句，支持多表联合查询</div>
-            </div>
-
-            <!-- 提交按钮 -->
-            <div class="flex justify-end gap-2">
-              <button type="submit" class="btn btn-primary" id="submit_btn">
-                <span class="indicator-label">生成代码</span>
-                <span class="indicator-progress hidden">
-                  <span
-                    class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
-                    role="status" aria-label="loading"></span>
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56 required">
+                SQL 查询
+              </label>
+              <div class="flex flex-col w-full gap-1">
+                <textarea class="textarea w-full max-w-[800px]" name="sql" rows="8"
+                  placeholder="例如：SELECT a.order_id, a.order_no, a.status, b.customer_name FROM orders a LEFT JOIN customers b ON b.customer_id = a.customer_id"></textarea>
+                <span class="text-xs text-gray-500">
+                  支持多表联合查询，字段别名将用于显示名称
                 </span>
-              </button>
+              </div>
+
             </div>
           </form>
         </div>
       </div>
     </div>
   </div>
-  <!-- End of Container -->
 </main>
-<!-- End of Container -->
 @endsection
 
 @section('scripts')
@@ -74,10 +64,13 @@
   // 处理表单提交
   Util.handleFormSubmit('#generator_form', {
     submitButton: '#submit_btn',
-    action: '/generator/generate-code',
+    action: '/generator/generate',
     onSuccess: (response) => {
-      // TODO: 显示生成结果
-      console.log(response)
+      if (response.status === 1) {
+        Util.showSuccessMsg(response.msg)
+      } else {
+        Util.showErrorMsg(response.msg)
+      }
     }
   })
 </script>

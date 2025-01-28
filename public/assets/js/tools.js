@@ -32,8 +32,22 @@ class Tools {
     // 初始化翻译方法
     this.trans = this._initTrans()
 
+    // 初始化权限检查方法
+    this.hasPermission = this._initHasPermission()
+
     // 初始化加载状态
     this._initState()
+  }
+
+  /**
+   * 初始化权限检查方法
+   * @private
+   * @returns {Function} 权限检查函数
+   */
+  _initHasPermission() {
+    return (key) => {
+      return !!(window.globalData && window.globalData.permissions && window.globalData.permissions[key])
+    }
   }
 
   /**

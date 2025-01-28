@@ -35,6 +35,9 @@
     }, function (error) {
       return Promise.reject(error)
     })
+
+    // 注入全局变量
+    window.globalData = {{{ toJSON(globalData) }}}
   </script>
 </head>
 
@@ -1138,7 +1141,7 @@
 
   <script>
     // 局部声明需要使用的工具
-    const { Util, dayjs, cookie, trans } = window.Tools;
+    const { Util, dayjs, cookie, trans, hasPermission } = window.Tools;
 
     // 在页面加载时
     document.addEventListener('DOMContentLoaded', async () => {

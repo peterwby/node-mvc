@@ -13,11 +13,13 @@
         </h1>
       </div>
       <div class="flex items-center gap-2.5">
+        @if(hasPermission('{{ menu_path }}/list@create'))
         <a href="{{ menu_path }}/create" class="btn btn-sm btn-primary">
           <i class="ki-duotone ki-plus fs-2"></i>
           {{ trans('create') }}
         </a>
-        @if(primary_key)
+        @endif
+        @if(hasPermission('{{ menu_path }}/list@batch-remove'))
         <button id="batch_delete_btn" class="btn btn-sm btn-danger" disabled>
           {{ trans('batch delete') }}
         </button>
@@ -187,24 +189,26 @@
             '</a>' +
             '</div>' +
 
+            (hasPermission('{{ menu_path }}/list@edit') ?
             '<div class="menu-item">' +
             '<a class="menu-link" href="{{ menu_path }}/edit/' + data.{{ primary_key }} + '">' +
             '<span class="menu-title">' +
             trans('edit') +
             '</span>' +
             '</a>' +
-            '</div>' +
+            '</div>' : '') +
 
             '<div class="menu-separator">' +
             '</div>' +
 
+            (hasPermission('{{ menu_path }}/list@remove') ?
             '<div class="menu-item">' +
             '<button type="button" class="menu-link remove-btn" data-id="' + data.{{ primary_key }} + '">' +
             '<span class="menu-title">' +
             trans('delete') +
             '</span>' +
             '</button>' +
-            '</div>' +
+            '</div>' : '') +
 
             '</div>' +
             '</div>' +

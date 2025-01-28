@@ -15,9 +15,11 @@
         <button type="button" class="btn btn-sm btn-light" onclick="window.history.back()">
           {{ trans('back') }}
         </button>
+        @if(hasPermission('/admin/member/edit/:id'))
         <a class="btn btn-sm btn-primary" href="/admin/member/edit/{{ member_info.member_id }}">
           {{ trans('edit') }}
         </a>
+        @endif
       </div>
     </div>
   </div>
