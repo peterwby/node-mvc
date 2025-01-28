@@ -474,6 +474,9 @@ async function testTableExtraction() {
 }
 
 module.exports = {
+  extractFieldDefinitions,
+  extractTableNames,
+  hasLimit,
   extractFields,
   validateTable,
   getTableFields,

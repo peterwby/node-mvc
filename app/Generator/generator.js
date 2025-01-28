@@ -5,6 +5,7 @@ const path = require('path')
 const Helpers = use('Helpers')
 const log = use('Logger')
 const GeneratorLogger = require('./logger')
+const moment = require('moment')
 
 /**
  * 代码生成器类
@@ -113,10 +114,24 @@ class Generator {
    * 生成后端文件
    */
   async generateBackendFiles() {
-    const files = ['controller.js', 'service.js', 'model.js']
-    for (const file of files) {
-      await this.generateFile('backend', file)
-    }
+    // 生成控制器
+    await this.generateController()
+    // 生成服务层
+    await this.generateService()
+    // 生成表层
+    await this.generateTable()
+  }
+
+  /**
+   * 生成表层文件
+   */
+  async generateTable() {
+    const template = await this.readTemplate('backend/table.js.tpl')
+    const content = this.replaceTableVariables(template, {
+      table_name: this.table_name,
+    })
+    const table_path = path.join(this.base_path, 'app/Models/Table', this.table_name + '.js')
+    await this.writeFile(table_path, content)
   }
 
   /**
@@ -174,7 +189,7 @@ class Generator {
       const dir_map = {
         'controller.js': 'Controllers/Http',
         'service.js': 'Services',
-        'model.js': 'Models/Table',
+        'table.js': 'Models/Table',
       }
       const base_name = path.basename(this.menu_path)
       const file_name = template_name.replace('.js', `/${base_name}_${template_name}`)
@@ -183,18 +198,45 @@ class Generator {
   }
 
   /**
-   * 替换列表页变量
-   * @param {string} content 模板内容
+   * 替换通用模板变量
+   * @param {string} template 模板内容
+   * @param {Object} variables 变量对象
    * @returns {string} 替换后的内容
    */
-  replaceListVariables(content) {
-    let result = content
+  replaceCommonVariables(template, variables) {
+    let content = template
 
+    // 替换基础变量
+    for (const [key, value] of Object.entries(variables)) {
+      const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g')
+      content = content.replace(regex, value || '')
+    }
+
+    // 替换条件块
+    content = this.replaceConditionalBlocks(content, variables)
+
+    // 替换循环块
+    content = this.replaceLoopBlocks(content, variables)
+
+    return content
+  }
+
+  /**
+   * 替换列表页变量
+   * @param {string} content 模板内容
+   * @param {Object} data 数据对象
+   * @returns {string} 替换后的内容
+   */
+  replaceListVariables(content, data) {
+    // 使用通用变量替换
+    let result = this.replaceCommonVariables(content, data)
+
+    // 特定的列表页变量替换
     // 1. 替换菜单路径
     result = result.replace(/\{\{\s*menu_path\s*\}\}/g, this.menu_path)
 
     // 2. 替换主键相关的变量
-    const primary_key = this.fields.find((field) => field.key === 'PRI')?.name || ''
+    const primary_key = this.fields.find((field) => field.key === 'PRI')?.name || 'id'
     result = result.replace(/\{\{\s*primary_key\s*\}\}/g, primary_key)
 
     // 3. 替换列表字段
@@ -202,27 +244,43 @@ class Generator {
       // 根据字段类型生成渲染函数
       let render = ''
       switch (field.type) {
-        case 'datetime':
-          render = `(value) => Util.formatDateTime(value)`
-          break
         case 'boolean':
           render = `(value) => value ? trans('yes') : trans('no')`
           break
-        case 'number':
-          render = `(value) => Util.formatNumber(value)`
+        case 'select':
+          render = `(value, data) => data.${field.name}_text || value`
           break
         default:
-          render = `(value) => Util.escapeHtml(value)`
+          // 其他类型（包括日期时间）直接显示值
+          render = `(value) => value || ''`
       }
 
       return {
         name: field.name,
-        label: field.label,
+        label: field.label || field.name,
         render,
       }
     })
 
-    result = result.replace(/\{\{\s*list_fields\s*\}\}/g, JSON.stringify(list_fields))
+    // 将 list_fields 转换为字符串，但保持 render 函数的原始形式
+    const list_fields_str = JSON.stringify(
+      list_fields,
+      (key, value) => {
+        if (key === 'render') {
+          // 保持 render 函数的原始形式
+          return value.toString()
+        }
+        return value
+      },
+      2
+    )
+      // 移除 render 函数的引号
+      .replace(/"(.*?)\(\s*value.*?\)\s*=>\s*.*?\)"/g, '$1')
+
+    result = result.replace(/\{\{\s*list_fields\s*\}\}/g, list_fields_str)
+
+    // 4. 替换操作列中的主键引用
+    result = result.replace(/data\.\s*\+/g, `data.${primary_key}`)
 
     return result
   }
@@ -230,11 +288,14 @@ class Generator {
   /**
    * 替换编辑页变量
    * @param {string} content 模板内容
+   * @param {Object} data 数据对象
    * @returns {string} 替换后的内容
    */
-  replaceEditVariables(content) {
-    let result = content
+  replaceEditVariables(content, data) {
+    // 使用通用变量替换
+    let result = this.replaceCommonVariables(content, data)
 
+    // 特定的编辑页变量替换
     // 1. 替换菜单路径
     result = result.replace(/\{\{\s*menu_path\s*\}\}/g, this.menu_path)
 
@@ -247,351 +308,222 @@ class Generator {
     const primary_key = this.fields.find((field) => field.key === 'PRI')?.name || ''
     result = result.replace(/\{\{\s*primary_key\s*\}\}/g, primary_key)
 
-    // 4. 生成表单字段的 HTML
-    const formFields = this.fields
-      .map((field) => {
-        let fieldHtml = ''
-        const infoValue = `{{ info.${field.name} }}`
-
-        if (field.name === primary_key) {
-          // 主键字段使用隐藏输入
-          fieldHtml = `<input type="hidden" name="${field.name}" value="${infoValue}">`
-        } else {
-          fieldHtml = `
-            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
-              <label class="form-label max-w-56">
-                {{ trans('${field.label}') }}
-              </label>`
-
-          switch (field.type) {
-            case 'select':
-              fieldHtml += `
-              <select id="${field.name}" name="${field.name}" class="select max-w-[300px]" ${field.required ? 'required' : ''}>
-                <option value="">{{ trans('please select') }}</option>
-                @each(option in ${field.name}_options)
-                <option value="{{ option.value }}" {{ ${infoValue} + '' === option.value + '' ? 'selected' : '' }}>
-                  {{ option.label }}
-                </option>
-                @endeach
-              </select>`
-              break
-            case 'textarea':
-              fieldHtml += `
-              <textarea id="${field.name}" name="${field.name}" class="form-textarea max-w-[800px]" rows="4"
-                placeholder="{{ trans('${field.label}') }}" ${field.required ? 'required' : ''}>${infoValue}</textarea>`
-              break
-            case 'rich_editor':
-              fieldHtml += `
-              <div class="grow h-[250px] max-w-[800px]">
-                <div id="${field.name}"></div>
-              </div>`
-              break
-            case 'password':
-              fieldHtml += `
-              <input id="${field.name}" name="${field.name}" class="input max-w-[300px]"
-                placeholder="{{ trans('${field.label}') }}" type="password" ${field.required ? 'required' : ''} />`
-              break
-            default:
-              fieldHtml += `
-              <input id="${field.name}" name="${field.name}" class="input max-w-[300px]"
-                placeholder="{{ trans('${field.label}') }}" type="${field.html_type || 'text'}"
-                value="${infoValue}" ${field.required ? 'required' : ''} />`
-          }
-
-          fieldHtml += `
-            </div>`
-        }
-        return fieldHtml
-      })
-      .join('\n')
-
-    result = result.replace(/\{\{\s*form_fields\s*\}\}/g, formFields)
-
-    // 5. 生成验证规则
-    const validationRules = this.fields
-      .filter((field) => field.name !== primary_key && Object.keys(field.validation).length > 0)
-      .map((field) => {
-        return `
-        ${field.name}: {
-          validators: ${JSON.stringify(field.validation)}
-        }`
-      })
-      .filter((rule) => rule)
-      .join(',\n')
-
-    result = result.replace(/\{\{\s*validation_rules\s*\}\}/g, validationRules)
-
-    // 6. 替换富文本编辑器初始化代码
-    if (this.has_rich_editor) {
-      const editorInitCode = this.rich_editor_fields
-        .map(
-          (field) => `
-      // 初始化 ${field.name} 编辑器
-      editors['${field.name}'] = await new RichEditor('#${field.name}', 'simple');
-      const ${field.name}Data = {{{ info.${field.name} || null }}};
-      if (${field.name}Data) {
-        editors['${field.name}'].setContents(${field.name}Data);
-      }`
-        )
-        .join('\n')
-      result = result.replace(/\{\{\s*editor_init_code\s*\}\}/g, editorInitCode)
-    }
-
     return result
   }
 
   /**
    * 替换查看页变量
    * @param {string} content 模板内容
+   * @param {Object} data 数据对象
    * @returns {string} 替换后的内容
    */
-  replaceViewVariables(content) {
-    let result = content
+  replaceViewVariables(content, data) {
+    // 使用通用变量替换
+    let result = this.replaceCommonVariables(content, data)
 
+    // 特定的查看页变量替换
     // 1. 替换菜单路径
     result = result.replace(/\{\{\s*menu_path\s*\}\}/g, this.menu_path)
 
-    // 2. 获取主键字段
-    const primary_key = this.fields.find((field) => field.key === 'PRI')?.name || ''
-    result = result.replace(/\{\{\s*primary_key\s*\}\}/g, primary_key)
-
-    // 3. 生成字段显示 HTML
-    const fieldRows = this.fields
-      .filter((field) => field.name !== primary_key) // 排除主键字段
-      .map((field) => {
-        let valueHtml = ''
-
-        switch (field.type) {
-          case 'rich_editor':
-            valueHtml = `<div id="${field.name}" class="h-[150px]"></div>`
-            break
-          case 'datetime':
-            valueHtml = `{{ info.${field.name} }}`
-            break
-          case 'boolean':
-            valueHtml = `{{ info.${field.name} ? trans('yes') : trans('no') }}`
-            break
-          case 'select':
-            valueHtml = `{{ info.${field.name}_text }}`
-            break
-          default:
-            valueHtml = `{{ info.${field.name} || '' }}`
-        }
-
-        return `
-            <tr>
-              <td class="py-2 text-gray-600 font-normal">
-                {{ trans('${field.label}') }}
-              </td>
-              <td class="py-2 text-gray-700 font-normal text-sm">
-                ${valueHtml}
-              </td>
-            </tr>`
-      })
-      .join('\n')
-
-    result = result.replace(/\{\{\s*field_rows\s*\}\}/g, fieldRows)
-
-    // 4. 替换富文本编辑器相关变量
+    // 2. 替换字段相关的变量
+    result = result.replace(/\{\{\s*fields\s*\}\}/g, JSON.stringify(this.fields))
     result = result.replace(/\{\{\s*has_rich_editor\s*\}\}/g, this.has_rich_editor.toString())
     result = result.replace(/\{\{\s*rich_editor_fields\s*\}\}/g, JSON.stringify(this.rich_editor_fields))
-
-    // 5. 生成富文本编辑器初始化代码
-    if (this.has_rich_editor) {
-      const editorInitCode = this.rich_editor_fields
-        .map(
-          (field) => `
-      // 初始化 ${field.name} 编辑器为只读模式
-      const ${field.name}Editor = await new RichEditor('#${field.name}', 'readonly');
-      const ${field.name}Data = {{{ info.${field.name} || null }}};
-      if (${field.name}Data) {
-        ${field.name}Editor.setContents(${field.name}Data);
-      }`
-        )
-        .join('\n')
-      result = result.replace(/\{\{\s*editor_init_code\s*\}\}/g, editorInitCode)
-    }
 
     return result
   }
 
   /**
-   * 替换 Model 模板中的变量
-   * @param {string} content - 模板内容
-   * @param {object} data - 变量数据
-   * @returns {string} - 替换后的内容
+   * 替换创建页变量
+   * @param {string} content 模板内容
+   * @param {Object} data 数据对象
+   * @returns {string} 替换后的内容
    */
-  replaceModelVariables(content, data) {
-    const { menu_path, table_name, primary_key, fields, joins, search_fields } = data
+  replaceCreateVariables(content, data) {
+    // 使用通用变量替换
+    let result = this.replaceCommonVariables(content, data)
 
-    // 获取类名
-    const class_name = this.getClassName(menu_path) + 'Table'
+    // 特定的创建页变量替换
+    // 1. 替换菜单路径
+    result = result.replace(/\{\{\s*menu_path\s*\}\}/g, this.menu_path)
 
-    // 生成详情页字段
-    const detail_fields = fields
-      .map((field) => {
-        if (field.table_alias) {
-          return `${field.table_alias}.${field.name} as ${field.alias || field.name}`
-        }
-        return `a.${field.name}`
-      })
-      .join(',\n    ')
+    // 2. 替换字段相关的变量
+    result = result.replace(/\{\{\s*fields\s*\}\}/g, JSON.stringify(this.fields))
+    result = result.replace(/\{\{\s*has_rich_editor\s*\}\}/g, this.has_rich_editor.toString())
+    result = result.replace(/\{\{\s*rich_editor_fields\s*\}\}/g, JSON.stringify(this.rich_editor_fields))
 
-    // 生成列表页字段
-    const list_fields = fields
-      .map((field) => {
-        if (field.table_alias) {
-          return `${field.table_alias}.${field.name} as ${field.alias || field.name}`
-        }
-        return `a.${field.name}`
-      })
-      .join(',\n    ')
-
-    // 生成关联语句
-    const join_statements = joins
-      ? joins
-          .map((join) => {
-            return `\n        .leftJoin('${join.table} as ${join.alias}', '${join.alias}.${join.foreign_key}', 'a.${join.local_key}')`
-          })
-          .join('')
-      : ''
-
-    // 生成搜索条件
-    const search_conditions = search_fields
-      ? `
-        // 搜索条件
-        if (obj.search) {
-          table.where(function() {
-            ${search_fields
-              .map((field) => {
-                if (field.table_alias) {
-                  return `this.orWhere('${field.table_alias}.${field.name}', 'like', '%' + obj.search + '%')`
-                }
-                return `this.orWhere('a.${field.name}', 'like', '%' + obj.search + '%')`
-              })
-              .join('\n          ')}
-          })
-        }`
-      : ''
-
-    // 替换变量
-    return content
-      .replace(/{{ class_name }}/g, class_name)
-      .replace(/{{ table_name }}/g, table_name)
-      .replace(/{{ primary_key }}/g, primary_key)
-      .replace(/{{ detail_fields }}/g, detail_fields)
-      .replace(/{{ list_fields }}/g, list_fields)
-      .replace(/{{ join_statements }}/g, join_statements)
-      .replace(/{{ search_conditions }}/g, search_conditions)
-      .replace(/{{ additional_methods }}/g, '')
+    return result
   }
 
   /**
-   * 替换 Service 模板中的变量
-   * @param {string} content - 模板内容
-   * @param {object} data - 变量数据
-   * @returns {string} - 替换后的内容
+   * 替换服务层变量
+   * @param {string} content 模板内容
+   * @param {Object} data 数据对象
+   * @returns {string} 替换后的内容
    */
   replaceServiceVariables(content, data) {
-    const { menu_path, table_name, fields, select_fields } = data
+    // 使用通用变量替换
+    let result = this.replaceCommonVariables(content, data)
 
-    // 获取表名的驼峰形式
-    const table_name_camel = table_name.replace(/_([a-z])/g, (g) => g[1].toUpperCase())
+    // 1. 生成下拉列表数据获取代码
+    let select_list_data = []
+    let select_list_vars = []
+    this.fields.forEach((field) => {
+      if (field.type === 'select') {
+        const table_name = `dict_${field.name}`
+        select_list_data.push(`const ${field.name}_list = await Database.table('${table_name}').select('*')`)
+        select_list_vars.push(`${field.name}_list`)
+      }
+    })
 
-    // 生成下拉列表数据
-    const select_list_data = select_fields
-      ? select_fields
-          .map((field) => {
-            const table_class = this.getClassName(field.table) + 'Table'
-            const table_var = field.table + 'Table'
-            return `
-        //获取${field.comment}下拉列表
-        const ${table_class} = require('@Table/${field.table}')
-        const ${table_var} = new ${table_class}()
-        result = await ${table_var}.fetchAll({
-          orderBy: [['sequence', 'asc']],
-        })
-        const ${field.name}_list = result.data.data.map(item => ({
-          ${field.value_field}: item.${field.value_field},
-          ${field.label_field}: item.${field.label_field},
-        }))`
+    // 2. 生成搜索条件
+    const searchable_fields = this.fields.filter(
+      (field) => ['string', 'text'].includes(field.type) && ['name', 'title', 'description', 'content'].includes(field.name)
+    )
+    const search_conditions = searchable_fields.map((field) => `['${field.name}', 'like', \`%\${search}%\`]`)
+
+    // 3. 生成创建和更新字段
+    const create_fields = this.fields
+      .filter((field) => !['id', 'created_at', 'updated_at'].includes(field.name))
+      .map((field) => `${field.name}: body.${field.name}`)
+      .join(',\n          ')
+
+    // 替换变量
+    result = result
+      .replace(/\{\{\s*select_list_data\s*\}\}/g, select_list_data.join('\n      '))
+      .replace(/\{\{\s*select_list_vars\s*\}\}/g, select_list_vars.join(',\n        '))
+      .replace(/\{\{\s*search_conditions\s*\}\}/g, search_conditions.join(' OR '))
+      .replace(/\{\{\s*create_fields\s*\}\}/g, create_fields)
+      .replace(/\{\{\s*edit_fields\s*\}\}/g, create_fields)
+
+    return result
+  }
+
+  /**
+   * 替换表层变量
+   * @param {string} content 模板内容
+   * @param {Object} data 数据对象
+   * @returns {string} 替换后的内容
+   */
+  replaceTableVariables(content, data) {
+    // 使用通用变量替换
+    let result = this.replaceCommonVariables(content, data)
+
+    // 1. 替换类名相关变量
+    const table_name = data.table_name
+    const class_name = this.capitalize(table_name)
+    result = result.replace(/\{\{\s*class_name\s*\}\}/g, class_name)
+
+    // 2. 替换表名相关变量
+    result = result.replace(/\{\{\s*table_name\s*\}\}/g, table_name)
+
+    // 3. 替换主键相关变量
+    const primary_key = this.fields.find((field) => field.key === 'PRI')?.name || 'id'
+    result = result.replace(/\{\{\s*primary_key\s*\}\}/g, primary_key)
+
+    // 4. 替换字段列表
+    // 详情页字段
+    const detail_fields = this.fields.map((field) => `'a.${field.name}'`).join(', ')
+    result = result.replace(/\{\{\s*detail_fields\s*\}\}/g, detail_fields)
+
+    // 列表页字段
+    const list_fields = this.fields.map((field) => `'a.${field.name}'`).join(', ')
+    result = result.replace(/\{\{\s*list_fields\s*\}\}/g, list_fields)
+
+    // 5. 替换关联查询语句
+    const join_statements = data.joins
+      ? data.joins
+          .map((join, index) => {
+            const alias = String.fromCharCode(98 + index) // b, c, d...
+            return `        .leftJoin('${join.table} as ${alias}', 'a.${join.foreign_key}', '${alias}.${join.primary_key}')`
           })
           .join('\n')
       : ''
+    result = result.replace(/\{\{\s*join_statements\s*\}\}/g, join_statements)
 
-    // 生成下拉列表变量
-    const select_list_vars = select_fields
-      ? select_fields
-          .map((field) => {
-            return `${field.name}_list,`
-          })
-          .join('\n        ')
-      : ''
+    // 6. 替换搜索条件
+    const search_conditions = this.fields
+      .filter((field) => field.searchable)
+      .map(
+        (field) => `if (obj.search) {
+          table.where('a.${field.name}', 'like', '%' + obj.search + '%')
+        }`
+      )
+      .join('\n        ')
+    result = result.replace(/\{\{\s*search_conditions\s*\}\}/g, search_conditions)
 
-    // 生成创建字段
-    const create_fields = fields
-      .filter((field) => !field.is_primary_key)
-      .map((field) => {
-        return `${field.name}: body.${field.name},`
-      })
-      .join('\n          ')
+    // 7. 替换额外方法
+    const additional_methods = data.additional_methods || ''
+    result = result.replace(/\{\{\s*additional_methods\s*\}\}/g, additional_methods)
 
-    // 生成编辑字段
-    const edit_fields = fields
-      .filter((field) => !field.is_primary_key)
-      .map((field) => {
-        return `${field.name}: body.${field.name},`
-      })
-      .join('\n          ')
+    // 8. 替换 track 参数，使用当前时间戳
+    const timestamp = Date.now()
+    result = result.replace(/track: 'table_(\w+)_' \+ Util\.genRandomString\(\)/g, (match, method) => {
+      return `track: 'table_${method}_${timestamp}'`
+    })
 
-    // 替换变量
-    return content
-      .replace(/{{ table_name }}/g, table_name)
-      .replace(/{{ table_name_camel }}/g, table_name_camel)
-      .replace(/{{ select_list_data }}/g, select_list_data)
-      .replace(/{{ select_list_vars }}/g, select_list_vars)
-      .replace(/{{ create_fields }}/g, create_fields)
-      .replace(/{{ edit_fields }}/g, edit_fields)
+    return result
   }
 
   /**
-   * 替换 Controller 模板中的变量
-   * @param {string} content - 模板内容
-   * @param {object} data - 变量数据
-   * @returns {string} - 替换后的内容
+   * 替换控制器变量
+   * @param {string} content 模板内容
+   * @param {Object} data 数据对象
+   * @returns {string} 替换后的内容
    */
   replaceControllerVariables(content, data) {
-    const { menu_path, table_name, primary_key, fields, select_fields } = data
+    // 使用通用变量替换
+    let result = this.replaceCommonVariables(content, data)
 
-    // 获取类名
-    const controller_name = this.getClassName(menu_path) + 'Controller'
-    const service_name = this.getClassName(menu_path) + 'Service'
-    const service_var = table_name + 'Service'
+    // 1. 替换类名相关变量
+    const class_name = this.getClassName(this.menu_path)
+    result = result.replace(/\{\{\s*controller_name\s*\}\}/g, class_name + 'Controller')
+    result = result.replace(/\{\{\s*service_name\s*\}\}/g, class_name + 'Service')
+    result = result.replace(/\{\{\s*service_var\s*\}\}/g, this.camelCase(class_name + 'Service'))
 
-    // 获取视图路径
-    const view_path = menu_path.replace(/^\//, '').replace(/\//g, '.')
+    // 2. 替换路径相关变量
+    result = result.replace(/\{\{\s*view_path\s*\}\}/g, this.menu_path.replace(/^\//, ''))
 
-    // 生成下拉列表变量
-    const select_list_vars = select_fields
-      ? select_fields
-          .map((field) => {
-            return `${field.name}_list`
-          })
-          .join(', ')
-      : ''
+    // 3. 替换主键相关变量
+    const primary_key = this.fields.find((field) => field.key === 'PRI')?.name || 'id'
+    result = result.replace(/\{\{\s*primary_key\s*\}\}/g, primary_key)
 
-    // 生成验证函数
-    const validation_functions = this.generateValidationFunctions(menu_path, fields)
+    // 4. 替换选择列表变量
+    result = result.replace(/\{\{\s*select_list_vars\s*\}\}/g, data.select_list_vars || '')
 
-    // 替换变量
-    return content
-      .replace(/{{ controller_name }}/g, controller_name)
-      .replace(/{{ service_name }}/g, service_name)
-      .replace(/{{ service_var }}/g, service_var)
-      .replace(/{{ view_path }}/g, view_path)
-      .replace(/{{ primary_key }}/g, primary_key)
-      .replace(/{{ select_list_vars }}/g, select_list_vars)
-      .replace(/{{ validation_functions }}/g, validation_functions)
+    // 5. 替换日期格式化代码
+    const dateFields = this.fields.filter((field) => field.type === 'datetime' || field.type === 'date')
+    if (dateFields.length > 0) {
+      const dateFormatCode = dateFields
+        .map((field) => {
+          const format = field.type === 'datetime' ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD'
+          return `if (item.${field.name}) {\n          item.${field.name} = moment(item.${field.name}).format('${format}')\n        }`
+        })
+        .join('\n        ')
+      result = result.replace(/\/\/ FORMAT_DATE_FIELDS/g, dateFormatCode)
+    } else {
+      result = result.replace(/\/\/ FORMAT_DATE_FIELDS/g, '')
+    }
+
+    // 6. 替换 track 参数，使用当前时间戳
+    const timestamp = Date.now()
+    result = result.replace(/track: 'controller_(\w+)_' \+ Util\.genRandomString\(\)/g, (match, method) => {
+      return `track: 'controller_${method}_${timestamp}'`
+    })
+
+    // 7. 替换验证函数
+    result = result.replace(/\{\{\s*validation_functions\s*\}\}/g, this.generateValidationFunctions(this.menu_path, this.fields))
+
+    return result
+  }
+
+  /**
+   * 转换为驼峰命名
+   * @param {string} str 字符串
+   * @returns {string} 驼峰命名的字符串
+   */
+  camelCase(str) {
+    return str.charAt(0).toLowerCase() + str.slice(1)
   }
 
   /**
@@ -602,6 +534,7 @@ class Generator {
    */
   generateValidationFunctions(menu_path, fields) {
     const validations = []
+    const timestamp = Date.now() // 使用当前时间戳
 
     // 列表页验证
     validations.push(`
@@ -637,7 +570,7 @@ async function listValid(ctx) {
   } catch (err) {
     return Util.error2front({
       msg: err.message,
-      track: 'listValid_' + ${Date.now()},
+      track: 'listValid_${timestamp}',
     })
   }
 }`)
@@ -676,12 +609,12 @@ async function getListValid(ctx) {
   } catch (err) {
     return Util.error2front({
       msg: err.message,
-      track: 'getListValid_' + ${Date.now()},
+      track: 'getListValid_${timestamp}',
     })
   }
 }`)
 
-    // 创建页验证
+    // 创建页面验证
     validations.push(`
 async function createValid(ctx) {
   try {
@@ -695,7 +628,7 @@ async function createValid(ctx) {
 
     //权限验证
     async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/list@create']) {
+      if (!ctx.session.get('permissions')['${menu_path}/create@create']) {
         return Util.end2front({
           msg: '无权限访问',
           code: 9000,
@@ -711,7 +644,7 @@ async function createValid(ctx) {
   } catch (err) {
     return Util.error2front({
       msg: err.message,
-      track: 'createValid_' + ${Date.now()},
+      track: 'createValid_${timestamp}',
     })
   }
 }`)
@@ -729,17 +662,11 @@ async function createInfoValid(ctx) {
     async function paramsValid() {
       const rules = {
         ${fields
-          .filter((field) => !field.is_primary_key)
-          .map((field) => {
-            if (field.is_required) {
-              return `${field.name}: 'required'`
-            }
-            return ''
-          })
-          .filter(Boolean)
+          .filter((field) => !field.is_primary_key && field.required)
+          .map((field) => `${field.name}: 'required'`)
           .join(',\n        ')}
       }
-      const validation = await validate(ctx.body, rules)
+      const validation = await validate(body, rules)
       if (validation.fails()) {
         return Util.end2front({
           msg: validation.messages()[0].message,
@@ -750,7 +677,7 @@ async function createInfoValid(ctx) {
 
     //权限验证
     async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/list@create']) {
+      if (!ctx.session.get('permissions')['${menu_path}/create@create']) {
         return Util.end2front({
           msg: '无权限访问',
           code: 9000,
@@ -766,19 +693,18 @@ async function createInfoValid(ctx) {
   } catch (err) {
     return Util.error2front({
       msg: err.message,
-      track: 'createInfoValid_' + ${Date.now()},
+      track: 'createInfoValid_${timestamp}',
     })
   }
 }`)
 
-    // 查看页验证
+    // 查看数据验证
     validations.push(`
 async function viewValid(ctx) {
   try {
     //参数预处理
     async function paramsHandle() {
       const { body } = ctx
-      body.id = Util.decode(body.id)
     }
 
     //参数验证
@@ -786,7 +712,7 @@ async function viewValid(ctx) {
       const rules = {
         id: 'required',
       }
-      const validation = await validate(ctx.body, rules)
+      const validation = await validate(body, rules)
       if (validation.fails()) {
         return Util.end2front({
           msg: validation.messages()[0].message,
@@ -797,7 +723,7 @@ async function viewValid(ctx) {
 
     //权限验证
     async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/list@view']) {
+      if (!ctx.session.get('permissions')['${menu_path}/view@view']) {
         return Util.end2front({
           msg: '无权限访问',
           code: 9000,
@@ -813,19 +739,18 @@ async function viewValid(ctx) {
   } catch (err) {
     return Util.error2front({
       msg: err.message,
-      track: 'viewValid_' + ${Date.now()},
+      track: 'viewValid_${timestamp}',
     })
   }
 }`)
 
-    // 编辑页验证
+    // 编辑页面验证
     validations.push(`
 async function editValid(ctx) {
   try {
     //参数预处理
     async function paramsHandle() {
       const { body } = ctx
-      body.id = Util.decode(body.id)
     }
 
     //参数验证
@@ -833,7 +758,7 @@ async function editValid(ctx) {
       const rules = {
         id: 'required',
       }
-      const validation = await validate(ctx.body, rules)
+      const validation = await validate(body, rules)
       if (validation.fails()) {
         return Util.end2front({
           msg: validation.messages()[0].message,
@@ -844,7 +769,7 @@ async function editValid(ctx) {
 
     //权限验证
     async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/list@edit']) {
+      if (!ctx.session.get('permissions')['${menu_path}/edit@edit']) {
         return Util.end2front({
           msg: '无权限访问',
           code: 9000,
@@ -860,7 +785,7 @@ async function editValid(ctx) {
   } catch (err) {
     return Util.error2front({
       msg: err.message,
-      track: 'editValid_' + ${Date.now()},
+      track: 'editValid_${timestamp}',
     })
   }
 }`)
@@ -872,7 +797,6 @@ async function editInfoValid(ctx) {
     //参数预处理
     async function paramsHandle() {
       const { body } = ctx
-      body.id = Util.decode(body.id)
     }
 
     //参数验证
@@ -880,17 +804,11 @@ async function editInfoValid(ctx) {
       const rules = {
         id: 'required',
         ${fields
-          .filter((field) => !field.is_primary_key)
-          .map((field) => {
-            if (field.is_required) {
-              return `${field.name}: 'required'`
-            }
-            return ''
-          })
-          .filter(Boolean)
+          .filter((field) => !field.is_primary_key && field.required)
+          .map((field) => `${field.name}: 'required'`)
           .join(',\n        ')}
       }
-      const validation = await validate(ctx.body, rules)
+      const validation = await validate(body, rules)
       if (validation.fails()) {
         return Util.end2front({
           msg: validation.messages()[0].message,
@@ -901,7 +819,7 @@ async function editInfoValid(ctx) {
 
     //权限验证
     async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/list@edit']) {
+      if (!ctx.session.get('permissions')['${menu_path}/edit@edit']) {
         return Util.end2front({
           msg: '无权限访问',
           code: 9000,
@@ -917,12 +835,12 @@ async function editInfoValid(ctx) {
   } catch (err) {
     return Util.error2front({
       msg: err.message,
-      track: 'editInfoValid_' + ${Date.now()},
+      track: 'editInfoValid_${timestamp}',
     })
   }
 }`)
 
-    // 删除验证
+    // 删除数据验证
     validations.push(`
 async function removeValid(ctx) {
   try {
@@ -937,7 +855,7 @@ async function removeValid(ctx) {
       const rules = {
         id: 'required',
       }
-      const validation = await validate(ctx.body, rules)
+      const validation = await validate(body, rules)
       if (validation.fails()) {
         return Util.end2front({
           msg: validation.messages()[0].message,
@@ -948,7 +866,7 @@ async function removeValid(ctx) {
 
     //权限验证
     async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/list@remove']) {
+      if (!ctx.session.get('permissions')['${menu_path}/remove@remove']) {
         return Util.end2front({
           msg: '无权限访问',
           code: 9000,
@@ -964,7 +882,7 @@ async function removeValid(ctx) {
   } catch (err) {
     return Util.error2front({
       msg: err.message,
-      track: 'removeValid_' + ${Date.now()},
+      track: 'removeValid_${timestamp}',
     })
   }
 }`)
@@ -984,7 +902,7 @@ async function batchRemoveValid(ctx) {
       const rules = {
         ids: 'required|array',
       }
-      const validation = await validate(ctx.body, rules)
+      const validation = await validate(body, rules)
       if (validation.fails()) {
         return Util.end2front({
           msg: validation.messages()[0].message,
@@ -995,7 +913,7 @@ async function batchRemoveValid(ctx) {
 
     //权限验证
     async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/list@batch-remove']) {
+      if (!ctx.session.get('permissions')['${menu_path}/batch-remove@batch-remove']) {
         return Util.end2front({
           msg: '无权限访问',
           code: 9000,
@@ -1011,12 +929,12 @@ async function batchRemoveValid(ctx) {
   } catch (err) {
     return Util.error2front({
       msg: err.message,
-      track: 'batchRemoveValid_' + ${Date.now()},
+      track: 'batchRemoveValid_${timestamp}',
     })
   }
 }`)
 
-    return validations.join('\n')
+    return validations.join('\n\n')
   }
 
   /**
@@ -1025,11 +943,141 @@ async function batchRemoveValid(ctx) {
    * @returns {string} - 类名
    */
   getClassName(menu_path) {
-    return menu_path
+    // 移除开头的斜杠
+    const path = menu_path.replace(/^\//, '')
+    // 移除 admin/ 前缀
+    const cleanPath = path.replace(/^admin\//, '')
+    // 将路径分割并转换为 PascalCase
+    return cleanPath
       .split('/')
       .filter(Boolean)
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
       .join('')
+  }
+
+  /**
+   * 格式化日期时间
+   * @param {string|Date} date 日期时间
+   * @param {string} format 格式化模式，默认 YYYY-MM-DD HH:mm:ss
+   * @returns {string} 格式化后的日期时间
+   */
+  formatDateTime(date, format = 'YYYY-MM-DD HH:mm:ss') {
+    if (!date) return ''
+    return moment(date).format(format)
+  }
+
+  /**
+   * 格式化数字
+   * @param {number} num 数字
+   * @param {number} decimals 小数位数
+   * @returns {string} 格式化后的数字
+   */
+  formatNumber(num, decimals = 0) {
+    if (num === null || num === undefined) return ''
+    return Number(num).toFixed(decimals)
+  }
+
+  /**
+   * HTML转义
+   * @param {string} str 需要转义的字符串
+   * @returns {string} 转义后的字符串
+   */
+  escapeHtml(str) {
+    if (!str) return ''
+    const entityMap = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '/': '&#x2F;',
+      '`': '&#x60;',
+      '=': '&#x3D;',
+    }
+    return String(str).replace(/[&<>"'`=\/]/g, (s) => entityMap[s])
+  }
+
+  /**
+   * 首字母大写
+   * @param {string} str 字符串
+   * @returns {string} 首字母大写后的字符串
+   */
+  capitalize(str) {
+    if (!str) return ''
+    return str.charAt(0).toUpperCase() + str.slice(1)
+  }
+
+  /**
+   * 替换条件块
+   * @param {string} content 内容
+   * @param {Object} variables 变量
+   * @returns {string} 替换后的内容
+   */
+  replaceConditionalBlocks(content, variables) {
+    const ifRegex = /\{\{\s*if\s+(.+?)\s*\}\}([\s\S]*?)\{\{\s*endif\s*\}\}/g
+    return content.replace(ifRegex, (match, condition, block) => {
+      try {
+        // 创建一个安全的求值环境
+        const evalContext = { ...variables }
+        const result = new Function('ctx', `with(ctx) { return !!(${condition}) }`)(evalContext)
+        return result ? block : ''
+      } catch (err) {
+        console.error('条件块处理错误:', err)
+        return ''
+      }
+    })
+  }
+
+  /**
+   * 替换循环块
+   * @param {string} content 内容
+   * @param {Object} variables 变量
+   * @returns {string} 替换后的内容
+   */
+  replaceLoopBlocks(content, variables) {
+    const forRegex = /\{\{\s*for\s+(\w+)\s+in\s+(.+?)\s*\}\}([\s\S]*?)\{\{\s*endfor\s*\}\}/g
+    return content.replace(forRegex, (match, item, list, block) => {
+      try {
+        // 获取循环数组
+        const array = new Function('ctx', `with(ctx) { return ${list} }`)(variables)
+        if (!Array.isArray(array)) return ''
+
+        // 处理每个循环项
+        return array
+          .map((itemValue) => {
+            const itemVariables = { ...variables, [item]: itemValue }
+            return this.replaceTemplateVariables(block, itemVariables)
+          })
+          .join('')
+      } catch (err) {
+        console.error('循环块处理错误:', err)
+        return ''
+      }
+    })
+  }
+
+  /**
+   * 生成控制器文件
+   */
+  async generateController() {
+    const template = await this.readTemplate('backend/controller.js.tpl')
+    const content = this.replaceControllerVariables(template, {})
+    // 修改：直接放在 Controllers/Http 目录下
+    const controller_path = path.join(this.base_path, 'app/Controllers/Http', this.getClassName(this.menu_path) + 'Controller.js')
+    await this.writeFile(controller_path, content)
+  }
+
+  /**
+   * 生成服务层文件
+   */
+  async generateService() {
+    const template = await this.readTemplate('backend/service.js.tpl')
+    const content = this.replaceServiceVariables(template, {
+      table_name: this.table_name,
+    })
+    // 修改：直接放在 Services 目录下
+    const service_path = path.join(this.base_path, 'app/Services', this.getClassName(this.menu_path) + 'Service.js')
+    await this.writeFile(service_path, content)
   }
 }
 

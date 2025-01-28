@@ -3,10 +3,10 @@
 const Database = use('Database')
 const BaseService = require('@BaseClass/BaseService')
 const Util = require('@Lib/Util')
-const {{ table_name }}Table = require('@Table/{{ table_name }}')
-const {{ table_name_camel }}Table = new {{ table_name }}Table()
+const {{ class_name }}Table = require('@Table/{{ table_name }}')
+const {{ table_name_camel }} = new {{ class_name }}Table()
 
-class Service extends BaseService {
+class {{ service_name }} extends BaseService {
   /**
    * 获取列表页数据
    */
@@ -37,9 +37,19 @@ class Service extends BaseService {
    */
   async getList(ctx) {
     try {
-      let result = {}
       const { body } = ctx
-      result = await {{ table_name_camel }}Table.fetchListBy(body)
+      const { page = 1, limit = 10, search = '' } = body
+
+      const query = {
+        page,
+        limit,
+      }
+
+      if (search) {
+        query.where = [{{ search_conditions }}]
+      }
+
+      const result = await {{ table_name_camel }}.fetchAll(query)
       return Util.end({
         data: result.data,
       })
@@ -56,9 +66,6 @@ class Service extends BaseService {
    */
   async create(ctx) {
     try {
-      let result = {}
-      const { body } = ctx
-
       {{ select_list_data }}
 
       const data = {
@@ -81,16 +88,15 @@ class Service extends BaseService {
    */
   async createInfo(ctx) {
     try {
-      let result = {}
       const { body } = ctx
 
       await Database.transaction(async (trx) => {
-        let column = {
+        const result = await {{ table_name_camel }}.create(trx, {
           {{ create_fields }}
-        }
-        result = await {{ table_name_camel }}Table.create(trx, column)
+        })
+
         if (result.status === 0) {
-          throw new Error('新增失败')
+          throw new Error(result.msg || '新增失败')
         }
       })
 
@@ -110,11 +116,10 @@ class Service extends BaseService {
    */
   async view(ctx) {
     try {
-      let result = {}
       const { body } = ctx
       const { id } = body
 
-      result = await {{ table_name_camel }}Table.fetchDetailById(id)
+      const result = await {{ table_name_camel }}.fetchOneById(id)
       if (result.status === 0) {
         return Util.end({
           msg: result.msg,
@@ -141,11 +146,10 @@ class Service extends BaseService {
    */
   async edit(ctx) {
     try {
-      let result = {}
       const { body } = ctx
       const { id } = body
 
-      result = await {{ table_name_camel }}Table.fetchDetailById(id)
+      const result = await {{ table_name_camel }}.fetchOneById(id)
       if (result.status === 0) {
         return Util.end({
           msg: result.msg,
@@ -171,21 +175,23 @@ class Service extends BaseService {
   }
 
   /**
-   * 更新数据
+   * 编辑数据
    */
   async editInfo(ctx) {
     try {
-      let result = {}
       const { body } = ctx
       const { id } = body
 
       await Database.transaction(async (trx) => {
-        let column = {
-          {{ edit_fields }}
-        }
-        result = await {{ table_name_camel }}Table.update(trx, id, column)
+        const result = await {{ table_name_camel }}.updateBy(trx, {
+          where: [['id', '=', id]],
+          set: {
+            {{ edit_fields }}
+          }
+        })
+
         if (result.status === 0) {
-          throw new Error('更新失败')
+          throw new Error(result.msg || '更新失败')
         }
       })
 
@@ -205,14 +211,13 @@ class Service extends BaseService {
    */
   async remove(ctx) {
     try {
-      let result = {}
       const { body } = ctx
       const { id } = body
 
       await Database.transaction(async (trx) => {
-        result = await {{ table_name_camel }}Table.remove(trx, id)
+        const result = await {{ table_name_camel }}.deleteByIds(trx, [id])
         if (result.status === 0) {
-          throw new Error('删除失败')
+          throw new Error(result.msg || '删除失败')
         }
       })
 
@@ -232,21 +237,18 @@ class Service extends BaseService {
    */
   async batchRemove(ctx) {
     try {
-      let result = {}
       const { body } = ctx
       const { ids } = body
 
       await Database.transaction(async (trx) => {
-        for (let id of ids) {
-          result = await {{ table_name_camel }}Table.remove(trx, id)
-          if (result.status === 0) {
-            throw new Error('删除失败')
-          }
+        const result = await {{ table_name_camel }}.deleteByIds(trx, ids)
+        if (result.status === 0) {
+          throw new Error(result.msg || '批量删除失败')
         }
       })
 
       return Util.end({
-        msg: '删除成功',
+        msg: '批量删除成功',
       })
     } catch (err) {
       return Util.error({
@@ -257,4 +259,4 @@ class Service extends BaseService {
   }
 }
 
-module.exports = Service
+module.exports = {{ service_name }}

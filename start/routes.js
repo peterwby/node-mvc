@@ -144,6 +144,7 @@ Route.group(() => {
     Route.post('generate', async ({ request, response, session }) => {
       // 检查是否超级管理员
       const member = session.get('member')
+      console.log('session member', member)
       if (!member || member.member_id !== 1) {
         return Util.end2front({
           msg: '只有超级管理员可以使用此功能',
