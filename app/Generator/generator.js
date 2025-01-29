@@ -6,27 +6,79 @@ const Helpers = use('Helpers')
 const log = use('Logger')
 const GeneratorLogger = require('./logger')
 const moment = require('moment')
+const { createGeneratorError } = require('./errors')
 
 /**
  * 代码生成器类
+ * 用于根据数据库表结构和 SQL 查询自动生成前后端代码
+ * @class
  */
 class Generator {
+  /**
+   * 创建代码生成器实例
+   * @constructor
+   * @example
+   * const generator = new Generator()
+   */
   constructor() {
+    // 菜单路径，用于确定生成文件的位置，如 'admin/users'
     this.menu_path = ''
+    // 字段定义列表，从 SQL 查询中解析得到
     this.fields = []
+    // 表名列表，从 SQL 查询中解析得到
     this.tables = []
+    // 表字段映射，key 为表名，value 为字段列表
     this.table_fields = {}
+    // 视图文件路径，如 'resources/views/admin/users'
     this.view_path = ''
+    // 是否包含富文本编辑器字段
     this.has_rich_editor = false
+    // 富文本编辑器字段列表
     this.rich_editor_fields = []
+    // 日志记录器实例
     this.logger = new GeneratorLogger()
   }
 
   /**
    * 初始化生成器参数
+   * @param {string} menu_path - 菜单路径，如 'admin/users'
+   * @param {Array<Object>} fields - 字段定义列表，从 SQL 查询中解析得到
+   * @param {Array<Object>} tables - 表名列表，从 SQL 查询中解析得到
+   * @param {Object} table_fields - 表字段映射，key 为表名，value 为字段列表
+   * @throws {Error} 当参数无效或初始化失败时抛出错误
+   * @example
+   * generator.init(
+   *   'admin/users',
+   *   [{name: 'id', type: 'number'}, {name: 'name', type: 'string'}],
+   *   [{name: 'users', alias: 'u'}],
+   *   {users: ['id', 'name', 'created_at']}
+   * )
    */
   init(menu_path, fields, tables, table_fields) {
     try {
+      // 验证菜单路径
+      if (!menu_path?.trim()) {
+        throw createGeneratorError('INVALID_PATH', '菜单路径不能为空')
+      }
+      if (!menu_path.match(/^[a-z0-9_\/-]+$/i)) {
+        throw createGeneratorError('INVALID_PATH', '菜单路径只能包含字母、数字、下划线和斜杠')
+      }
+
+      // 验证字段列表
+      if (!Array.isArray(fields) || fields.length === 0) {
+        throw createGeneratorError('MISSING_FIELDS')
+      }
+
+      // 验证表名列表
+      if (!Array.isArray(tables) || tables.length === 0) {
+        throw createGeneratorError('MISSING_TABLES')
+      }
+
+      // 验证表字段映射
+      if (!table_fields || typeof table_fields !== 'object') {
+        throw createGeneratorError('MISSING_TABLES', '缺少表字段映射')
+      }
+
       this.menu_path = menu_path
       this.fields = fields
       this.tables = tables
@@ -35,13 +87,23 @@ class Generator {
 
       this.logger.log(`初始化生成器: menu_path=${menu_path}, fields=${fields.length}个`)
     } catch (err) {
-      this.logger.error(err, 'init')
-      throw err
+      // 如果已经是 GeneratorError，直接抛出
+      if (err.name === 'GeneratorError') {
+        throw err
+      }
+      // 否则包装为 INIT_FAILED 错误
+      throw createGeneratorError('INIT_FAILED', err.message, err)
     }
   }
 
   /**
-   * 显示工具页面
+   * 显示代码生成工具页面
+   * @param {Object} ctx - Adonis 上下文对象
+   * @param {Object} ctx.view - 视图渲染器
+   * @returns {Promise<string>} 渲染后的 HTML 页面
+   * @example
+   * // 在路由中使用
+   * Route.get('generator/tool', 'GeneratorController.tool')
    */
   async tool({ view }) {
     return view.render('../../app/Generator/views/tool')
@@ -49,24 +111,44 @@ class Generator {
 
   /**
    * 生成代码
+   * @param {Object} ctx - Adonis 上下文对象
+   * @param {Object} ctx.body - 请求体参数
+   * @param {string} ctx.body.menu_path - 菜单路径
+   * @param {Array<Object>} ctx.body.fields - 字段定义列表
+   * @param {Array<Object>} ctx.body.tables - 表名列表
+   * @param {Object} ctx.body.table_fields - 表字段映射
+   * @returns {Promise<Object>} 生成结果
+   * @returns {boolean} result.status - 是否成功
+   * @returns {string} result.message - 结果消息
+   * @returns {Object} [result.summary] - 生成摘要（仅当成功时）
+   * @example
+   * const result = await generator.generate({
+   *   body: {
+   *     menu_path: 'admin/users',
+   *     fields: [{name: 'id', type: 'number'}],
+   *     tables: [{name: 'users', alias: 'u'}],
+   *     table_fields: {users: ['id', 'name']}
+   *   }
+   * })
    */
   async generate({ body }) {
     try {
       this.logger.log('开始生成代码')
       const { menu_path, fields, tables, table_fields } = body
 
-      // 初始化参数
+      // 1. 初始化生成器参数
       this.init(menu_path, fields, tables, table_fields)
 
-      // 1. 创建目录
+      // 2. 创建必要的目录结构
       await this.createDirectory()
 
-      // 2. 生成前端文件
+      // 3. 生成前端文件（list/create/edit/view.edge）
       await this.generateFrontendFiles()
 
-      // 3. 生成后端文件
+      // 4. 生成后端文件（Controller/Service/Table）
       await this.generateBackendFiles()
 
+      // 5. 生成完成，返回摘要信息
       const summary = this.logger.getSummary()
       this.logger.log(`代码生成完成，总耗时: ${summary.totalTime}ms`)
 
@@ -76,16 +158,24 @@ class Generator {
         summary,
       }
     } catch (err) {
-      this.logger.error(err, 'generate')
+      // 如果已经是 GeneratorError，直接使用
+      const error = err.name === 'GeneratorError' ? err : createGeneratorError('GENERATE_FAILED', err.message, err)
+      // 记录错误并返回错误信息
+      this.logger.error(error, 'generate')
       return {
         status: false,
-        message: err.message,
+        message: error.message,
+        error: error.toJSON(),
       }
     }
   }
 
   /**
-   * 创建目录
+   * 创建目录结构
+   * @throws {Error} 当目录创建失败时抛出错误
+   * @example
+   * await generator.createDirectory()
+   * // 创建 resources/views/admin/users 目录
    */
   async createDirectory() {
     try {
@@ -95,13 +185,20 @@ class Generator {
         this.logger.log(`创建目录: ${dir}`)
       }
     } catch (err) {
-      this.logger.error(err, 'createDirectory')
-      throw err
+      throw createGeneratorError('CREATE_DIR_FAILED', err.message, err)
     }
   }
 
   /**
-   * 生成前端文件
+   * 生成前端文件（list.edge, create.edge, edit.edge, view.edge）
+   * @returns {Promise<void>}
+   * @example
+   * await generator.generateFrontendFiles()
+   * // 生成以下文件：
+   * // - resources/views/admin/users/list.edge
+   * // - resources/views/admin/users/create.edge
+   * // - resources/views/admin/users/edit.edge
+   * // - resources/views/admin/users/view.edge
    */
   async generateFrontendFiles() {
     const files = ['list', 'create', 'edit', 'view']
@@ -111,7 +208,14 @@ class Generator {
   }
 
   /**
-   * 生成后端文件
+   * 生成后端文件（Controller, Service, Table）
+   * @returns {Promise<void>}
+   * @example
+   * await generator.generateBackendFiles()
+   * // 生成以下文件：
+   * // - app/Controllers/Http/Admin/UsersController.js
+   * // - app/Services/Admin/UsersService.js
+   * // - app/Models/Table/Users.js
    */
   async generateBackendFiles() {
     // 生成控制器
@@ -124,6 +228,11 @@ class Generator {
 
   /**
    * 生成表层文件
+   * @returns {Promise<void>}
+   * @throws {Error} 当文件生成失败时抛出错误
+   * @example
+   * await generator.generateTable()
+   * // 生成 app/Models/Table/Users.js 文件
    */
   async generateTable() {
     const template = await this.readTemplate('backend/table.js.tpl')
@@ -136,86 +245,147 @@ class Generator {
 
   /**
    * 生成单个文件
-   * @param {string} type 文件类型：frontend 或 backend
-   * @param {string} template_name 模板文件名
+   * @param {string} type - 文件类型：'frontend' 或 'backend'
+   * @param {string} template_name - 模板文件名
+   * @throws {Error} 当文件生成失败时抛出错误
+   * @example
+   * // 生成前端列表页
+   * await generator.generateFile('frontend', 'list.edge')
+   *
+   * // 生成后端控制器
+   * await generator.generateFile('backend', 'controller.js')
    */
   async generateFile(type, template_name) {
     try {
       this.logger.log(`开始生成文件: ${type}/${template_name}`)
 
       // 1. 读取模板文件
+      // 模板文件位于 app/Generator/templates 目录下
       const template_path = path.join(__dirname, 'templates', type, template_name)
-      const template = fs.readFileSync(template_path, 'utf8')
+      let template
+      try {
+        template = fs.readFileSync(template_path, 'utf8')
+      } catch (err) {
+        throw createGeneratorError('READ_TEMPLATE_FAILED', `模板文件 ${template_name} 不存在或无法读取`, err)
+      }
 
       // 2. 替换模板变量
+      // 根据不同的文件类型和模板，替换相应的变量
       const content = this.replaceTemplateVariables(template, type, template_name)
 
       // 3. 确定目标文件路径
+      // 前端文件放在 resources/views 目录下
+      // 后端文件放在 app 目录下的相应子目录中
       const target_path = this.getTargetPath(type, template_name)
 
       // 4. 写入文件
-      fs.writeFileSync(target_path, content)
+      try {
+        fs.writeFileSync(target_path, content)
+      } catch (err) {
+        throw createGeneratorError('WRITE_FILE_FAILED', `无法写入文件 ${target_path}`, err)
+      }
 
       this.logger.log(`文件生成成功: ${target_path}`)
     } catch (err) {
-      this.logger.error(err, `generateFile: ${type}/${template_name}`)
-      throw new Error(`生成 ${template_name} 失败: ${err.message}`)
+      // 如果已经是 GeneratorError，直接抛出
+      if (err.name === 'GeneratorError') {
+        throw err
+      }
+      // 否则包装为 GENERATE_FAILED 错误
+      throw createGeneratorError('GENERATE_FAILED', `生成 ${template_name} 失败: ${err.message}`, err)
     }
   }
 
   /**
    * 替换模板变量
-   * @param {string} template 模板内容
-   * @param {string} type 文件类型
-   * @param {string} template_name 模板文件名
+   * @param {string} template - 模板内容
+   * @param {string} type - 文件类型：'frontend' 或 'backend'
+   * @param {string} template_name - 模板文件名
    * @returns {string} 替换后的内容
+   * @example
+   * const content = generator.replaceTemplateVariables(
+   *   '{{ menu_path }}/{{ table_name }}',
+   *   'frontend',
+   *   'list.edge'
+   * )
+   * // 返回: 'admin/users/users'
    */
   replaceTemplateVariables(template, type, template_name) {
-    // TODO: 根据不同的文件类型和模板，替换相应的变量
-    return template
-  }
+    let content = template
 
-  /**
-   * 获取目标文件路径
-   * @param {string} type 文件类型
-   * @param {string} template_name 模板文件名
-   * @returns {string} 目标文件路径
-   */
-  getTargetPath(type, template_name) {
-    if (type === 'frontend') {
-      return path.join(Helpers.resourcesPath(), this.view_path, template_name)
-    } else {
-      // backend 文件放在对应的目录下
-      const dir_map = {
-        'controller.js': 'Controllers/Http',
-        'service.js': 'Services',
-        'table.js': 'Models/Table',
-      }
-      const base_name = path.basename(this.menu_path)
-      const file_name = template_name.replace('.js', `/${base_name}_${template_name}`)
-      return path.join(Helpers.appPath(), dir_map[template_name], file_name)
+    // 1. 替换通用变量
+    content = this.replaceCommonVariables(content, {
+      menu_path: this.menu_path,
+      table_name: this.getTableName(),
+      module_name: this.getModuleName(),
+    })
+
+    // 2. 根据文件类型替换特定变量
+    switch (type) {
+      case 'frontend':
+        // 前端文件变量替换
+        switch (template_name) {
+          case 'list.edge':
+            content = this.replaceListVariables(content)
+            break
+          case 'create.edge':
+            content = this.replaceCreateVariables(content)
+            break
+          case 'edit.edge':
+            content = this.replaceEditVariables(content)
+            break
+          case 'view.edge':
+            content = this.replaceViewVariables(content)
+            break
+        }
+        break
+      case 'backend':
+        // 后端文件变量替换
+        switch (template_name) {
+          case 'controller.js':
+            content = this.replaceControllerVariables(content)
+            break
+          case 'service.js':
+            content = this.replaceServiceVariables(content)
+            break
+          case 'table.js':
+            content = this.replaceTableVariables(content)
+            break
+        }
+        break
     }
+
+    return content
   }
 
   /**
    * 替换通用模板变量
-   * @param {string} template 模板内容
-   * @param {Object} variables 变量对象
+   * @param {string} template - 模板内容
+   * @param {Object} variables - 变量对象，key 为变量名，value 为替换值
    * @returns {string} 替换后的内容
+   * @example
+   * const content = generator.replaceCommonVariables(
+   *   '{{ name }} is {{ age }} years old',
+   *   { name: 'John', age: 30 }
+   * )
+   * // 返回: 'John is 30 years old'
    */
   replaceCommonVariables(template, variables) {
     let content = template
 
-    // 替换基础变量
+    // 1. 替换基础变量
+    // 使用正则表达式替换 {{ variable }} 格式的变量
     for (const [key, value] of Object.entries(variables)) {
       const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g')
       content = content.replace(regex, value || '')
     }
 
-    // 替换条件块
+    // 2. 替换条件块
+    // 处理 {{#if condition}} content {{/if}} 格式的条件块
     content = this.replaceConditionalBlocks(content, variables)
 
-    // 替换循环块
+    // 3. 替换循环块
+    // 处理 {{#each items}} content {{/each}} 格式的循环块
     content = this.replaceLoopBlocks(content, variables)
 
     return content
@@ -223,36 +393,52 @@ class Generator {
 
   /**
    * 替换列表页变量
-   * @param {string} content 模板内容
-   * @param {Object} data 数据对象
+   * @param {string} content - 模板内容
+   * @param {Object} data - 数据对象
    * @returns {string} 替换后的内容
+   * @example
+   * const content = generator.replaceListVariables(
+   *   '{{ menu_path }}/{{ primary_key }}',
+   *   { menu_path: 'admin/users', primary_key: 'id' }
+   * )
+   * // 返回: 'admin/users/id'
    */
   replaceListVariables(content, data) {
     // 使用通用变量替换
     let result = this.replaceCommonVariables(content, data)
 
-    // 特定的列表页变量替换
     // 1. 替换菜单路径
     result = result.replace(/\{\{\s*menu_path\s*\}\}/g, this.menu_path)
 
     // 2. 替换主键相关的变量
+    // 查找主键字段，默认为 'id'
     const primary_key = this.fields.find((field) => field.key === 'PRI')?.name || 'id'
     result = result.replace(/\{\{\s*primary_key\s*\}\}/g, primary_key)
 
     // 3. 替换列表字段
+    // 根据字段类型生成不同的渲染函数
     const list_fields = this.fields.map((field) => {
-      // 根据字段类型生成渲染函数
       let render = ''
       switch (field.type) {
         case 'boolean':
+          // 布尔值显示为是/否
           render = `(value) => value ? trans('yes') : trans('no')`
           break
         case 'select':
-          render = `(value, data) => data.${field.name}_text || value`
+          // 下拉列表显示对应的文本
+          render = `(value) => getDictLabel('${field.dict_table}', value)`
+          break
+        case 'datetime':
+          // 日期时间格式化
+          render = `(value) => moment(value).format('YYYY-MM-DD HH:mm:ss')`
+          break
+        case 'rich_editor':
+          // 富文本编辑器内容需要转义 HTML
+          render = `(value) => escapeHtml(value)`
           break
         default:
-          // 其他类型（包括日期时间）直接显示值
-          render = `(value) => value || ''`
+          // 其他类型直接显示
+          render = '(value) => value'
       }
 
       return {
@@ -262,25 +448,33 @@ class Generator {
       }
     })
 
-    // 将 list_fields 转换为字符串，但保持 render 函数的原始形式
-    const list_fields_str = JSON.stringify(
-      list_fields,
-      (key, value) => {
-        if (key === 'render') {
-          // 保持 render 函数的原始形式
-          return value.toString()
-        }
-        return value
-      },
-      2
-    )
-      // 移除 render 函数的引号
-      .replace(/"(.*?)\(\s*value.*?\)\s*=>\s*.*?\)"/g, '$1')
+    // 4. 替换搜索条件
+    // 根据字段类型生成不同的搜索条件
+    const search_fields = this.fields.filter(isSearchableField).map((field) => {
+      let condition = ''
+      switch (field.type) {
+        case 'select':
+          // 下拉列表精确匹配
+          condition = `['${field.name}', '=', value]`
+          break
+        case 'datetime':
+          // 日期时间范围查询
+          condition = `['${field.name}', 'between', [start, end]]`
+          break
+        default:
+          // 其他类型模糊查询
+          condition = `['${field.name}', 'like', \`%\${value}%\`]`
+      }
 
-    result = result.replace(/\{\{\s*list_fields\s*\}\}/g, list_fields_str)
+      return {
+        name: field.name,
+        label: field.label || field.name,
+        condition,
+      }
+    })
 
-    // 4. 替换操作列中的主键引用
-    result = result.replace(/data\.\s*\+/g, `data.${primary_key}`)
+    // 5. 替换字段变量
+    result = result.replace('{{ list_fields }}', JSON.stringify(list_fields, null, 2)).replace('{{ search_fields }}', JSON.stringify(search_fields, null, 2))
 
     return result
   }
