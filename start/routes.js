@@ -15,8 +15,6 @@
 /** @type {typeof import('@adonisjs/framework/src/Route/Manager')} */
 const Route = use('Route')
 const Util = require('@Lib/Util')
-const Generator = require('../app/Generator')
-const generator = new Generator()
 
 // 刷新翻译数据
 const CommonService = require(`@Services/CommonService`)
@@ -74,6 +72,7 @@ Route.group(() => {
 Route.group(() => {
   try {
     //通用
+
     Route.post('upload/image', 'CommonController.uploadImage')
     //用户
     Route.post('member/get-list', 'MemberController.getList')
@@ -96,6 +95,7 @@ Route.group(() => {
 Route.group(() => {
   try {
     Route.get('/', 'HomeController.home')
+
     Route.get('member/list', 'MemberController.list')
     Route.get('member/view/:member_id', 'MemberController.view')
     Route.get('member/edit/:member_id', 'MemberController.edit')
@@ -127,39 +127,6 @@ Route.group(() => {
 })
   .prefix('admin/auth')
   .middleware(['noAuth'])
-
-// 代码生成工具
-Route.group(() => {
-  try {
-    Route.get('tool', async ({ view, session }) => {
-      // 检查是否超级管理员
-
-      const member = session.get('member')
-      if (!member || member.member_id !== 1) {
-        return view.render('error.404')
-      }
-      return generator.tool({ view })
-    })
-
-    Route.post('generate', async ({ request, response, session }) => {
-      // 检查是否超级管理员
-      const member = session.get('member')
-      console.log('session member', member)
-      if (!member || member.member_id !== 1) {
-        return Util.end2front({
-          msg: '只有超级管理员可以使用此功能',
-          code: 9000,
-        })
-      }
-      return generator.generate({ body: request.all(), response })
-    })
-  } catch (err) {
-    return Util.end2front({
-      msg: 'Not found the API',
-      code: 9994,
-    })
-  }
-}).prefix('generator')
 
 //兜底：如果都匹配不到路由，则转到404页面
 //Route.any('*', ({ view }) => view.render('error.404'))

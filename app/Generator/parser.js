@@ -547,6 +547,7 @@ async function extractFields(sql_query) {
       tables,
       has_rich_editor,
       rich_editor_fields,
+      table_fields: tableFields,
     }
   } catch (err) {
     log.error('SQL解析错误:', err)

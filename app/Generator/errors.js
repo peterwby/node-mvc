@@ -120,6 +120,14 @@ const GENERATOR_ERRORS = {
     code: 'GEN-GEN-SYS-002',
     message: '生成代码失败',
   },
+  CONFIG_FAILED: {
+    code: 'GEN-GEN-SYS-003',
+    message: '生成系统配置失败',
+  },
+  ROUTES_FAILED: {
+    code: 'GEN-GEN-SYS-004',
+    message: '生成路由配置失败',
+  },
 }
 
 // Logger 错误码

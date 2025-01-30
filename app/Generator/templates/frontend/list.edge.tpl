@@ -63,58 +63,17 @@
               <table class="table table-auto table-border " data-datatable-table="true">
                 <thead>
                   <tr>
-                    @if(primary_key)
-                    <th class="w-[44px] text-center">
-                      <input class="checkbox checkbox-sm" data-datatable-check="true" type="checkbox" />
-                    </th>
-                    @endif
-                    @each(field in list_fields)
-                    <th class="min-w-[200px]">
-                      <span class="sort asc">
-                        <span class="sort-label font-normal text-gray-700">
-                          {{ trans(field.label) }}
-                        </span>
-                        <span class="sort-icon">
-                          <i class="ki-outline ki-arrow-up"></i>
-                          <i class="ki-outline ki-arrow-down"></i>
-                        </span>
-                      </span>
-                    </th>
-                    @endeach
-                    @if(primary_key)
-                    <th class="w-[120px] text-center">{{ trans('operation') }}</th>
-                    @endif
+                    {{ checkbox_th }}
+                    {{ field_headers }}
+                    {{ operation_th }}
                   </tr>
                 </thead>
                 <tbody>
                   @each(item in list)
                   <tr>
-                    @if(primary_key)
-                    <td class="text-center">
-                      <input class="checkbox checkbox-sm" type="checkbox" value="{{ item[primary_key] }}" />
-                    </td>
-                    @endif
-                    @each(field in list_fields)
-                    <td>
-                      {{{ field.render(item[field.name]) }}}
-                    </td>
-                    @endeach
-                    @if(primary_key)
-                    <td class="text-center">
-                      <div class="flex items-center justify-center gap-2">
-                        <a href="{{ menu_path }}/view/{{ item[primary_key] }}" class="btn btn-icon btn-sm btn-secondary">
-                          <i class="ki-outline ki-eye fs-2"></i>
-                        </a>
-                        <a href="{{ menu_path }}/edit/{{ item[primary_key] }}" class="btn btn-icon btn-sm btn-primary">
-                          <i class="ki-outline ki-pencil fs-2"></i>
-                        </a>
-                        <button type="button" class="btn btn-icon btn-sm btn-danger delete-btn"
-                          data-id="{{ item[primary_key] }}">
-                          <i class="ki-outline ki-trash fs-2"></i>
-                        </button>
-                      </div>
-                    </td>
-                    @endif
+                    {{ checkbox_td }}
+                    {{ field_columns }}
+                    {{ operation_td }}
                   </tr>
                   @endeach
                 </tbody>
@@ -155,73 +114,18 @@
 
   // 2. 初始化数据表格
   const datatable = Util.initDataTable('#primary_table', {
-    apiEndpoint: '/api{{ menu_path }}/get-list',
+    apiEndpoint: '/api/{{ api_path }}/get-list',
     pageSize: initialState.pageSize,
     initialPage: initialState.page,
     columns: {
-      {{ primary_key }}: {
-        render: (item) => {
-          return '<input class="checkbox checkbox-sm" data-datatable-row-check="true" type="checkbox" value="' + item + '">'
-        },
-      },
-      @each(field in list_fields)
-      {{ field.name }}: {
-        @if(field.render)
-        render: {{ field.render }},
-        @endif
-      },
-      @endeach
-      action: {
-        render: (item, data) => {
-          return '<div class="menu flex-inline" data-menu="true">' +
-            '<div class="menu-item" data-menu-item-offset="0, 10px" data-menu-item-placement="bottom-end" data-menu-item-placement-rtl="bottom-start" data-menu-item-toggle="dropdown" data-menu-item-trigger="click|lg:click">' +
-            '<button class="menu-toggle btn btn-sm btn-icon btn-light btn-clear">' +
-            '<i class="ki-filled ki-dots-vertical">' +
-            '</i>' +
-            '</button>' +
-            '<div class="menu-dropdown menu-default w-full max-w-[120px]" data-menu-dismiss="true">' +
-
-            '<div class="menu-item">' +
-            '<a class="menu-link" href="{{ menu_path }}/view/' + data.{{ primary_key }} + '">' +
-            '<span class="menu-title">' +
-            trans('view') +
-            '</span>' +
-            '</a>' +
-            '</div>' +
-
-            (hasPermission('{{ menu_path }}/list@edit') ?
-            '<div class="menu-item">' +
-            '<a class="menu-link" href="{{ menu_path }}/edit/' + data.{{ primary_key }} + '">' +
-            '<span class="menu-title">' +
-            trans('edit') +
-            '</span>' +
-            '</a>' +
-            '</div>' : '') +
-
-            '<div class="menu-separator">' +
-            '</div>' +
-
-            (hasPermission('{{ menu_path }}/list@remove') ?
-            '<div class="menu-item">' +
-            '<button type="button" class="menu-link remove-btn" data-id="' + data.{{ primary_key }} + '">' +
-            '<span class="menu-title">' +
-            trans('delete') +
-            '</span>' +
-            '</button>' +
-            '</div>' : '') +
-
-            '</div>' +
-            '</div>' +
-            '</div>'
-        },
-      },
+      {{ column_defs }}
     }
   })
 
   // 3. 处理单行删除
   Util.handleRowDelete({
     tableId: '#primary_table',
-    deleteApi: '/api{{ menu_path }}/remove',
+    deleteApi: '/api/{{ api_path }}/remove',
     onSuccess: () => {
       datatable.reload()
     }
@@ -230,7 +134,7 @@
   // 4. 处理批量删除
   Util.handleBatchDelete({
     tableId: '#primary_table',
-    deleteApi: '/api{{ menu_path }}/remove',
+    deleteApi: '/api/{{ api_path }}/remove',
     buttonId: '#batch_delete_btn',
     confirmMessage: (count) => trans('confirm delete these items', [count]),
     onSuccess: () => {

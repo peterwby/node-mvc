@@ -51,7 +51,7 @@ class GeneratorController {
       const { has_rich_editor, rich_editor_fields } = result
 
       // 初始化生成器
-      this.generator.init(menu_path, fields, [], {})
+      this.generator.init(menu_path, fields, tables, result.table_fields || {})
       this.generator.has_rich_editor = has_rich_editor
       this.generator.rich_editor_fields = rich_editor_fields
 
@@ -116,6 +116,10 @@ class GeneratorController {
         fs.writeFileSync(file_path, content)
       }
 
+      // 生成系统配置（路由、菜单、权限）
+      await this.generator.generateSystemConfig()
+
+      console.log('=========代码生成结束=========')
       return Util.end2front({
         msg: '生成成功',
       })

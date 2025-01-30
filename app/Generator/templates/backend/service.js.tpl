@@ -12,73 +12,47 @@ class {{ service_name }} extends BaseService {
    */
   async list(ctx) {
     try {
-      let result = {}
-      const { body } = ctx
-
-      {{ select_list_data }}
-
-      const data = {
-        {{ select_list_vars }}
-      }
       return Util.end({
-        data,
+        data: {},
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        stack: err.stack,
-        track: 'service_list_' + Util.genRandomString(),
+        track: 'service_list_{{ timestamp }}',
       })
     }
   }
 
   /**
-   * 获取列表
+   * 获取列表数据
    */
   async getList(ctx) {
     try {
       const { body } = ctx
-      const { page = 1, limit = 10, search = '' } = body
-
-      const query = {
-        page,
-        limit,
-      }
-
-      if (search) {
-        query.where = [{{ search_conditions }}]
-      }
-
-      const result = await {{ table_name_camel }}.fetchAll(query)
+      const result = await {{ table_name_camel }}.fetchListBy(body)
       return Util.end({
         data: result.data,
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: 'service_getList_' + Util.genRandomString(),
+        track: 'service_getList_{{ timestamp }}',
       })
     }
   }
 
   /**
-   * 创建页面数据
+   * 获取创建页数据
    */
   async create(ctx) {
     try {
-      {{ select_list_data }}
-
-      const data = {
-        {{ select_list_vars }}
-      }
       return Util.end({
-        data,
+        data: {},
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        stack: err.stack,
-        track: 'service_create_' + Util.genRandomString(),
+        track: 'service_create_{{ timestamp }}',
       })
     }
   }
@@ -89,119 +63,113 @@ class {{ service_name }} extends BaseService {
   async createInfo(ctx) {
     try {
       const { body } = ctx
-
-      await Database.transaction(async (trx) => {
-        const result = await {{ table_name_camel }}.create(trx, {
-          {{ create_fields }}
+      //检查标题是否已被占用
+      const result = await {{ table_name_camel }}.checkExistByColumn({ title: body.title })
+      if (result.data.is_exist) {
+        return Util.end({
+          status: 0,
+          msg: '此标题已被使用',
         })
-
+      }
+      //检查通过，开始创建新记录
+      await Database.transaction(async (trx) => {
+        const result = await {{ table_name_camel }}.create(trx, body)
         if (result.status === 0) {
-          throw new Error(result.msg || '新增失败')
+          throw new Error('新增失败')
         }
       })
 
-      return Util.end({
-        msg: '新增成功',
-      })
+      return Util.end({})
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: 'service_createInfo_' + Util.genRandomString(),
+        stack: err.stack,
+        track: 'service_createInfo_{{ timestamp }}',
       })
     }
   }
 
   /**
-   * 查看数据
+   * 获取查看页数据
    */
   async view(ctx) {
     try {
       const { body } = ctx
       const { id } = body
 
+      //获取信息
       const result = await {{ table_name_camel }}.fetchOneById(id)
-      if (result.status === 0) {
+      if (!result.data) {
         return Util.end({
-          msg: result.msg,
-          status: result.status,
+          status: 0,
+          msg: '记录不存在',
         })
       }
 
-      const data = {
-        info: result.data,
-      }
       return Util.end({
-        data,
+        data: {
+          info: result.data,
+        },
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: 'service_view_' + Util.genRandomString(),
+        track: 'service_view_{{ timestamp }}',
       })
     }
   }
 
   /**
-   * 编辑页面数据
+   * 获取编辑页数据
    */
   async edit(ctx) {
     try {
       const { body } = ctx
       const { id } = body
 
+      //获取信息
       const result = await {{ table_name_camel }}.fetchOneById(id)
-      if (result.status === 0) {
+      if (!result.data) {
         return Util.end({
-          msg: result.msg,
-          status: result.status,
+          status: 0,
+          msg: '记录不存在',
         })
       }
 
-      {{ select_list_data }}
-
-      const data = {
-        info: result.data,
-        {{ select_list_vars }}
-      }
       return Util.end({
-        data,
+        data: {
+          info: result.data,
+        },
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: 'service_edit_' + Util.genRandomString(),
+        track: 'service_edit_' + Date.now(),
       })
     }
   }
 
   /**
-   * 编辑数据
+   * 更新数据
    */
-  async editInfo(ctx) {
+  async updateInfo(ctx) {
     try {
       const { body } = ctx
-      const { id } = body
-
       await Database.transaction(async (trx) => {
         const result = await {{ table_name_camel }}.updateBy(trx, {
-          where: [['id', '=', id]],
-          set: {
-            {{ edit_fields }}
-          }
+          where: [['id', '=', body.id]],
+          set: body,
         })
-
         if (result.status === 0) {
-          throw new Error(result.msg || '更新失败')
+          throw new Error('保存失败')
         }
       })
 
-      return Util.end({
-        msg: '更新成功',
-      })
+      return Util.end({})
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: 'service_editInfo_' + Util.genRandomString(),
+        track: 'service_updateInfo_{{ timestamp }}',
       })
     }
   }
@@ -212,48 +180,21 @@ class {{ service_name }} extends BaseService {
   async remove(ctx) {
     try {
       const { body } = ctx
-      const { id } = body
-
       await Database.transaction(async (trx) => {
-        const result = await {{ table_name_camel }}.deleteByIds(trx, [id])
+        const result = await {{ table_name_camel }}.deleteByIds(trx, body.ids)
         if (result.status === 0) {
-          throw new Error(result.msg || '删除失败')
+          throw new Error('删除失败')
         }
       })
 
       return Util.end({
-        msg: '删除成功',
+        data: result.data,
       })
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: 'service_remove_' + Util.genRandomString(),
-      })
-    }
-  }
-
-  /**
-   * 批量删除数据
-   */
-  async batchRemove(ctx) {
-    try {
-      const { body } = ctx
-      const { ids } = body
-
-      await Database.transaction(async (trx) => {
-        const result = await {{ table_name_camel }}.deleteByIds(trx, ids)
-        if (result.status === 0) {
-          throw new Error(result.msg || '批量删除失败')
-        }
-      })
-
-      return Util.end({
-        msg: '批量删除成功',
-      })
-    } catch (err) {
-      return Util.error({
-        msg: err.message,
-        track: 'service_batchRemove_' + Util.genRandomString(),
+        stack: err.stack,
+        track: 'service_remove_{{ timestamp }}',
       })
     }
   }

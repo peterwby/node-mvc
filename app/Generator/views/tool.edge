@@ -13,8 +13,10 @@
       <div class="flex items-center gap-2.5">
         <button type="submit" class="btn btn-sm btn-primary" form="generator_form" id="submit_btn">
           <span class="indicator-label">生成代码</span>
-          <span class="indicator-progress">
-            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+          <span class="indicator-progress hidden">
+            <span
+              class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
+              role="status" aria-label="loading"></span>
           </span>
         </button>
       </div>
@@ -24,7 +26,7 @@
     <div class="grid gap-5 lg:gap-7.5">
       <div class="card min-w-full">
         <div class="card-body">
-          <form id="generator_form" class="grid gap-5">
+          <form id="generator_form" class="grid gap-5" method="POST">
             <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
               <label class="form-label max-w-56 required">
                 菜单路径
@@ -60,18 +62,81 @@
 @endsection
 
 @section('scripts')
+<script src="/assets/vendors/@form-validation/form-validation.bundle.js"></script>
 <script>
-  // 处理表单提交
-  Util.handleFormSubmit('#generator_form', {
-    submitButton: '#submit_btn',
-    action: '/generator/generate',
-    onSuccess: (response) => {
-      if (response.status === 1) {
-        Util.showSuccessMsg(response.msg)
-      } else {
-        Util.showErrorMsg(response.msg)
+  var validator;
+
+  /**
+   * 初始化表单验证
+   * @param {string} formId - 表单元素的ID
+   * @returns {Object} - FormValidation实例
+   */
+  function initFormValidation(formId) {
+    const form = document.querySelector(formId);
+
+    const validator = FormValidation.formValidation(form, {
+      fields: {
+        menu_path: {
+          validators: {
+            notEmpty: {
+              message: '请输入正确的格式'
+            },
+          }
+        },
+        sql: {
+          validators: {
+            notEmpty: {
+              message: '请输入正确的格式'
+            }
+          }
+        }
+      },
+      plugins: {
+        trigger: new FormValidation.plugins.Trigger(),
+        bootstrap: new FormValidation.plugins.Bootstrap5({
+          rowSelector: '.flex',
+          eleInvalidClass: 'border-red-500',
+          eleValidClass: 'border-green-500',
+          messageClass: 'text-gray-500'
+        }),
+        submitButton: new FormValidation.plugins.SubmitButton(),
       }
+    });
+
+    return validator;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // 初始化表单验证
+    validator = initFormValidation('#generator_form');
+  });
+
+  /**
+   * 通用表单提交处理函数
+   */
+  Util.handleFormSubmit('#generator_form', '#submit_btn', async (formData) => {
+    try {
+      // 进行表单验证
+      const isValid = await validator.validate();
+      if (isValid === 'Invalid') {
+        throw new Error('表单验证失败');
+      }
+      const response = await axios.post('/generator/generate', formData, {
+        headers: {
+          'token': localStorage.getItem('token')
+        }
+      });
+
+      if (response.data.code === 0) {
+        Util.successMsg('操作成功');
+        return response.data;
+      } else {
+        throw new Error(response.data.msg || '操作失败');
+      }
+    } catch (error) {
+      console.error('操作失败:', error);
+      throw error;
     }
-  })
+  });
 </script>
 @endsection

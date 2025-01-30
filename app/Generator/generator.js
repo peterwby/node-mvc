@@ -97,80 +97,6 @@ class Generator {
   }
 
   /**
-   * 显示代码生成工具页面
-   * @param {Object} ctx - Adonis 上下文对象
-   * @param {Object} ctx.view - 视图渲染器
-   * @returns {Promise<string>} 渲染后的 HTML 页面
-   * @example
-   * // 在路由中使用
-   * Route.get('generator/tool', 'GeneratorController.tool')
-   */
-  async tool({ view }) {
-    return view.render('../../app/Generator/views/tool')
-  }
-
-  /**
-   * 生成代码
-   * @param {Object} ctx - Adonis 上下文对象
-   * @param {Object} ctx.body - 请求体参数
-   * @param {string} ctx.body.menu_path - 菜单路径
-   * @param {Array<Object>} ctx.body.fields - 字段定义列表
-   * @param {Array<Object>} ctx.body.tables - 表名列表
-   * @param {Object} ctx.body.table_fields - 表字段映射
-   * @returns {Promise<Object>} 生成结果
-   * @returns {boolean} result.status - 是否成功
-   * @returns {string} result.message - 结果消息
-   * @returns {Object} [result.summary] - 生成摘要（仅当成功时）
-   * @example
-   * const result = await generator.generate({
-   *   body: {
-   *     menu_path: 'admin/users',
-   *     fields: [{name: 'id', type: 'number'}],
-   *     tables: [{name: 'users', alias: 'u'}],
-   *     table_fields: {users: ['id', 'name']}
-   *   }
-   * })
-   */
-  async generate({ body }) {
-    try {
-      this.logger.log('开始生成代码')
-      const { menu_path, fields, tables, table_fields } = body
-
-      // 1. 初始化生成器参数
-      this.init(menu_path, fields, tables, table_fields)
-
-      // 2. 创建必要的目录结构
-      await this.createDirectory()
-
-      // 3. 生成前端文件（list/create/edit/view.edge）
-      await this.generateFrontendFiles()
-
-      // 4. 生成后端文件（Controller/Service/Table）
-      await this.generateBackendFiles()
-
-      // 5. 生成完成，返回摘要信息
-      const summary = this.logger.getSummary()
-      this.logger.log(`代码生成完成，总耗时: ${summary.totalTime}ms`)
-
-      return {
-        status: true,
-        message: '代码生成成功',
-        summary,
-      }
-    } catch (err) {
-      // 如果已经是 GeneratorError，直接使用
-      const error = err.name === 'GeneratorError' ? err : createGeneratorError('GENERATE_FAILED', err.message, err)
-      // 记录错误并返回错误信息
-      this.logger.error(error, 'generate')
-      return {
-        status: false,
-        message: error.message,
-        error: error.toJSON(),
-      }
-    }
-  }
-
-  /**
    * 创建目录结构
    * @throws {Error} 当目录创建失败时抛出错误
    * @example
@@ -186,113 +112,6 @@ class Generator {
       }
     } catch (err) {
       throw createGeneratorError('CREATE_DIR_FAILED', err.message, err)
-    }
-  }
-
-  /**
-   * 生成前端文件（list.edge, create.edge, edit.edge, view.edge）
-   * @returns {Promise<void>}
-   * @example
-   * await generator.generateFrontendFiles()
-   * // 生成以下文件：
-   * // - resources/views/admin/users/list.edge
-   * // - resources/views/admin/users/create.edge
-   * // - resources/views/admin/users/edit.edge
-   * // - resources/views/admin/users/view.edge
-   */
-  async generateFrontendFiles() {
-    const files = ['list', 'create', 'edit', 'view']
-    for (const file of files) {
-      await this.generateFile('frontend', `${file}.edge`)
-    }
-  }
-
-  /**
-   * 生成后端文件（Controller, Service, Table）
-   * @returns {Promise<void>}
-   * @example
-   * await generator.generateBackendFiles()
-   * // 生成以下文件：
-   * // - app/Controllers/Http/Admin/UsersController.js
-   * // - app/Services/Admin/UsersService.js
-   * // - app/Models/Table/Users.js
-   */
-  async generateBackendFiles() {
-    // 生成控制器
-    await this.generateController()
-    // 生成服务层
-    await this.generateService()
-    // 生成表层
-    await this.generateTable()
-  }
-
-  /**
-   * 生成表层文件
-   * @returns {Promise<void>}
-   * @throws {Error} 当文件生成失败时抛出错误
-   * @example
-   * await generator.generateTable()
-   * // 生成 app/Models/Table/Users.js 文件
-   */
-  async generateTable() {
-    const template = await this.readTemplate('backend/table.js.tpl')
-    const content = this.replaceTableVariables(template, {
-      table_name: this.table_name,
-    })
-    const table_path = path.join(this.base_path, 'app/Models/Table', this.table_name + '.js')
-    await this.writeFile(table_path, content)
-  }
-
-  /**
-   * 生成单个文件
-   * @param {string} type - 文件类型：'frontend' 或 'backend'
-   * @param {string} template_name - 模板文件名
-   * @throws {Error} 当文件生成失败时抛出错误
-   * @example
-   * // 生成前端列表页
-   * await generator.generateFile('frontend', 'list.edge')
-   *
-   * // 生成后端控制器
-   * await generator.generateFile('backend', 'controller.js')
-   */
-  async generateFile(type, template_name) {
-    try {
-      this.logger.log(`开始生成文件: ${type}/${template_name}`)
-
-      // 1. 读取模板文件
-      // 模板文件位于 app/Generator/templates 目录下
-      const template_path = path.join(__dirname, 'templates', type, template_name)
-      let template
-      try {
-        template = fs.readFileSync(template_path, 'utf8')
-      } catch (err) {
-        throw createGeneratorError('READ_TEMPLATE_FAILED', `模板文件 ${template_name} 不存在或无法读取`, err)
-      }
-
-      // 2. 替换模板变量
-      // 根据不同的文件类型和模板，替换相应的变量
-      const content = this.replaceTemplateVariables(template, type, template_name)
-
-      // 3. 确定目标文件路径
-      // 前端文件放在 resources/views 目录下
-      // 后端文件放在 app 目录下的相应子目录中
-      const target_path = this.getTargetPath(type, template_name)
-
-      // 4. 写入文件
-      try {
-        fs.writeFileSync(target_path, content)
-      } catch (err) {
-        throw createGeneratorError('WRITE_FILE_FAILED', `无法写入文件 ${target_path}`, err)
-      }
-
-      this.logger.log(`文件生成成功: ${target_path}`)
-    } catch (err) {
-      // 如果已经是 GeneratorError，直接抛出
-      if (err.name === 'GeneratorError') {
-        throw err
-      }
-      // 否则包装为 GENERATE_FAILED 错误
-      throw createGeneratorError('GENERATE_FAILED', `生成 ${template_name} 失败: ${err.message}`, err)
     }
   }
 
@@ -396,85 +215,170 @@ class Generator {
    * @param {string} content - 模板内容
    * @param {Object} data - 数据对象
    * @returns {string} 替换后的内容
-   * @example
-   * const content = generator.replaceListVariables(
-   *   '{{ menu_path }}/{{ primary_key }}',
-   *   { menu_path: 'admin/users', primary_key: 'id' }
-   * )
-   * // 返回: 'admin/users/id'
    */
   replaceListVariables(content, data) {
     // 使用通用变量替换
     let result = this.replaceCommonVariables(content, data)
 
-    // 1. 替换菜单路径
-    result = result.replace(/\{\{\s*menu_path\s*\}\}/g, this.menu_path)
+    // 1. 替换路径相关变量
+    const api_path = this.menu_path.replace(/^\/admin\//, '')
+    result = result.replace(/\{\{\s*menu_path\s*\}\}/g, '/admin/' + api_path)
+    result = result.replace(/\{\{\s*api_path\s*\}\}/g, api_path)
 
     // 2. 替换主键相关的变量
-    // 查找主键字段，默认为 'id'
     const primary_key = this.fields.find((field) => field.key === 'PRI')?.name || 'id'
-    result = result.replace(/\{\{\s*primary_key\s*\}\}/g, primary_key)
 
-    // 3. 替换列表字段
-    // 根据字段类型生成不同的渲染函数
-    const list_fields = this.fields.map((field) => {
-      let render = ''
+    // 3. 生成表格相关的 HTML
+    // 3.1 复选框列（如果有主键）
+    const checkbox_th = primary_key
+      ? '<th class="w-[44px] text-center"><input class="checkbox checkbox-sm" data-datatable-check="true" type="checkbox" /></th>'
+      : ''
+    const checkbox_td = primary_key
+      ? '<td class="text-center"><input class="checkbox checkbox-sm" type="checkbox" value="{{ item.' + primary_key + ' }}" /></td>'
+      : ''
+    result = result.replace(/\{\{\s*checkbox_th\s*\}\}/g, checkbox_th)
+    result = result.replace(/\{\{\s*checkbox_td\s*\}\}/g, checkbox_td)
+
+    // 3.2 字段列
+    const field_headers = this.fields
+      .map(
+        (field) => `<th class="min-w-[200px]">
+          <span class="sort asc">
+            <span class="sort-label font-normal text-gray-700">
+              {{ trans('${field.label || field.name}') }}
+            </span>
+            <span class="sort-icon">
+              <i class="ki-outline ki-arrow-up"></i>
+              <i class="ki-outline ki-arrow-down"></i>
+            </span>
+          </span>
+        </th>`
+      )
+      .join('\n')
+    result = result.replace(/\{\{\s*field_headers\s*\}\}/g, field_headers)
+
+    const field_columns = this.fields
+      .map((field) => {
+        let render = ''
+        switch (field.type) {
+          case 'boolean':
+            render = `{{ item.${field.name} ? trans('yes') : trans('no') }}`
+            break
+          case 'select':
+            render = `{{ getDictLabel('${field.dict_table}', item.${field.name}) }}`
+            break
+          case 'datetime':
+            render = `{{ moment(item.${field.name}).format('YYYY-MM-DD HH:mm:ss') }}`
+            break
+          case 'rich_editor':
+            render = `{{{ escapeHtml(item.${field.name}) }}}`
+            break
+          default:
+            render = `{{ item.${field.name} }}`
+        }
+        return `<td>${render}</td>`
+      })
+      .join('\n')
+    result = result.replace(/\{\{\s*field_columns\s*\}\}/g, field_columns)
+
+    // 3.3 操作列（如果有主键）
+    const operation_th = primary_key ? '<th class="w-[120px] text-center">{{ trans(\'operation\') }}</th>' : ''
+    const operation_td = primary_key
+      ? `<td class="text-center">
+          <div class="flex items-center justify-center gap-2">
+            <a href="/admin/${api_path}/view/{{ item.${primary_key} }}" class="btn btn-icon btn-sm btn-secondary">
+              <i class="ki-outline ki-eye fs-2"></i>
+            </a>
+            <a href="/admin/${api_path}/edit/{{ item.${primary_key} }}" class="btn btn-icon btn-sm btn-primary">
+              <i class="ki-outline ki-pencil fs-2"></i>
+            </a>
+            <button type="button" class="btn btn-icon btn-sm btn-danger delete-btn" data-id="{{ item.${primary_key} }}">
+              <i class="ki-outline ki-trash fs-2"></i>
+            </button>
+          </div>
+        </td>`
+      : ''
+    result = result.replace(/\{\{\s*operation_th\s*\}\}/g, operation_th)
+    result = result.replace(/\{\{\s*operation_td\s*\}\}/g, operation_td)
+
+    // 4. 生成 datatable 列定义
+    const column_defs = []
+
+    // 4.1 添加复选框列
+    if (primary_key) {
+      column_defs.push(`      ${primary_key}: {
+        render: (item) => {
+          return '<input class="checkbox checkbox-sm" data-datatable-row-check="true" type="checkbox" value="' + item + '">'
+        }
+      }`)
+    }
+
+    // 4.2 添加数据列
+    this.fields.forEach((field) => {
+      let columnDef = `      ${field.name}: {`
+
+      // 根据字段类型添加渲染函数
       switch (field.type) {
         case 'boolean':
-          // 布尔值显示为是/否
-          render = `(value) => value ? trans('yes') : trans('no')`
+          columnDef += `
+        render: (value) => value ? trans('yes') : trans('no')`
           break
         case 'select':
-          // 下拉列表显示对应的文本
-          render = `(value) => getDictLabel('${field.dict_table}', value)`
+          columnDef += `
+        render: (value) => getDictLabel('${field.dict_table}', value)`
           break
         case 'datetime':
-          // 日期时间格式化
-          render = `(value) => moment(value).format('YYYY-MM-DD HH:mm:ss')`
+          columnDef += `
+        render: (value) => moment(value).format('YYYY-MM-DD HH:mm:ss')`
           break
         case 'rich_editor':
-          // 富文本编辑器内容需要转义 HTML
-          render = `(value) => escapeHtml(value)`
+          columnDef += `
+        render: (value) => escapeHtml(value)`
           break
-        default:
-          // 其他类型直接显示
-          render = '(value) => value'
       }
 
-      return {
-        name: field.name,
-        label: field.label || field.name,
-        render,
-      }
+      columnDef += `
+      }`
+      column_defs.push(columnDef)
     })
 
-    // 4. 替换搜索条件
-    // 根据字段类型生成不同的搜索条件
-    const search_fields = this.fields.filter(isSearchableField).map((field) => {
-      let condition = ''
-      switch (field.type) {
-        case 'select':
-          // 下拉列表精确匹配
-          condition = `['${field.name}', '=', value]`
-          break
-        case 'datetime':
-          // 日期时间范围查询
-          condition = `['${field.name}', 'between', [start, end]]`
-          break
-        default:
-          // 其他类型模糊查询
-          condition = `['${field.name}', 'like', \`%\${value}%\`]`
-      }
+    // 4.3 添加操作列
+    if (primary_key) {
+      column_defs.push(`      action: {
+        render: (item, data) => {
+          return '<div class="menu flex-inline" data-menu="true">' +
+            '<div class="menu-item" data-menu-item-offset="0, 10px" data-menu-item-placement="bottom-end" data-menu-item-placement-rtl="bottom-start" data-menu-item-toggle="dropdown" data-menu-item-trigger="click|lg:click">' +
+            '<button class="menu-toggle btn btn-sm btn-icon btn-light btn-clear">' +
+            '<i class="ki-filled ki-dots-vertical"></i>' +
+            '</button>' +
+            '<div class="menu-dropdown menu-default w-full max-w-[120px]" data-menu-dismiss="true">' +
+            '<div class="menu-item">' +
+            '<a class="menu-link" href="/admin/${api_path}/view/' + data.${primary_key} + '">' +
+            '<span class="menu-title">' + trans('view') + '</span>' +
+            '</a>' +
+            '</div>' +
+            (hasPermission('/admin/${api_path}/list@edit') ?
+            '<div class="menu-item">' +
+            '<a class="menu-link" href="/admin/${api_path}/edit/' + data.${primary_key} + '">' +
+            '<span class="menu-title">' + trans('edit') + '</span>' +
+            '</a>' +
+            '</div>' : '') +
+            '<div class="menu-separator"></div>' +
+            (hasPermission('/admin/${api_path}/list@remove') ?
+            '<div class="menu-item">' +
+            '<button type="button" class="menu-link remove-btn" data-id="' + data.${primary_key} + '">' +
+            '<span class="menu-title">' + trans('delete') + '</span>' +
+            '</button>' +
+            '</div>' : '') +
+            '</div>' +
+            '</div>' +
+            '</div>'
+        }
+      }`)
+    }
 
-      return {
-        name: field.name,
-        label: field.label || field.name,
-        condition,
-      }
-    })
-
-    // 5. 替换字段变量
-    result = result.replace('{{ list_fields }}', JSON.stringify(list_fields, null, 2)).replace('{{ search_fields }}', JSON.stringify(search_fields, null, 2))
+    // 4.4 替换列定义
+    result = result.replace(/\{\{\s*column_defs\s*\}\}/g, column_defs.join(',\n'))
 
     return result
   }
@@ -550,6 +454,56 @@ class Generator {
   }
 
   /**
+   * 替换控制器变量
+   * @param {string} content 模板内容
+   * @param {Object} data 数据对象
+   * @returns {string} 替换后的内容
+   */
+  replaceControllerVariables(content, data) {
+    // 使用通用变量替换
+    let result = this.replaceCommonVariables(content, data)
+
+    // 1. 替换类名相关变量
+    const class_name = this.getClassName(this.menu_path)
+    result = result.replace(/\{\{\s*controller_name\s*\}\}/g, class_name + 'Controller')
+    result = result.replace(/\{\{\s*service_name\s*\}\}/g, class_name + 'Service')
+    result = result.replace(/\{\{\s*service_var\s*\}\}/g, this.camelCase(class_name + 'Service'))
+
+    // 2. 替换路径相关变量
+    result = result.replace(/\{\{\s*view_path\s*\}\}/g, this.menu_path.replace(/^\//, ''))
+
+    // 3. 替换主键相关变量
+    const primary_key = this.fields.find((field) => field.key === 'PRI')?.name || 'id'
+    result = result.replace(/\{\{\s*primary_key\s*\}\}/g, primary_key)
+
+    // 4. 替换选择列表变量
+    result = result.replace(/\{\{\s*select_list_vars\s*\}\}/g, data.select_list_vars || '')
+
+    // 5. 替换日期格式化代码
+    const dateFields = this.fields.filter((field) => field.type === 'datetime' || field.type === 'date')
+    if (dateFields.length > 0) {
+      const dateFormatCode = dateFields
+        .map((field) => {
+          const format = field.type === 'datetime' ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD'
+          return `if (item.${field.name}) {\n          item.${field.name} = moment(item.${field.name}).format('${format}')\n        }`
+        })
+        .join('\n        ')
+      result = result.replace(/\/\/ FORMAT_DATE_FIELDS/g, dateFormatCode)
+    } else {
+      result = result.replace(/\/\/ FORMAT_DATE_FIELDS/g, '')
+    }
+
+    // 6. 替换 track 参数，使用当前时间戳
+    const timestamp = Date.now()
+    result = result.replace(/\{\{\s*timestamp\s*\}\}/g, timestamp)
+
+    // 7. 替换验证函数
+    result = result.replace(/\{\{\s*validation_functions\s*\}\}/g, this.generateValidationFunctions(this.menu_path, this.fields))
+
+    return result
+  }
+
+  /**
    * 替换服务层变量
    * @param {string} content 模板内容
    * @param {Object} data 数据对象
@@ -559,7 +513,17 @@ class Generator {
     // 使用通用变量替换
     let result = this.replaceCommonVariables(content, data)
 
-    // 1. 生成下拉列表数据获取代码
+    // 1. 替换类名相关变量
+    const class_name = this.getClassName(this.menu_path)
+    const table_name = data.table_name
+    const table_name_camel = this.camelCase(class_name)
+    const table_instance_name = this.camelCase(class_name) + 'Table'
+
+    result = result.replace(/\{\{\s*class_name\s*\}\}/g, class_name)
+    result = result.replace(/\{\{\s*service_name\s*\}\}/g, class_name + 'Service')
+    result = result.replace(/\{\{\s*table_name_camel\s*\}\}/g, table_instance_name)
+
+    // 2. 生成下拉列表数据获取代码
     let select_list_data = []
     let select_list_vars = []
     this.fields.forEach((field) => {
@@ -570,23 +534,32 @@ class Generator {
       }
     })
 
-    // 2. 生成搜索条件
+    // 3. 生成搜索条件
     const searchable_fields = this.fields.filter(
       (field) => ['string', 'text'].includes(field.type) && ['name', 'title', 'description', 'content'].includes(field.name)
     )
-    const search_conditions = searchable_fields.map((field) => `['${field.name}', 'like', \`%\${search}%\`]`)
+    const search_conditions = `table.where(function() {
+          this.where('${searchable_fields[0].name}', 'like', \`%\${search}%\`)${searchable_fields
+      .slice(1)
+      .map((field) => `.orWhere('${field.name}', 'like', \`%\${search}%\`)`)
+      .join('')}
+        })`
 
-    // 3. 生成创建和更新字段
+    // 4. 生成创建和更新字段
     const create_fields = this.fields
       .filter((field) => !['id', 'created_at', 'updated_at'].includes(field.name))
       .map((field) => `${field.name}: body.${field.name}`)
       .join(',\n          ')
 
+    // 5. 替换 track 参数，使用当前时间戳
+    const timestamp = Date.now()
+    result = result.replace(/\{\{\s*timestamp\s*\}\}/g, timestamp)
+
     // 替换变量
     result = result
       .replace(/\{\{\s*select_list_data\s*\}\}/g, select_list_data.join('\n      '))
       .replace(/\{\{\s*select_list_vars\s*\}\}/g, select_list_vars.join(',\n        '))
-      .replace(/\{\{\s*search_conditions\s*\}\}/g, search_conditions.join(' OR '))
+      .replace(/\{\{\s*search_conditions\s*\}\}/g, search_conditions)
       .replace(/\{\{\s*create_fields\s*\}\}/g, create_fields)
       .replace(/\{\{\s*edit_fields\s*\}\}/g, create_fields)
 
@@ -652,61 +625,7 @@ class Generator {
 
     // 8. 替换 track 参数，使用当前时间戳
     const timestamp = Date.now()
-    result = result.replace(/track: 'table_(\w+)_' \+ Util\.genRandomString\(\)/g, (match, method) => {
-      return `track: 'table_${method}_${timestamp}'`
-    })
-
-    return result
-  }
-
-  /**
-   * 替换控制器变量
-   * @param {string} content 模板内容
-   * @param {Object} data 数据对象
-   * @returns {string} 替换后的内容
-   */
-  replaceControllerVariables(content, data) {
-    // 使用通用变量替换
-    let result = this.replaceCommonVariables(content, data)
-
-    // 1. 替换类名相关变量
-    const class_name = this.getClassName(this.menu_path)
-    result = result.replace(/\{\{\s*controller_name\s*\}\}/g, class_name + 'Controller')
-    result = result.replace(/\{\{\s*service_name\s*\}\}/g, class_name + 'Service')
-    result = result.replace(/\{\{\s*service_var\s*\}\}/g, this.camelCase(class_name + 'Service'))
-
-    // 2. 替换路径相关变量
-    result = result.replace(/\{\{\s*view_path\s*\}\}/g, this.menu_path.replace(/^\//, ''))
-
-    // 3. 替换主键相关变量
-    const primary_key = this.fields.find((field) => field.key === 'PRI')?.name || 'id'
-    result = result.replace(/\{\{\s*primary_key\s*\}\}/g, primary_key)
-
-    // 4. 替换选择列表变量
-    result = result.replace(/\{\{\s*select_list_vars\s*\}\}/g, data.select_list_vars || '')
-
-    // 5. 替换日期格式化代码
-    const dateFields = this.fields.filter((field) => field.type === 'datetime' || field.type === 'date')
-    if (dateFields.length > 0) {
-      const dateFormatCode = dateFields
-        .map((field) => {
-          const format = field.type === 'datetime' ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD'
-          return `if (item.${field.name}) {\n          item.${field.name} = moment(item.${field.name}).format('${format}')\n        }`
-        })
-        .join('\n        ')
-      result = result.replace(/\/\/ FORMAT_DATE_FIELDS/g, dateFormatCode)
-    } else {
-      result = result.replace(/\/\/ FORMAT_DATE_FIELDS/g, '')
-    }
-
-    // 6. 替换 track 参数，使用当前时间戳
-    const timestamp = Date.now()
-    result = result.replace(/track: 'controller_(\w+)_' \+ Util\.genRandomString\(\)/g, (match, method) => {
-      return `track: 'controller_${method}_${timestamp}'`
-    })
-
-    // 7. 替换验证函数
-    result = result.replace(/\{\{\s*validation_functions\s*\}\}/g, this.generateValidationFunctions(this.menu_path, this.fields))
+    result = result.replace(/\{\{\s*timestamp\s*\}\}/g, timestamp)
 
     return result
   }
@@ -728,43 +647,56 @@ class Generator {
    */
   generateValidationFunctions(menu_path, fields) {
     const validations = []
-    const timestamp = Date.now() // 使用当前时间戳
+    const timestamp = Date.now()
 
     // 列表页验证
     validations.push(`
 async function listValid(ctx) {
   try {
-    //参数预处理
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
     async function paramsHandle() {
-      const { body } = ctx
-      //设置默认值
-      body.page = body.page || 1
-      body.limit = body.limit || 10
-      body.search = body.search || ''
+      const requestAll = ctx.request.all()
+      let body = {}
+      // 只接收以下参数
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'page':
+            body.page = parseInt(requestAll[k])
+            break
+          case 'limit':
+            body.limit = parseInt(requestAll[k])
+            break
+          case 'search':
+            body.search = requestAll[k]
+            break
+        }
+      }
+      if (!body.page) {
+        body.page = 1
+      }
+      if (!body.limit) {
+        body.limit = 10
+      }
+      ctx.body = Util.deepClone(body)
     }
 
-    //参数验证
     async function paramsValid() {}
 
-    //权限验证
-    async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/list@list']) {
-        return Util.end2front({
-          msg: '无权限访问',
-          code: 9000,
-        })
-      }
-    }
-
-    await paramsHandle()
-    const resultValid = await paramsValid()
-    if (resultValid) return resultValid
-    const resultAuth = await authValid()
-    if (resultAuth) return resultAuth
+    async function authValid() {}
   } catch (err) {
     return Util.error2front({
+      isShowMsg: true,
       msg: err.message,
-      track: 'listValid_${timestamp}',
+      code: 9000,
+      track: 'valid_listValid_${timestamp}',
     })
   }
 }`)
@@ -773,37 +705,55 @@ async function listValid(ctx) {
     validations.push(`
 async function getListValid(ctx) {
   try {
-    //参数预处理
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
     async function paramsHandle() {
-      const { body } = ctx
-      //设置默认值
-      body.page = body.page || 1
-      body.limit = body.limit || 10
-      body.search = body.search || ''
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'page':
+            body.page = requestAll[k]
+            break
+          case 'size':
+            body.limit = requestAll[k]
+            break
+          case 'sortorder':
+            body.sortOrder = requestAll[k]
+            break
+          case 'sortfield':
+            body.sortField = requestAll[k]
+            break
+          case 'search':
+            body.search = requestAll[k]
+            break
+        }
+      }
+      if (!body.page) {
+        body.page = 1
+      }
+      if (!body.limit) {
+        body.limit = 10
+      }
+      ctx.body = Util.deepClone(body)
     }
 
-    //参数验证
     async function paramsValid() {}
 
-    //权限验证
-    async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/list@list']) {
-        return Util.end2front({
-          msg: '无权限访问',
-          code: 9000,
-        })
-      }
-    }
-
-    await paramsHandle()
-    const resultValid = await paramsValid()
-    if (resultValid) return resultValid
-    const resultAuth = await authValid()
-    if (resultAuth) return resultAuth
+    async function authValid() {}
   } catch (err) {
     return Util.error2front({
+      isShowMsg: true,
       msg: err.message,
-      track: 'getListValid_${timestamp}',
+      code: 9000,
+      track: 'valid_getListValid_${timestamp}',
     })
   }
 }`)
@@ -812,33 +762,30 @@ async function getListValid(ctx) {
     validations.push(`
 async function createValid(ctx) {
   try {
-    //参数预处理
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
     async function paramsHandle() {
-      const { body } = ctx
+      const requestAll = ctx.params
+      let body = {}
+      ctx.body = Util.deepClone(body)
     }
 
-    //参数验证
     async function paramsValid() {}
 
-    //权限验证
-    async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/create@create']) {
-        return Util.end2front({
-          msg: '无权限访问',
-          code: 9000,
-        })
-      }
-    }
-
-    await paramsHandle()
-    const resultValid = await paramsValid()
-    if (resultValid) return resultValid
-    const resultAuth = await authValid()
-    if (resultAuth) return resultAuth
+    async function authValid() {}
   } catch (err) {
     return Util.error2front({
+      isShowMsg: true,
       msg: err.message,
-      track: 'createValid_${timestamp}',
+      code: 9000,
+      track: 'valid_createValid_${timestamp}',
     })
   }
 }`)
@@ -847,47 +794,53 @@ async function createValid(ctx) {
     validations.push(`
 async function createInfoValid(ctx) {
   try {
-    //参数预处理
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
     async function paramsHandle() {
-      const { body } = ctx
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          ${fields
+            .filter((field) => !['id', 'created_at', 'updated_at'].includes(field.name))
+            .map(
+              (field) => `case '${field.name}':
+            body.${field.name} = Util.filterXss(requestAll[k])
+            break`
+            )
+            .join('\n          ')}
+        }
+      }
+      ctx.body = Util.deepClone(body)
     }
 
-    //参数验证
     async function paramsValid() {
       const rules = {
         ${fields
-          .filter((field) => !field.is_primary_key && field.required)
+          .filter((field) => !['id', 'created_at', 'updated_at'].includes(field.name) && field.required)
           .map((field) => `${field.name}: 'required'`)
           .join(',\n        ')}
       }
-      const validation = await validate(body, rules)
+      const validation = await validate(ctx.body, rules)
       if (validation.fails()) {
-        return Util.end2front({
-          msg: validation.messages()[0].message,
-          code: 9000,
-        })
+        throw new Error(validation.messages()[0].message)
       }
     }
 
-    //权限验证
-    async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/create@create']) {
-        return Util.end2front({
-          msg: '无权限访问',
-          code: 9000,
-        })
-      }
-    }
-
-    await paramsHandle()
-    const resultValid = await paramsValid()
-    if (resultValid) return resultValid
-    const resultAuth = await authValid()
-    if (resultAuth) return resultAuth
+    async function authValid() {}
   } catch (err) {
     return Util.error2front({
+      isShowMsg: true,
       msg: err.message,
-      track: 'createInfoValid_${timestamp}',
+      code: 9000,
+      track: 'valid_createInfoValid_${timestamp}',
     })
   }
 }`)
@@ -896,44 +849,40 @@ async function createInfoValid(ctx) {
     validations.push(`
 async function viewValid(ctx) {
   try {
-    //参数预处理
-    async function paramsHandle() {
-      const { body } = ctx
-    }
-
-    //参数验证
-    async function paramsValid() {
-      const rules = {
-        id: 'required',
-      }
-      const validation = await validate(body, rules)
-      if (validation.fails()) {
-        return Util.end2front({
-          msg: validation.messages()[0].message,
-          code: 9000,
-        })
-      }
-    }
-
-    //权限验证
-    async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/view@view']) {
-        return Util.end2front({
-          msg: '无权限访问',
-          code: 9000,
-        })
-      }
-    }
-
+    //组装处理参数
     await paramsHandle()
-    const resultValid = await paramsValid()
-    if (resultValid) return resultValid
-    const resultAuth = await authValid()
-    if (resultAuth) return resultAuth
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.params
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'id':
+            {
+              const tmp = Util.decode(requestAll[k])
+              if (tmp) body.id = tmp
+            }
+            break
+        }
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {}
+
+    async function authValid() {}
   } catch (err) {
     return Util.error2front({
+      isShowMsg: true,
       msg: err.message,
-      track: 'viewValid_${timestamp}',
+      code: 9000,
+      track: 'valid_viewValid_${timestamp}',
     })
   }
 }`)
@@ -942,94 +891,113 @@ async function viewValid(ctx) {
     validations.push(`
 async function editValid(ctx) {
   try {
-    //参数预处理
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
     async function paramsHandle() {
-      const { body } = ctx
+      const requestAll = ctx.params
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'id':
+            {
+              const tmp = Util.decode(requestAll[k])
+              if (tmp) body.id = tmp
+            }
+            break
+        }
+      }
+      ctx.body = Util.deepClone(body)
     }
 
-    //参数验证
     async function paramsValid() {
       const rules = {
         id: 'required',
       }
-      const validation = await validate(body, rules)
+      const messages = {
+        'id.required': 'id is required',
+      }
+      const validation = await validate(ctx.body, rules)
       if (validation.fails()) {
-        return Util.end2front({
-          msg: validation.messages()[0].message,
-          code: 9000,
-        })
+        throw new Error(validation.messages()[0].message)
       }
     }
 
-    //权限验证
-    async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/edit@edit']) {
-        return Util.end2front({
-          msg: '无权限访问',
-          code: 9000,
-        })
-      }
-    }
-
-    await paramsHandle()
-    const resultValid = await paramsValid()
-    if (resultValid) return resultValid
-    const resultAuth = await authValid()
-    if (resultAuth) return resultAuth
+    async function authValid() {}
   } catch (err) {
     return Util.error2front({
+      isShowMsg: true,
       msg: err.message,
-      track: 'editValid_${timestamp}',
+      code: 9000,
+      track: 'valid_editValid_${timestamp}',
     })
   }
 }`)
 
-    // 编辑数据验证
+    // 更新数据验证
     validations.push(`
-async function editInfoValid(ctx) {
+async function updateInfoValid(ctx) {
   try {
-    //参数预处理
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
     async function paramsHandle() {
-      const { body } = ctx
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'id':
+            {
+              const tmp = Util.decode(requestAll[k])
+              if (tmp) body.id = tmp
+            }
+            break
+          ${fields
+            .filter((field) => !['id', 'created_at', 'updated_at'].includes(field.name))
+            .map(
+              (field) => `case '${field.name}':
+            body.${field.name} = Util.filterXss(requestAll[k])
+            break`
+            )
+            .join('\n          ')}
+        }
+      }
+      ctx.body = Util.deepClone(body)
     }
 
-    //参数验证
     async function paramsValid() {
       const rules = {
         id: 'required',
         ${fields
-          .filter((field) => !field.is_primary_key && field.required)
+          .filter((field) => !['id', 'created_at', 'updated_at'].includes(field.name) && field.required)
           .map((field) => `${field.name}: 'required'`)
           .join(',\n        ')}
       }
-      const validation = await validate(body, rules)
+      const validation = await validate(ctx.body, rules)
       if (validation.fails()) {
-        return Util.end2front({
-          msg: validation.messages()[0].message,
-          code: 9000,
-        })
+        throw new Error(validation.messages()[0].message)
       }
     }
 
-    //权限验证
-    async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/edit@edit']) {
-        return Util.end2front({
-          msg: '无权限访问',
-          code: 9000,
-        })
-      }
-    }
-
-    await paramsHandle()
-    const resultValid = await paramsValid()
-    if (resultValid) return resultValid
-    const resultAuth = await authValid()
-    if (resultAuth) return resultAuth
+    async function authValid() {}
   } catch (err) {
     return Util.error2front({
+      isShowMsg: true,
       msg: err.message,
-      track: 'editInfoValid_${timestamp}',
+      code: 9000,
+      track: 'valid_updateInfoValid_${timestamp}',
     })
   }
 }`)
@@ -1038,92 +1006,58 @@ async function editInfoValid(ctx) {
     validations.push(`
 async function removeValid(ctx) {
   try {
-    //参数预处理
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
     async function paramsHandle() {
-      const { body } = ctx
-      body.id = Util.decode(body.id)
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'ids': {
+            if (Util.isArray(requestAll[k])) {
+              const ids = requestAll[k].map((item) => {
+                item = Util.decode(item)
+                return item
+              })
+              if (ids.length) {
+                body.ids = ids
+              }
+            }
+          }
+        }
+      }
+      ctx.body = Util.deepClone(body)
     }
 
-    //参数验证
     async function paramsValid() {
       const rules = {
-        id: 'required',
+        ids: 'required',
       }
-      const validation = await validate(body, rules)
+      const messages = {
+        'ids.required': 'ids参数为必填项',
+      }
+      const validation = await validate(ctx.body, rules, messages)
       if (validation.fails()) {
-        return Util.end2front({
-          msg: validation.messages()[0].message,
-          code: 9000,
-        })
+        throw new Error(validation.messages()[0].message)
       }
     }
 
-    //权限验证
     async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/remove@remove']) {
-        return Util.end2front({
-          msg: '无权限访问',
-          code: 9000,
-        })
-      }
+      const session = ctx.session
     }
-
-    await paramsHandle()
-    const resultValid = await paramsValid()
-    if (resultValid) return resultValid
-    const resultAuth = await authValid()
-    if (resultAuth) return resultAuth
   } catch (err) {
     return Util.error2front({
+      isShowMsg: true,
       msg: err.message,
-      track: 'removeValid_${timestamp}',
-    })
-  }
-}`)
-
-    // 批量删除验证
-    validations.push(`
-async function batchRemoveValid(ctx) {
-  try {
-    //参数预处理
-    async function paramsHandle() {
-      const { body } = ctx
-      body.ids = body.ids.map(id => Util.decode(id))
-    }
-
-    //参数验证
-    async function paramsValid() {
-      const rules = {
-        ids: 'required|array',
-      }
-      const validation = await validate(body, rules)
-      if (validation.fails()) {
-        return Util.end2front({
-          msg: validation.messages()[0].message,
-          code: 9000,
-        })
-      }
-    }
-
-    //权限验证
-    async function authValid() {
-      if (!ctx.session.get('permissions')['${menu_path}/batch-remove@batch-remove']) {
-        return Util.end2front({
-          msg: '无权限访问',
-          code: 9000,
-        })
-      }
-    }
-
-    await paramsHandle()
-    const resultValid = await paramsValid()
-    if (resultValid) return resultValid
-    const resultAuth = await authValid()
-    if (resultAuth) return resultAuth
-  } catch (err) {
-    return Util.error2front({
-      msg: err.message,
-      track: 'batchRemoveValid_${timestamp}',
+      code: 9000,
+      track: 'valid_removeValid_1586354732',
     })
   }
 }`)
@@ -1272,6 +1206,322 @@ async function batchRemoveValid(ctx) {
     // 修改：直接放在 Services 目录下
     const service_path = path.join(this.base_path, 'app/Services', this.getClassName(this.menu_path) + 'Service.js')
     await this.writeFile(service_path, content)
+  }
+
+  /**
+   * 判断字段是否可以作为搜索条件
+   * @param {Object} field - 字段定义
+   * @returns {boolean} - 是否可搜索
+   */
+  isSearchableField(field) {
+    // 不可搜索的字段类型
+    const unsearchableTypes = ['rich_editor', 'password', 'file', 'image']
+
+    // 不可搜索的字段名
+    const unsearchableNames = ['id', 'created_at', 'updated_at', 'deleted_at']
+
+    // 检查字段类型
+    if (unsearchableTypes.includes(field.type)) {
+      return false
+    }
+
+    // 检查字段名
+    if (unsearchableNames.includes(field.name)) {
+      return false
+    }
+
+    return true
+  }
+
+  /**
+   * 生成系统配置（路由、菜单、权限）
+   * @returns {Promise<void>}
+   * @throws {Error} 当配置生成失败时抛出错误
+   */
+  async generateSystemConfig() {
+    try {
+      const Database = use('Database')
+      const PrimaryMenusTable = require('@Table/primary_menus')
+      const PermissionsTable = require('@Table/permissions')
+      const RolePermissionsTable = require('@Table/role_permissions')
+      const primaryMenusTable = new PrimaryMenusTable()
+      const permissionsTable = new PermissionsTable()
+      const rolePermissionsTable = new RolePermissionsTable()
+
+      // 生成路由配置
+      await this.generateRoutes()
+      const module_name = this.getModuleName()
+
+      // 处理菜单路径，确保正确的格式
+      const menu_url = this.menu_path.replace(/^\/?(admin\/)?/, '')
+      this.logger.log(`处理后的菜单路径: ${menu_url}`)
+
+      const permissions = [
+        // 菜单权限
+        {
+          name: `${module_name}列表`,
+          type: 'menu',
+          key: `/admin/${menu_url}/list`,
+          description: `${module_name}管理-列表页面`,
+        },
+        {
+          name: `${module_name}查看`,
+          type: 'menu',
+          key: `/admin/${menu_url}/view/:id`,
+          description: `${module_name}管理-查看页面`,
+        },
+        {
+          name: `${module_name}编辑`,
+          type: 'menu',
+          key: `/admin/${menu_url}/edit/:id`,
+          description: `${module_name}管理-编辑页面`,
+        },
+        {
+          name: `${module_name}创建`,
+          type: 'menu',
+          key: `/admin/${menu_url}/create`,
+          description: `${module_name}管理-创建页面`,
+        },
+        // API权限
+        {
+          name: `获取${module_name}列表`,
+          type: 'api',
+          key: `/api/${menu_url}/get-list`,
+          description: `获取${module_name}列表数据`,
+        },
+        {
+          name: `创建${module_name}`,
+          type: 'api',
+          key: `/api/${menu_url}/create-info`,
+          description: `创建新${module_name}`,
+        },
+        {
+          name: `更新${module_name}`,
+          type: 'api',
+          key: `/api/${menu_url}/update-info`,
+          description: `更新${module_name}信息`,
+        },
+        {
+          name: `删除${module_name}`,
+          type: 'api',
+          key: `/api/${menu_url}/remove`,
+          description: `删除${module_name}`,
+        },
+        // 元素权限
+        {
+          name: '编辑按钮',
+          type: 'element',
+          key: `/admin/${menu_url}/list@edit`,
+          description: `${module_name}列表中的编辑按钮`,
+        },
+        {
+          name: '删除按钮',
+          type: 'element',
+          key: `/admin/${menu_url}/list@remove`,
+          description: `${module_name}列表中的删除按钮`,
+        },
+        {
+          name: '创建按钮',
+          type: 'element',
+          key: `/admin/${menu_url}/list@create`,
+          description: `${module_name}列表中的创建按钮`,
+        },
+        {
+          name: '批量删除按钮',
+          type: 'element',
+          key: `/admin/${menu_url}/list@batch-remove`,
+          description: `${module_name}列表中的批量删除按钮`,
+        },
+      ]
+
+      console.log('开始操作数据库')
+      // 在同一个事务中创建权限记录并分配给超级管理员
+      await Database.transaction(async (trx) => {
+        this.logger.log('开始数据库事务')
+
+        // 1. 生成父菜单记录
+        const parent_menu_data = {
+          title: `${module_name} manage`, // 英文标题
+          title_cn: `${module_name}管理`, // 中文标题
+          url: null, // 父菜单没有URL
+          icon: 'ki-file-document', // 默认图标
+          parent_id: 0, // 顶级菜单
+          sort: 10, // 排序号
+          level: 1, // 层级
+          is_leaf: 0, // 不是叶子节点
+          spread: 0, // 展开状态
+          status: 1, // 启用状态
+        }
+        this.logger.log(`准备创建父菜单记录: ${JSON.stringify(parent_menu_data)}`)
+
+        let parent_menu_id
+        try {
+          const parent_menu_result = await primaryMenusTable.create(trx, parent_menu_data)
+          if (!parent_menu_result || parent_menu_result.status !== 1) {
+            throw new Error(`创建父菜单记录失败: ${parent_menu_result?.msg || '未知错误'}`)
+          }
+          parent_menu_id = parent_menu_result.data.new_id
+          this.logger.log(`创建父菜单记录成功，ID: ${parent_menu_id}`)
+        } catch (err) {
+          this.logger.error(`创建父菜单记录失败: ${err.message}`)
+          throw err
+        }
+
+        // 2. 生成子菜单记录（列表页）
+        const child_menu_data = {
+          title: `${module_name} list`, // 英文标题
+          title_cn: `${module_name}列表`, // 中文标题
+          url: `/admin/${menu_url}/list`, // 列表页URL
+          icon: null, // 子菜单不需要图标
+          parent_id: parent_menu_id, // 父菜单ID
+          sort: 10, // 排序号
+          level: 2, // 层级
+          is_leaf: 1, // 是叶子节点
+          spread: 0, // 展开状态
+          status: 1, // 启用状态
+        }
+        this.logger.log(`准备创建子菜单记录: ${JSON.stringify(child_menu_data)}`)
+
+        try {
+          const child_menu_result = await primaryMenusTable.create(trx, child_menu_data)
+          if (!child_menu_result || child_menu_result.status !== 1) {
+            throw new Error(`创建子菜单记录失败: ${child_menu_result?.msg || '未知错误'}`)
+          }
+          this.logger.log(`创建子菜单记录成功: ${JSON.stringify(child_menu_result)}`)
+        } catch (err) {
+          this.logger.error(`创建子菜单记录失败: ${err.message}`)
+          throw err
+        }
+
+        // 3. 生成权限记录并为超级管理员分配权限
+        const created_permission_ids = []
+        for (const perm of permissions) {
+          const result = await permissionsTable.create(trx, perm)
+          if (result.status === 1 && result.data.new_id) {
+            created_permission_ids.push(result.data.new_id)
+          } else {
+            throw new Error(`创建权限记录失败: ${result.msg}`)
+          }
+        }
+        this.logger.log(`创建权限记录: ${permissions.length}个`)
+
+        // 为超级管理员分配权限
+        for (const permission_id of created_permission_ids) {
+          const result = await rolePermissionsTable.create(trx, {
+            role_id: 1, // 超级管理员角色ID
+            permission_id: permission_id,
+          })
+          if (result.status !== 1) {
+            throw new Error(`分配权限失败: ${result.msg}`)
+          }
+        }
+        this.logger.log('为超级管理员分配新权限')
+      })
+    } catch (err) {
+      throw createGeneratorError('CONFIG_FAILED', err.message, err)
+    }
+  }
+
+  /**
+   * 生成路由配置
+   * @returns {Promise<void>}
+   * @throws {Error} 当路由生成失败时抛出错误
+   */
+  async generateRoutes() {
+    try {
+      const routes_file = 'start/routes.js'
+      this.logger.log(`开始生成路由配置，目标文件: ${routes_file}`)
+
+      // 读取路由文件
+      let routes_content
+      try {
+        routes_content = await fs.promises.readFile(routes_file, 'utf8')
+        this.logger.log(`成功读取路由文件，内容长度: ${routes_content.length}字符`)
+      } catch (err) {
+        this.logger.error(`读取路由文件失败: ${err.message}`)
+        throw err
+      }
+
+      // 获取模块名和控制器名
+      const module_name = this.getModuleName()
+      const controller_name = this.getClassName(this.menu_path) + 'Controller'
+      this.logger.log(`模块名: ${module_name}, 控制器名: ${controller_name}`)
+
+      // 1. 生成前端路由配置
+      const frontend_routes = `    Route.get('${this.menu_path.replace(/^\/admin\//, '')}/list', '${controller_name}.list')
+    Route.get('${this.menu_path.replace(/^\/admin\//, '')}/view/:id', '${controller_name}.view')
+    Route.get('${this.menu_path.replace(/^\/admin\//, '')}/edit/:id', '${controller_name}.edit')
+    Route.get('${this.menu_path.replace(/^\/admin\//, '')}/create', '${controller_name}.create')`
+      this.logger.log(`生成的前端路由配置:\n${frontend_routes}`)
+
+      // 2. 生成后端 API 路由配置
+      const api_routes = `    Route.post('${this.menu_path.replace(/^\/admin\//, '')}/get-list', '${controller_name}.getList')
+    Route.post('${this.menu_path.replace(/^\/admin\//, '')}/create-info', '${controller_name}.createInfo')
+    Route.post('${this.menu_path.replace(/^\/admin\//, '')}/update-info', '${controller_name}.updateInfo')
+    Route.post('${this.menu_path.replace(/^\/admin\//, '')}/remove', '${controller_name}.remove')
+    `
+      this.logger.log(`生成的后端 API 路由配置:\n${api_routes}`)
+
+      // 3. 插入前端路由
+      const view_auth_group_start = routes_content.indexOf('// View层 - 需要验证身份的路由')
+      this.logger.log(`找到前端路由组的位置: ${view_auth_group_start}`)
+      if (view_auth_group_start === -1) {
+        this.logger.error('找不到前端路由组')
+        throw new Error('找不到前端路由组')
+      }
+
+      const view_try_block_start = routes_content.indexOf('try {', view_auth_group_start)
+      const first_route_start = routes_content.indexOf("Route.get('/'", view_try_block_start)
+      const first_route = "Route.get('/', 'HomeController.home')"
+
+      // 4. 插入后端 API 路由
+      const api_auth_group_start = routes_content.indexOf('Route.group(() => {', 0)
+      this.logger.log(`找到后端 API 路由组的位置: ${api_auth_group_start}`)
+      if (api_auth_group_start === -1) {
+        this.logger.error('找不到后端 API 路由组')
+        throw new Error('找不到后端 API 路由组')
+      }
+
+      const api_try_block_start = routes_content.indexOf('try {', api_auth_group_start)
+      const first_api_route_start = routes_content.indexOf("Route.post('upload/image'", api_try_block_start)
+
+      // 5. 构建更新后的内容
+      const updated_content =
+        routes_content.slice(0, first_api_route_start) +
+        api_routes +
+        '\n' +
+        routes_content.slice(first_api_route_start, first_route_start + first_route.length) +
+        '\n' +
+        frontend_routes +
+        '\n' +
+        routes_content.slice(first_route_start + first_route.length)
+
+      this.logger.log(`更新后的内容长度: ${updated_content.length}`)
+
+      // 写入文件
+      try {
+        await fs.promises.writeFile(routes_file, updated_content, 'utf8')
+        this.logger.log(`成功写入更新后的路由文件`)
+      } catch (err) {
+        this.logger.error(`写入路由文件失败: ${err.message}`)
+        throw err
+      }
+
+      this.logger.log(`路由配置生成完成`)
+    } catch (err) {
+      this.logger.error(`生成路由配置失败: ${err.message}`)
+      throw createGeneratorError('ROUTES_FAILED', err.message, err)
+    }
+  }
+
+  /**
+   * 获取模块名称
+   * @returns {string} 模块名称
+   */
+  getModuleName() {
+    const parts = this.menu_path.split('/')
+    const last_part = parts[parts.length - 1]
+    return last_part.charAt(0).toUpperCase() + last_part.slice(1)
   }
 }
 

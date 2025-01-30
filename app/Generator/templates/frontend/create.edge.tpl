@@ -159,7 +159,7 @@
       @endeach
       @endif
 
-      const response = await axios.post('/api{{ menu_path }}/create-info', formData, {
+      const response = await axios.post('/api/{{ menu_path.replace(/^\/admin\//, '') }}/create-info', formData, {
         headers: {
           'token': localStorage.getItem('token')
         }
@@ -167,7 +167,7 @@
 
       if (response.data.code === 0) {
         Util.successMsg(trans('operation success'), () => {
-          window.location.href = '{{ menu_path }}/list';
+          window.location.href = '/admin/{{ menu_path.replace(/^\/admin\//, '') }}/list';
         });
         return response.data;
       } else {

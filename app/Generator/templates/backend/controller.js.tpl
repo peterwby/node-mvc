@@ -1,185 +1,223 @@
 'use strict'
 
-const BaseController = require('@BaseClass/BaseController')
-const {{ service_name }} = require('@Service/{{ service_name }}')
-const {{ service_var }} = new {{ service_name }}()
+const { validate } = use('Validator')
+const log = use('Logger')
 const Util = require('@Lib/Util')
-const moment = require('moment')
+const moment = require('moment') //日期格式化插件
+moment.locale('zh-cn') //设为北京时区
+const {{ service_name }} = require(`@Services/{{ service_name }}`)
+const {{ service_var }} = new {{ service_name }}()
 
-class {{ controller_name }} extends BaseController {
-  /**
-   * 列表页
-   */
+class {{ controller_name }} {
+  constructor() {}
+
   async list(ctx) {
     try {
+      let result = {}
+      //检查参数合法性
       const resultValid = await listValid(ctx)
       if (resultValid) return resultValid
+      //调用业务逻辑Service
+      result = await {{ service_var }}.list(ctx)
+      //组装从Service返回的数据，返回给前端
+      const data = result.data
 
-      const result = await {{ service_var }}.list(ctx)
-      return result
+      //渲染视图
+      return ctx.view.render('{{ view_path }}.list', data)
     } catch (err) {
-      return Util.error2front({
+      return Util.error({
         msg: err.message,
-        track: 'controller_list_' + Util.genRandomString(),
+        track: 'controller_list_{{ timestamp }}',
       })
     }
   }
 
-  /**
-   * 获取列表
-   */
-  async getList(ctx) {
-    try {
-      const resultValid = await getListValid(ctx)
-      if (resultValid) return resultValid
-
-      const result = await {{ service_var }}.getList(ctx)
-      if (result.data && result.data.list) {
-        result.data.list = result.data.list.map(item => {
-          // FORMAT_DATE_FIELDS
-          return item
-        })
-      }
-      return result
-    } catch (err) {
-      return Util.error2front({
-        msg: err.message,
-        track: 'controller_getList_' + Util.genRandomString(),
-      })
-    }
-  }
-
-  /**
-   * 创建页面
-   */
   async create(ctx) {
     try {
+      let result = {}
+      //检查参数合法性
       const resultValid = await createValid(ctx)
       if (resultValid) return resultValid
+      //调用业务逻辑Service
+      result = await {{ service_var }}.create(ctx)
+      //组装从Service返回的数据，返回给前端
+      const data = result.data
 
-      const result = await {{ service_var }}.create(ctx)
-      return result
+      //渲染视图
+      return ctx.view.render('{{ view_path }}.create', data)
     } catch (err) {
-      return Util.error2front({
+      return Util.error({
         msg: err.message,
-        track: 'controller_create_' + Util.genRandomString(),
+        track: 'controller_create_{{ timestamp }}',
       })
     }
   }
 
-  /**
-   * 创建数据
-   */
-  async createInfo(ctx) {
-    try {
-      const resultValid = await createInfoValid(ctx)
-      if (resultValid) return resultValid
-
-      const result = await {{ service_var }}.createInfo(ctx)
-      return result
-    } catch (err) {
-      return Util.error2front({
-        msg: err.message,
-        track: 'controller_createInfo_' + Util.genRandomString(),
-      })
-    }
-  }
-
-  /**
-   * 查看数据
-   */
   async view(ctx) {
     try {
+      let result = {}
+      //检查参数合法性
       const resultValid = await viewValid(ctx)
       if (resultValid) return resultValid
-
-      const result = await {{ service_var }}.view(ctx)
-      if (result.data && result.data.info) {
-        // FORMAT_DATE_FIELDS
+      //调用业务逻辑Service
+      result = await {{ service_var }}.view(ctx)
+      if (result.status === 0) {
+        return Util.end({
+          msg: result.msg,
+          code: 9000,
+        })
       }
-      return result
+      //组装从Service返回的数据，返回给前端
+      const { info } = result.data
+      info.id = Util.encode(info.id)
+      info.created_at = moment(info.created_at).format('YYYY-MM-DD')
+
+      //渲染视图
+      return ctx.view.render('{{ view_path }}.view', { info })
     } catch (err) {
-      return Util.error2front({
+      return Util.error({
         msg: err.message,
-        track: 'controller_view_' + Util.genRandomString(),
+        track: 'controller_view_{{ timestamp }}',
       })
     }
   }
 
-  /**
-   * 编辑页面
-   */
   async edit(ctx) {
     try {
+      let result = {}
+      //检查参数合法性
       const resultValid = await editValid(ctx)
       if (resultValid) return resultValid
-
-      const result = await {{ service_var }}.edit(ctx)
-      if (result.data && result.data.info) {
-        // FORMAT_DATE_FIELDS
+      //调用业务逻辑Service
+      result = await {{ service_var }}.edit(ctx)
+      if (result.status === 0) {
+        return Util.end({
+          msg: result.msg,
+          code: 9000,
+        })
       }
-      return result
+      //组装从Service返回的数据，返回给前端
+      const { info } = result.data
+      info.id = Util.encode(info.id)
+      info.created_at = moment(info.created_at).format('YYYY-MM-DD')
+
+      //渲染视图
+      return ctx.view.render('{{ view_path }}.edit', { info })
     } catch (err) {
-      return Util.error2front({
+      return Util.error({
         msg: err.message,
-        track: 'controller_edit_' + Util.genRandomString(),
+        track: 'controller_edit_{{ timestamp }}',
       })
     }
   }
 
-  /**
-   * 编辑数据
-   */
-  async editInfo(ctx) {
+  async getList(ctx) {
     try {
-      const resultValid = await editInfoValid(ctx)
+      let result = {}
+      //检查参数合法性
+      const resultValid = await getListValid(ctx)
       if (resultValid) return resultValid
+      result = await {{ service_var }}.getList(ctx)
+      //组装从Service返回的数据，返回给前端
+      const { data } = result.data
+      const finalData = data.map((item) => ({
+        ...item,
+        id: Util.encode(item.id),
+        created_at: moment(item.created_at).format('YYYY-MM-DD'),
+      }))
 
-      const result = await {{ service_var }}.editInfo(ctx)
-      return result
+      return ctx.response.json({
+        data: finalData,
+        totalCount: result.data.total,
+        pageCount: result.data.perPage,
+        page: result.data.page,
+      })
     } catch (err) {
-      return Util.error2front({
+      return Util.error({
         msg: err.message,
-        track: 'controller_editInfo_' + Util.genRandomString(),
+        track: 'controller_getList_{{ timestamp }}',
       })
     }
   }
 
-  /**
-   * 删除数据
-   */
+  async createInfo(ctx) {
+    try {
+      let result = {}
+      //检查参数合法性
+      const resultValid = await createInfoValid(ctx)
+      if (resultValid) return resultValid
+      //调用业务逻辑Service
+      result = await {{ service_var }}.createInfo(ctx)
+      //组装从Service返回的数据，返回给前端
+      if (result.status === 0) {
+        return Util.end({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
+      return Util.end({
+        msg: '已创建',
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        track: 'controller_createInfo_{{ timestamp }}',
+      })
+    }
+  }
+
+  async updateInfo(ctx) {
+    try {
+      let result = {}
+      //检查参数合法性
+      const resultValid = await updateInfoValid(ctx)
+      if (resultValid) return resultValid
+      //调用业务逻辑Service
+      result = await {{ service_var }}.updateInfo(ctx)
+      //组装从Service返回的数据，返回给前端
+      if (result.status === 0) {
+        return Util.end({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
+      return Util.end({
+        msg: '已更新',
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        track: 'controller_updateInfo_{{ timestamp }}',
+      })
+    }
+  }
+
   async remove(ctx) {
     try {
+      let result = {}
+      //检查参数合法性
       const resultValid = await removeValid(ctx)
       if (resultValid) return resultValid
-
-      const result = await {{ service_var }}.remove(ctx)
-      return result
+      //调用业务逻辑Service
+      result = await {{ service_var }}.remove(ctx)
+      //组装从Service返回的数据，返回给前端
+      if (result.status === 0) {
+        return Util.end({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
+      return Util.end({
+        msg: '已删除',
+      })
     } catch (err) {
-      return Util.error2front({
+      return Util.error({
         msg: err.message,
-        track: 'controller_remove_' + Util.genRandomString(),
+        track: 'controller_remove_{{ timestamp }}',
       })
     }
   }
 
-  /**
-   * 批量删除数据
-   */
-  async batchRemove(ctx) {
-    try {
-      const resultValid = await batchRemoveValid(ctx)
-      if (resultValid) return resultValid
-
-      const result = await {{ service_var }}.batchRemove(ctx)
-      return result
-    } catch (err) {
-      return Util.error2front({
-        msg: err.message,
-        track: 'controller_batchRemove_' + Util.genRandomString(),
-      })
-    }
-  }
 }
 
 {{ validation_functions }}

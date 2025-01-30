@@ -1,15 +1,186 @@
 # 代码生成器
 
-代码生成器是一个基于 SQL 查询的前后端代码生成工具，可以快速生成基于 Adonis.js v4.1 的 CRUD 模块。
+基于 Adonis.js v4.1 的代码生成器，用于快速生成 MVC 架构的前后端代码。
 
 ## 功能特点
 
-- 🚀 一键生成完整的前后端代码
-- 📝 支持多种字段类型（文本、数字、日期、布尔值、下拉列表、富文本等）
-- 🔍 智能生成搜索条件和表单验证规则
-- 🎨 生成美观的前端界面，基于 Metronic v9.1.2
-- 🌐 支持国际化，自动使用翻译函数
-- 📊 支持复杂的数据库查询，包括多表关联
+1. 基于 SQL 查询自动生成：
+
+   - 前端页面（list/create/edit/view）
+   - 后端代码（Controller/Service/Table）
+   - 系统配置（路由、菜单、权限）
+
+2. 支持的字段类型：
+
+   - text：文本输入框
+   - select：下拉选择框
+   - textarea：多行文本框
+   - rich_editor：富文本编辑器
+   - password：密码输入框
+   - boolean：布尔值（是/否）
+   - datetime：日期时间
+   - 其他类型默认使用文本输入框
+
+3. 自动生成的功能：
+   - 列表页：搜索、排序、分页、批量操作
+   - 表单页：字段验证、富文本编辑器
+   - 权限控制：基于角色的访问控制
+   - 国际化：所有文本使用 trans 函数包装
+
+## 使用方法
+
+1. 准备 SQL 查询语句，例如：
+
+   ```sql
+   SELECT
+     a.id,
+     a.title,
+     a.content,
+     a.type,
+     a.status,
+     a.priority,
+     a.publish_time
+   FROM news a
+   ```
+
+2. 访问代码生成工具页面：
+
+   - 路径：/admin/generator/tool
+   - 输入菜单路径（例如：/admin/news）
+   - 粘贴 SQL 查询语句
+   - 点击生成按钮
+
+3. 生成的文件结构：
+
+   ```
+   resources/views/admin/news/
+   ├── list.edge    # 列表页
+   ├── create.edge  # 创建页
+   ├── edit.edge    # 编辑页
+   └── view.edge    # 查看页
+
+   app/Controllers/Http/
+   └── NewsController.js
+
+   app/Services/
+   └── NewsService.js
+
+   app/Models/Table/
+   └── news.js
+   ```
+
+## 模板系统
+
+1. 模板文件位置：
+
+   ```
+   app/Generator/templates/
+   ├── frontend/      # 前端模板
+   │   ├── list.edge.tpl
+   │   ├── create.edge.tpl
+   │   ├── edit.edge.tpl
+   │   └── view.edge.tpl
+   └── backend/       # 后端模板
+       ├── controller.js.tpl
+       ├── service.js.tpl
+       └── table.js.tpl
+   ```
+
+2. 模板变量：
+
+   - `{{ menu_path }}`：菜单路径（例如：/admin/news）
+   - `{{ api_path }}`：API 路径（例如：news）
+   - `{{ primary_key }}`：主键字段名
+   - `{{ field_headers }}`：表格标题列
+   - `{{ field_columns }}`：表格数据列
+   - `{{ column_defs }}`：DataTable 列定义
+   - `{{ checkbox_th }}`：复选框列标题
+   - `{{ checkbox_td }}`：复选框列数据
+   - `{{ operation_th }}`：操作列标题
+   - `{{ operation_td }}`：操作列数据
+
+3. 字段渲染：
+
+   ```javascript
+   // 布尔值
+   render: (value) => (value ? trans('yes') : trans('no'))
+
+   // 下拉列表
+   render: (value) => getDictLabel('dict_table_name', value)
+
+   // 日期时间
+   render: (value) => moment(value).format('YYYY-MM-DD HH:mm:ss')
+
+   // 富文本
+   render: (value) => escapeHtml(value)
+   ```
+
+## 开发规范
+
+1. 命名规范：
+
+   - 类名：使用 PascalCase（例如：NewsController）
+   - 方法名：使用 camelCase（例如：getList）
+   - 路由：使用连字符（例如：/admin/news/get-list）
+   - 文件名：使用下划线（例如：news_controller.js）
+
+2. 错误处理：
+
+   - 使用统一的错误类和错误代码
+   - 所有错误消息都要清晰明确
+   - 区分用户错误和系统错误
+   - 关键操作要有错误追踪信息
+
+3. 国际化：
+
+   - 所有面向用户的文本都要使用 trans 函数
+   - 翻译文件位于项目根目录的 trans.json
+   - 翻译 key 要有意义且易于理解
+
+4. 权限控制：
+   - 所有操作按钮都要进行权限检查
+   - 权限 key 格式：/admin/news/list@create
+   - 自动为超级管理员分配所有权限
+
+## 注意事项
+
+1. 生成代码前：
+
+   - 确保 SQL 查询语句正确
+   - 检查字段类型是否合适
+   - 确认菜单路径的正确性
+
+2. 生成代码后：
+
+   - 检查生成的文件是否完整
+   - 测试所有功能是否正常
+   - 确认权限配置是否正确
+   - 检查国际化文本是否完整
+
+3. 可能的问题：
+   - 字段名冲突
+   - 权限 key 重复
+   - 翻译 key 重复
+   - 路由冲突
+
+## 扩展开发
+
+1. 添加新的字段类型：
+
+   - 在 replaceListVariables 方法中添加渲染逻辑
+   - 在模板文件中添加相应的表单控件
+   - 在验证规则中添加相应的验证逻辑
+
+2. 修改生成的代码：
+
+   - 编辑相应的模板文件
+   - 修改生成器中的变量替换逻辑
+   - 更新 README.md 文档
+
+3. 添加新的功能：
+   - 在生成器类中添加新的方法
+   - 创建新的模板文件
+   - 更新路由和权限配置
 
 ## 目录结构
 
