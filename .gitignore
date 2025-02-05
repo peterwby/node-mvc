@@ -28,7 +28,8 @@ database/development.sqlite
 
 # VSCode & Webstorm history directories
 .history
+.history/*
 .idea
 .cursorrules
-
+.nyc_output
 public/upload/images/*

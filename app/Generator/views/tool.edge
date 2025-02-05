@@ -11,13 +11,11 @@
         </h1>
       </div>
       <div class="flex items-center gap-2.5">
-        <button type="submit" class="btn btn-sm btn-primary" form="generator_form" id="submit_btn">
-          <span class="indicator-label">生成代码</span>
-          <span class="indicator-progress hidden">
-            <span
-              class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
-              role="status" aria-label="loading"></span>
-          </span>
+        <button type="button" class="btn btn-sm btn-light me-3" onclick="previewSQL()">
+          预览
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="generateCode()">
+          生成代码
         </button>
       </div>
     </div>
@@ -26,16 +24,16 @@
     <div class="grid gap-5 lg:gap-7.5">
       <div class="card min-w-full">
         <div class="card-body">
-          <form id="generator_form" class="grid gap-5" method="POST">
+          <form id="generator_form" class="grid gap-5">
             <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
               <label class="form-label max-w-56 required">
                 菜单路径
               </label>
-
               <div class="flex flex-col w-full gap-1">
-                <input type="text" class="input max-w-[300px]" name="menu_path" placeholder="例如：/admin/orders" />
+                <input type="text" class="input max-w-[300px]" id="menu_path" name="menu_path"
+                  placeholder="例如：system/users" />
                 <span class="text-xs text-gray-500">
-                  菜单路径必须以 / 开头，用于确定生成文件的位置
+                  用于生成路由和菜单，不要以斜杠开头
                 </span>
               </div>
             </div>
@@ -45,15 +43,50 @@
                 SQL 查询
               </label>
               <div class="flex flex-col w-full gap-1">
-                <textarea class="textarea w-full max-w-[800px]" name="sql" rows="8"
+                <textarea class="textarea w-full max-w-[800px]" id="sql" name="sql" rows="8"
                   placeholder="例如：SELECT a.order_id, a.order_no, a.status, b.customer_name FROM orders a LEFT JOIN customers b ON b.customer_id = a.customer_id"></textarea>
                 <span class="text-xs text-gray-500">
-                  支持多表联合查询，字段别名将用于显示名称
+                  支持多表联合查询，字段可以使用AS指定别名
                 </span>
               </div>
+            </div>
 
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                Primary Key
+              </label>
+              <div class="flex flex-col w-full gap-1">
+                <input type="text" class="input max-w-[300px]" id="primary_key" name="primary_key"
+                  placeholder="例如：id" />
+                <span class="text-xs text-gray-500">
+                  如果不填写主键，则生成的列表页将不显示复选框列
+                </span>
+              </div>
+            </div>
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                选项
+              </label>
+              <div class="flex flex-col w-full gap-1">
+                <div class="flex items-center">
+                  <input type="checkbox" class="form-check-input" id="force_override" name="force_override" />
+                  <label class="form-check-label ms-2" for="force_override">
+                    覆盖已存在的模块
+                  </label>
+                </div>
+                <span class="text-xs text-gray-500">
+                  如果勾选，将覆盖已存在的模块文件，请谨慎使用
+                </span>
+              </div>
             </div>
           </form>
+
+          <!-- 预览结果区域 -->
+          <div id="previewArea" class="d-none mt-5">
+            <h3 class="text-lg font-medium mb-3">预览结果</h3>
+            <pre id="previewResult" class="bg-gray-100 p-4 rounded"></pre>
+          </div>
         </div>
       </div>
     </div>
@@ -68,25 +101,30 @@
 
   /**
    * 初始化表单验证
-   * @param {string} formId - 表单元素的ID
-   * @returns {Object} - FormValidation实例
    */
-  function initFormValidation(formId) {
-    const form = document.querySelector(formId);
+  function initFormValidation() {
+    const form = document.querySelector('#generator_form');
 
-    const validator = FormValidation.formValidation(form, {
+    validator = FormValidation.formValidation(form, {
       fields: {
         menu_path: {
           validators: {
             notEmpty: {
-              message: '请输入正确的格式'
-            },
+              message: '请输入菜单路径'
+            }
           }
         },
         sql: {
           validators: {
             notEmpty: {
-              message: '请输入正确的格式'
+              message: '请输入SQL查询语句'
+            }
+          }
+        },
+        primary_key: {
+          validators: {
+            notEmpty: {
+              message: '请输入主键字段名'
             }
           }
         }
@@ -98,45 +136,85 @@
           eleInvalidClass: 'border-red-500',
           eleValidClass: 'border-green-500',
           messageClass: 'text-gray-500'
-        }),
-        submitButton: new FormValidation.plugins.SubmitButton(),
+        })
       }
     });
 
     return validator;
   }
 
+  // 页面加载时初始化表单验证
   document.addEventListener('DOMContentLoaded', function() {
-    // 初始化表单验证
-    validator = initFormValidation('#generator_form');
+    validator = initFormValidation();
   });
 
-  /**
-   * 通用表单提交处理函数
-   */
-  Util.handleFormSubmit('#generator_form', '#submit_btn', async (formData) => {
+  // 预览SQL解析结果
+  async function previewSQL() {
     try {
       // 进行表单验证
-      const isValid = await validator.validate();
-      if (isValid === 'Invalid') {
-        throw new Error('表单验证失败');
+      const result = await validator.validate();
+      if (result === 'Invalid') {
+        return;
       }
-      const response = await axios.post('/generator/generate', formData, {
-        headers: {
-          'token': localStorage.getItem('token')
-        }
-      });
 
-      if (response.data.code === 0) {
-        Util.successMsg('操作成功');
-        return response.data;
+      const sql = document.getElementById('sql').value;
+      const primary_key = document.getElementById('primary_key').value;
+      const response = await fetch('/generator/preview-sql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': localStorage.getItem('token')
+        },
+        body: JSON.stringify({ sql, primary_key })
+      });
+      const data = await response.json();
+
+      if (data.code === 0) {
+        // 显示预览区域
+        document.getElementById('previewArea').classList.remove('d-none');
+        // 格式化显示结果
+        document.getElementById('previewResult').textContent =
+          JSON.stringify(data.data, null, 2);
       } else {
-        throw new Error(response.data.msg || '操作失败');
+        Util.errorMsg(data.msg);
       }
-    } catch (error) {
-      console.error('操作失败:', error);
-      throw error;
+    } catch (err) {
+      Util.errorMsg('预览失败：' + err.message);
     }
-  });
+  }
+
+  // 生成代码
+  async function generateCode() {
+    try {
+      // 进行表单验证
+      const result = await validator.validate();
+      if (result === 'Invalid') {
+        return;
+      }
+
+      const sql = document.getElementById('sql').value;
+      const primary_key = document.getElementById('primary_key').value;
+      const menu_path = document.getElementById('menu_path').value;
+      const force_override = document.getElementById('force_override').checked;
+
+      const response = await fetch('/generator/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': localStorage.getItem('token')
+        },
+        body: JSON.stringify({ sql, primary_key, menu_path, force_override })
+      });
+      const data = await response.json();
+
+      if (data.code === 0) {
+        Util.successMsg(data.msg);
+      } else {
+        Util.errorMsg(data.msg);
+      }
+    } catch (err) {
+      Util.errorMsg('生成失败：' + err.message);
+    }
+  }
 </script>
 @endsection

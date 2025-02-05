@@ -1635,91 +1635,6 @@ video {
   background-position: left 0.675rem center;
 }
 
-.textarea {
-  display: block;
-  width: 100%;
-  -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
-  box-shadow: none;
-  outline: none;
-  font-weight: 500;
-  font-size: 0.8125rem;
-  background-color: var(--tw-light-active);
-  border-radius: 0.375rem;
-  padding: 0.55rem 0.75rem;
-  border: 1px solid var(--tw-gray-300);
-  color: var(--tw-gray-700);
-}
-
-.textarea::-moz-placeholder {
-  color: var(--tw-gray-500);
-}
-
-.textarea::placeholder {
-  color: var(--tw-gray-500);
-}
-
-.textarea:hover {
-  border-color: var(--tw-gray-400);
-}
-
-.textarea:focus {
-  border-color: var(--tw-primary);
-  box-shadow: var(--tw-form-input-focus-box-shadow);
-  color: var(--tw-gray-700);
-}
-
-.textarea:focus::-moz-placeholder {
-  color: var(--tw-gray-600);
-}
-
-.textarea:focus::placeholder {
-  color: var(--tw-gray-600);
-}
-
-.textarea:active {
-  color: var(--tw-gray-700);
-}
-
-.textarea:active::-moz-placeholder {
-  color: var(--tw-gray-600);
-}
-
-.textarea:active::placeholder {
-  color: var(--tw-gray-600);
-}
-
-.textarea:active {
-  box-shadow: none;
-}
-
-.textarea[disabled] {
-  background-color: var(--tw-gray-100);
-  color: var(--tw-gray-400);
-}
-
-.textarea[disabled]::-moz-placeholder {
-  color: var(--tw-gray-300);
-}
-
-.textarea[disabled]::placeholder {
-  color: var(--tw-gray-300);
-}
-
-.textarea[readonly] {
-  background-color: var(--tw-gray-100);
-  color: var(--tw-gray-400);
-}
-
-.textarea[readonly]::-moz-placeholder {
-  color: var(--tw-gray-300);
-}
-
-.textarea[readonly]::placeholder {
-  color: var(--tw-gray-300);
-}
-
 .file-input {
   display: block;
   width: 100%;
@@ -3994,6 +3909,10 @@ label.rating-label {
   order: 2;
 }
 
+.m-0 {
+  margin: 0px;
+}
+
 .mx-1 {
   margin-left: 0.25rem;
   margin-right: 0.25rem;
@@ -4311,10 +4230,6 @@ label.rating-label {
   width: 1.75rem;
 }
 
-.w-\[120px\] {
-  width: 120px;
-}
-
 .w-\[20px\] {
   width: 20px;
 }
@@ -4347,6 +4262,10 @@ label.rating-label {
   width: 100vw;
 }
 
+.w-1 {
+  width: 0.25rem;
+}
+
 .min-w-\[100px\] {
   min-width: 100px;
 }
@@ -4365,6 +4284,10 @@ label.rating-label {
 
 .min-w-full {
   min-width: 100%;
+}
+
+.min-w-\[\] {
+  min-width: ;
 }
 
 .max-w-24 {

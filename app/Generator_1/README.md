@@ -74,7 +74,7 @@
 1. 模板文件位置：
 
    ```
-   app/Generator/templates/
+   app/Generator_1/templates/
    ├── frontend/      # 前端模板
    │   ├── list.edge.tpl
    │   ├── create.edge.tpl
@@ -185,7 +185,7 @@
 ## 目录结构
 
 ```
-app/Generator/
+app/Generator_1/
 ├── templates/          # 模板文件
 │   ├── frontend/      # 前端模板
 │   │   ├── list.edge.tpl
