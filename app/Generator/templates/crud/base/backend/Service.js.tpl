@@ -4,10 +4,10 @@ const Database = use('Database')
 const BaseService = require('@BaseClass/BaseService')
 const Util = require('@Lib/Util')
 const log = use('Logger')
-const ${module_name | capitalize}Table = require('@Table/${module_name}')
-const ${module_name}Table = new ${module_name | capitalize}Table()
+const ${module_name | pascal}Table = require('@Table/${module_name}')
+const ${module_name}Table = new ${module_name | pascal}Table()
 
-class ${module_name | capitalize}Service extends BaseService {
+class ${module_name | pascal}Service extends BaseService {
   /**
    * 获取列表页面数据
    */
@@ -87,8 +87,8 @@ class ${module_name | capitalize}Service extends BaseService {
    */
   async edit(ctx) {
     try {
-      const { query } = ctx
-      const { id } = query
+      const { body } = ctx
+      const { id } = body
 
       // 获取详情
       const result = await ${module_name}Table.fetchDetailById(id)
@@ -118,8 +118,8 @@ class ${module_name | capitalize}Service extends BaseService {
    */
   async view(ctx) {
     try {
-      const { query } = ctx
-      const { id } = query
+      const { body } = ctx
+      const { id } = body
 
       // 获取详情
       const result = await ${module_name}Table.fetchDetailById(id)
@@ -231,4 +231,4 @@ class ${module_name | capitalize}Service extends BaseService {
   }
 }
 
-module.exports = ${module_name | capitalize}Service
+module.exports = ${module_name | pascal}Service

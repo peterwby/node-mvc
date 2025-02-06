@@ -4,7 +4,7 @@ const Database = use('Database')
 const Util = require('@Lib/Util')
 const BaseTable = require('@BaseClass/BaseTable')
 
-class ${module_name | capitalize}Table extends BaseTable {
+class ${table_name | pascal}Table extends BaseTable {
   constructor() {
     const data = {
       table_name: '${table_name}',
@@ -66,4 +66,4 @@ class ${module_name | capitalize}Table extends BaseTable {
 
 }
 
-module.exports = ${module_name | capitalize}Table
+module.exports = ${table_name | pascal}Table

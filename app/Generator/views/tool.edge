@@ -14,8 +14,13 @@
         <button type="button" class="btn btn-sm btn-light me-3" onclick="previewSQL()">
           预览
         </button>
-        <button type="button" class="btn btn-sm btn-primary" onclick="generateCode()">
-          生成代码
+        <button type="submit" class="btn btn-sm btn-primary" form="generator_form" id="submit_btn">
+          <span class="indicator-label">生成代码</span>
+          <span class="indicator-progress hidden">
+            <span
+              class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
+              role="status" aria-label="loading"></span>
+          </span>
         </button>
       </div>
     </div>
@@ -44,6 +49,7 @@
               </label>
               <div class="flex flex-col w-full gap-1">
                 <textarea class="textarea w-full max-w-[800px]" id="sql" name="sql" rows="8"
+                  style="background-color: var(--tw-light-active); border: 1px solid var(--tw-gray-300); border-radius: 0.375rem; padding: 0.75rem;"
                   placeholder="例如：SELECT a.order_id, a.order_no, a.status, b.customer_name FROM orders a LEFT JOIN customers b ON b.customer_id = a.customer_id"></textarea>
                 <span class="text-xs text-gray-500">
                   支持多表联合查询，字段可以使用AS指定别名
@@ -102,8 +108,8 @@
   /**
    * 初始化表单验证
    */
-  function initFormValidation() {
-    const form = document.querySelector('#generator_form');
+  function initFormValidation(formId) {
+    const form = document.querySelector(formId);
 
     validator = FormValidation.formValidation(form, {
       fields: {
@@ -136,7 +142,8 @@
           eleInvalidClass: 'border-red-500',
           eleValidClass: 'border-green-500',
           messageClass: 'text-gray-500'
-        })
+        }),
+        submitButton: new FormValidation.plugins.SubmitButton(),
       }
     });
 
@@ -145,7 +152,36 @@
 
   // 页面加载时初始化表单验证
   document.addEventListener('DOMContentLoaded', function() {
-    validator = initFormValidation();
+    validator = initFormValidation('#generator_form');
+  });
+
+
+  /**
+   * 通用表单提交处理函数
+   */
+   Util.handleFormSubmit('#generator_form', '#submit_btn', async (formData) => {
+    try {
+      // 进行表单验证
+      const isValid = await validator.validate();
+      if (isValid === 'Invalid') {
+        throw new Error('表单验证失败');
+      }
+      const response = await axios.post('/generator/generate', formData, {
+        headers: {
+          'token': localStorage.getItem('token')
+        }
+      });
+
+      if (response.data.code === 0) {
+        Util.successMsg(response.data.msg || '操作成功');
+        return response.data;
+      } else {
+        throw new Error(response.data.msg || '操作失败');
+      }
+    } catch (error) {
+      console.error('操作失败:', error);
+      throw error;
+    }
   });
 
   // 预览SQL解析结果
@@ -183,38 +219,5 @@
     }
   }
 
-  // 生成代码
-  async function generateCode() {
-    try {
-      // 进行表单验证
-      const result = await validator.validate();
-      if (result === 'Invalid') {
-        return;
-      }
-
-      const sql = document.getElementById('sql').value;
-      const primary_key = document.getElementById('primary_key').value;
-      const menu_path = document.getElementById('menu_path').value;
-      const force_override = document.getElementById('force_override').checked;
-
-      const response = await fetch('/generator/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'token': localStorage.getItem('token')
-        },
-        body: JSON.stringify({ sql, primary_key, menu_path, force_override })
-      });
-      const data = await response.json();
-
-      if (data.code === 0) {
-        Util.successMsg(data.msg);
-      } else {
-        Util.errorMsg(data.msg);
-      }
-    } catch (err) {
-      Util.errorMsg('生成失败：' + err.message);
-    }
-  }
 </script>
 @endsection

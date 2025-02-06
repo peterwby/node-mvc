@@ -8,22 +8,22 @@
     <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
       <div class="flex flex-col justify-center gap-2">
         <h1 class="text-xl font-medium leading-none text-gray-900">
-          {{ trans(${module_name}) }} {{ trans('list') }}
+          {{ trans('list') }}
         </h1>
-        <p class="text-sm text-gray-500">{{ trans('total_items', { count: total }) }}</p>
+
       </div>
       <div class="flex items-center gap-2.5">
-        <%if(has_create_permission)%>
+        @if(hasPermission('/admin/${module_name}/list@create'))
         <a href="/admin/${module_name}/create" class="btn btn-sm btn-primary">
           <i class="ki-duotone ki-plus fs-2"></i>
           {{ trans('create') }}
         </a>
-        <%endif%>
-        <%if(has_batch_delete_permission)%>
+        @endif
+        @if(hasPermission('/admin/${module_name}/list@batch-remove'))
         <button id="batch_delete_btn" class="btn btn-sm btn-danger" disabled>
           {{ trans('batch delete') }}
         </button>
-        <%endif%>
+        @endif
       </div>
     </div>
   </div>
@@ -65,9 +65,8 @@
                 <thead>
                   <tr>
                     <%if(has_primary_key)%>
-                    <th class="w-1">
-                      <input class="form-check-input m-0 align-middle" type="checkbox" aria-label="全选"
-                             onclick="toggleAllCheckbox(this)">
+                    <th class="w-[44px] text-center">
+                      <input class="checkbox checkbox-sm" data-datatable-check="true" type="checkbox" />
                     </th>
                     <%endif%>
                     <%each(field in fields)%>
@@ -75,7 +74,7 @@
                       <th class="min-w-[${field.min_width || '200px'}]">
                         <span class="sort ${field.sort_direction || 'asc'}">
                           <span class="sort-label font-normal text-gray-700">
-                            {{ trans(${field.comment}) }}
+                            {{ trans('${field.comment}') }}
                           </span>
                           <span class="sort-icon"></span>
                         </span>
@@ -124,9 +123,9 @@
     initialPage: initialState.page,
     columns: {
       <%if(has_primary_key)%>
-      checkbox: {
+      ${primary_key}: {
         render: (item) => {
-          return '<input class="form-check-input m-0 align-middle" type="checkbox" value="' + item.${primary_key} + '">'
+          return '<input class="form-check-input m-0 align-middle" type="checkbox" value="' + item + '">'
         },
       },
       <%endif%>
@@ -167,21 +166,22 @@
             '<span class="menu-title">' + trans('view') + '</span>' +
             '</a>' +
             '</div>' +
-            <%if(has_edit_permission)%>
+            (hasPermission('/admin/${module_name}/list@edit') ?
             '<div class="menu-item">' +
             '<a class="menu-link" href="/admin/${module_name}/edit/' + data.${module_id_field} + '">' +
             '<span class="menu-title">' + trans('edit') + '</span>' +
             '</a>' +
-            '</div>' +
-            <%endif%>
+            '</div>'  : '') +
+
             '<div class="menu-separator"></div>' +
-            <%if(has_delete_permission)%>
+
+            (hasPermission('/admin/${module_name}/list@remove') ?
             '<div class="menu-item">' +
             '<button type="button" class="menu-link remove-btn" data-id="' + data.${module_id_field} + '">' +
             '<span class="menu-title">' + trans('delete') + '</span>' +
             '</button>' +
-            '</div>' +
-            <%endif%>
+            '</div>' : '') +
+
             '</div>' +
             '</div>' +
             '</div>'
@@ -207,50 +207,21 @@
     confirmMessage: (count) => trans('confirm delete these items', [count]),
     onSuccess: () => {
       datatable.reload()
-    }
+    },
+    datatable: datatable
   })
 
-  <%if(has_primary_key && has_batch_delete_permission)%>
-  function toggleAllCheckbox(checkbox) {
-    const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]')
-    checkboxes.forEach(item => item.checked = checkbox.checked)
-  }
 
-  function batchDelete() {
-    const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]:checked')
-    if (checkboxes.length === 0) {
-      alert('请选择要删除的记录')
-      return
+  // 5. 处理表单筛选
+  Util.handleTableFilter('#filter_form', {
+    onSubmit: () => {
+      datatable.reload()
+      Util.updateUrlParams(Util.getAllTableParams(datatable))
+    },
+    onReset: () => {
+      Util.clearUrlParams()
+      datatable.reload()
     }
-
-    if (!confirm('确定要删除选中的记录吗？')) {
-      return
-    }
-
-    const ids = Array.from(checkboxes).map(checkbox => checkbox.value)
-
-    fetch('/api/${module_name}/batch-delete', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ids }),
-    })
-    .then(response => response.json())
-    .then(result => {
-      if (result.code === 0) {
-        datatable.reload()
-      } else {
-        alert(result.message)
-      }
-    })
-  }
-  <%endif%>
-
-  // 5. 处理重置按钮
-  document.getElementById('reset_filter_btn').addEventListener('click', () => {
-    document.getElementById('filter_form').reset()
-    document.getElementById('filter_form').submit()
-  })
+  }, datatable)
 </script>
 @endsection

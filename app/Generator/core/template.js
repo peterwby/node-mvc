@@ -12,12 +12,28 @@ class TemplateEngine {
     // 过滤器
     this.filters = {
       pascal: (str) => {
-        this.logger.debug('执行pascal过滤器:', { input: str, output: str.charAt(0).toUpperCase() + str.slice(1) })
-        return str.charAt(0).toUpperCase() + str.slice(1)
+        // 将蛇形命名转换为帕斯卡命名（如：user_info -> UserInfo）
+        const transformed = str
+          .split('_')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join('')
+
+        this.logger.debug('执行pascal过滤器:', {
+          input: str,
+          output: transformed,
+          segments: str.split('_'), // 记录拆分后的单词段
+        })
+        return transformed
       },
       capitalize: (str) => {
-        this.logger.debug('执行capitalize过滤器:', { input: str, output: str.charAt(0).toUpperCase() + str.slice(1) })
-        return str.charAt(0).toUpperCase() + str.slice(1)
+        // 仅首字母大写（如：user -> User）
+        const transformed = str.charAt(0).toUpperCase() + str.slice(1)
+        this.logger.debug('执行capitalize过滤器:', {
+          input: str,
+          output: transformed,
+          length: str.length, // 记录原始长度
+        })
+        return transformed
       },
     }
     // Edge语法标记列表

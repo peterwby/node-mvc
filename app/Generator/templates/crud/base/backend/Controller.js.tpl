@@ -5,10 +5,10 @@ const log = use('Logger')
 const Util = require('@Lib/Util')
 const moment = require('moment')
 moment.locale('zh-cn')
-const ${module_name | capitalize}Service = require(`@Services/${module_name | capitalize}Service`)
-const ${module_name}Service = new ${module_name | capitalize}Service()
+const ${module_name | pascal}Service = require(`@Services/${module_name | pascal}Service`)
+const ${module_name}Service = new ${module_name | pascal}Service()
 
-class ${module_name | capitalize}Controller {
+class ${module_name | pascal}Controller {
   constructor() {}
 
   /**
@@ -23,15 +23,14 @@ class ${module_name | capitalize}Controller {
       //调用业务逻辑Service
       const result = await ${module_name}Service.list(ctx)
 
-      return Util.end2front({
-        msg: '获取成功',
-        data: result.data
-      })
+      //组装从Service返回的数据，返回给前端
+      const data = result.data
+
+      //渲染视图
+      return ctx.view.render('admin.${module_name}.list', data)
     } catch (err) {
-      return Util.error2front({
-        msg: err.message,
-        track: 'controller_list_${timestamp}'
-      })
+      console.log(err)
+      return ctx.view.render('error.404')
     }
   }
 
@@ -47,9 +46,14 @@ class ${module_name | capitalize}Controller {
       //调用业务逻辑Service
       const result = await ${module_name}Service.getList(ctx)
 
-      return Util.end2front({
-        msg: '获取成功',
-        data: result.data
+      //组装从Service返回的数据，返回给前端
+      const { data } = result.data
+      return ctx.response.json({
+        data: data,
+        totalCount: result.data.total,
+        pageCount: result.data.perPage,
+        page: result.data.page,
+        lastPage: result.data.lastPage,
       })
     } catch (err) {
       return Util.error2front({
@@ -71,15 +75,14 @@ class ${module_name | capitalize}Controller {
       //调用业务逻辑Service
       const result = await ${module_name}Service.create(ctx)
 
-      return Util.end2front({
-        msg: '创建成功',
-        data: result.data
-      })
+      //组装从Service返回的数据，返回给前端
+      const data = result.data
+
+      //渲染视图
+      return ctx.view.render('admin.${module_name}.create', data)
     } catch (err) {
-      return Util.error2front({
-        msg: err.message,
-        track: 'controller_create_${timestamp}'
-      })
+      console.log(err)
+      return ctx.view.render('error.404')
     }
   }
 
@@ -94,16 +97,21 @@ class ${module_name | capitalize}Controller {
 
       //调用业务逻辑Service
       const result = await ${module_name}Service.edit(ctx)
+      if (result.status === 0) {
+        return Util.end2front({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
 
-      return Util.end2front({
-        msg: '获取成功',
-        data: result.data
-      })
+      //组装从Service返回的数据，返回给前端
+      const data = result.data
+
+      //渲染视图
+      return ctx.view.render('admin.${module_name}.edit', data)
     } catch (err) {
-      return Util.error2front({
-        msg: err.message,
-        track: 'controller_edit_${timestamp}'
-      })
+      console.log(err)
+      return ctx.view.render('error.404')
     }
   }
 
@@ -118,16 +126,21 @@ class ${module_name | capitalize}Controller {
 
       //调用业务逻辑Service
       const result = await ${module_name}Service.view(ctx)
+      if (result.status === 0) {
+        return Util.end2front({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
 
-      return Util.end2front({
-        msg: '获取成功',
-        data: result.data
-      })
+      //组装从Service返回的数据，返回给前端
+      const data = result.data
+
+      //渲染视图
+      return ctx.view.render('admin.${module_name}.view', data)
     } catch (err) {
-      return Util.error2front({
-        msg: err.message,
-        track: 'controller_view_${timestamp}'
-      })
+      console.log(err)
+      return ctx.view.render('error.404')
     }
   }
 
@@ -166,6 +179,12 @@ class ${module_name | capitalize}Controller {
 
       //调用业务逻辑Service
       const result = await ${module_name}Service.updateInfo(ctx)
+      if (result.status === 0) {
+        return Util.end2front({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
 
       return Util.end2front({
         msg: '更新成功',
@@ -209,27 +228,48 @@ class ${module_name | capitalize}Controller {
  */
 async function listValid(ctx) {
   try {
-    //参数处理
+    //组装处理参数
     await paramsHandle()
-    //参数验证
+    //校验请求参数合法性
     await paramsValid()
-    //权限验证
-    await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.request.all()
+      let body = {}
+      // 只接收以下参数
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'page':
+            body.page = parseInt(requestAll[k])
+            break
+          case 'limit':
+            body.limit = parseInt(requestAll[k])
+            break
+
+        }
+      }
+      if (!body.page) {
+        body.page = 1
+      }
+      if (!body.limit) {
+        body.limit = 10
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {}
+
+    async function authValid() {
+      const session = ctx.session
+    }
   } catch (err) {
     return Util.error2front({
       msg: err.message,
       track: 'listValid_${timestamp}'
     })
   }
-
-  async function paramsHandle() {
-    const { query } = ctx
-    ctx.body = query
-  }
-
-  async function paramsValid() {}
-
-  async function authValid() {}
 }
 
 /**
@@ -237,27 +277,55 @@ async function listValid(ctx) {
  */
 async function getListValid(ctx) {
   try {
-    //参数处理
+    //组装处理参数
     await paramsHandle()
-    //参数验证
+    //校验请求参数合法性
     await paramsValid()
     //权限验证
     await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'page':
+            body.page = requestAll[k]
+            break
+          case 'size':
+            body.limit = requestAll[k]
+            break
+          case 'sortorder':
+            body.sortOrder = requestAll[k]
+            break
+          case 'sortfield':
+            body.sortField = requestAll[k]
+            break
+
+        }
+      }
+      if (!body.page) {
+        body.page = 1
+      }
+      if (!body.limit) {
+        body.limit = 10
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {}
+
+    async function authValid() {
+      const session = ctx.session
+    }
   } catch (err) {
     return Util.error2front({
       msg: err.message,
       track: 'getListValid_${timestamp}'
     })
   }
-
-  async function paramsHandle() {
-    const { query } = ctx
-    ctx.body = query
-  }
-
-  async function paramsValid() {}
-
-  async function authValid() {}
 }
 
 /**
@@ -265,27 +333,33 @@ async function getListValid(ctx) {
  */
 async function createValid(ctx) {
   try {
-    //参数处理
+    //组装处理参数
     await paramsHandle()
-    //参数验证
+    //校验请求参数合法性
     await paramsValid()
     //权限验证
     await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.params
+      let body = {}
+
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {}
+
+    async function authValid() {
+      const session = ctx.session
+    }
   } catch (err) {
     return Util.error2front({
       msg: err.message,
       track: 'createValid_${timestamp}'
     })
   }
-
-  async function paramsHandle() {
-    const { query } = ctx
-    ctx.body = query
-  }
-
-  async function paramsValid() {}
-
-  async function authValid() {}
 }
 
 /**
@@ -293,27 +367,52 @@ async function createValid(ctx) {
  */
 async function editValid(ctx) {
   try {
-    //参数处理
+    //组装处理参数
     await paramsHandle()
-    //参数验证
+    //校验请求参数合法性
     await paramsValid()
     //权限验证
     await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.params
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'id':
+            {
+              body.id = requestAll[k]
+            }
+            break
+        }
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {
+      const rules = {
+        id: 'required',
+      }
+      const messages = {
+        'id.required': 'id is require',
+      }
+      const validation = await validate(ctx.body, rules, messages)
+      if (validation.fails()) {
+        throw new Error(validation.messages()[0].message)
+      }
+    }
+
+    async function authValid() {
+      const session = ctx.session
+    }
   } catch (err) {
     return Util.error2front({
       msg: err.message,
       track: 'editValid_${timestamp}'
     })
   }
-
-  async function paramsHandle() {
-    const { query } = ctx
-    ctx.body = query
-  }
-
-  async function paramsValid() {}
-
-  async function authValid() {}
 }
 
 /**
@@ -321,27 +420,52 @@ async function editValid(ctx) {
  */
 async function viewValid(ctx) {
   try {
-    //参数处理
+    //组装处理参数
     await paramsHandle()
-    //参数验证
+    //校验请求参数合法性
     await paramsValid()
     //权限验证
     await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.params
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'id':
+            {
+              body.id = requestAll[k]
+            }
+            break
+        }
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {
+      const rules = {
+        id: 'required',
+      }
+      const messages = {
+        'id.required': 'id is require',
+      }
+      const validation = await validate(ctx.body, rules, messages)
+      if (validation.fails()) {
+        throw new Error(validation.messages()[0].message)
+      }
+    }
+
+    async function authValid() {
+      const session = ctx.session
+    }
   } catch (err) {
     return Util.error2front({
       msg: err.message,
       track: 'viewValid_${timestamp}'
     })
   }
-
-  async function paramsHandle() {
-    const { query } = ctx
-    ctx.body = query
-  }
-
-  async function paramsValid() {}
-
-  async function authValid() {}
 }
 
 /**
@@ -349,12 +473,31 @@ async function viewValid(ctx) {
  */
 async function createInfoValid(ctx) {
   try {
-    //参数处理
+    //组装处理参数
     await paramsHandle()
-    //参数验证
+    //校验请求参数合法性
     await paramsValid()
     //权限验证
     await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {
+
+    }
+
+    async function authValid() {
+      const session = ctx.session
+    }
   } catch (err) {
     return Util.error2front({
       msg: err.message,
@@ -362,27 +505,7 @@ async function createInfoValid(ctx) {
     })
   }
 
-  async function paramsHandle() {
-    const { body } = ctx
-    ctx.body = body
-  }
 
-  async function paramsValid() {
-    const rules = {
-      <%each(field in fields)%>
-        <%if(field.required)%>
-          ${field.name}: 'required',
-        <%endif%>
-      <%endeach%>
-    }
-
-    const validation = await validate(ctx.body, rules)
-    if (validation.fails()) {
-      throw new Error(validation.messages()[0].message)
-    }
-  }
-
-  async function authValid() {}
 }
 
 /**
@@ -390,40 +513,37 @@ async function createInfoValid(ctx) {
  */
 async function updateInfoValid(ctx) {
   try {
-    //参数处理
+    //组装处理参数
     await paramsHandle()
-    //参数验证
+    //校验请求参数合法性
     await paramsValid()
     //权限验证
     await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {
+
+    }
+
+    async function authValid() {
+      const session = ctx.session
+    }
   } catch (err) {
     return Util.error2front({
       msg: err.message,
       track: 'updateInfoValid_${timestamp}'
     })
   }
-
-  async function paramsHandle() {
-    const { body } = ctx
-    ctx.body = body
-  }
-
-  async function paramsValid() {
-    const rules = {
-      <%each(field in fields)%>
-        <%if(field.required)%>
-          ${field.name}: 'required',
-        <%endif%>
-      <%endeach%>
-    }
-
-    const validation = await validate(ctx.body, rules)
-    if (validation.fails()) {
-      throw new Error(validation.messages()[0].message)
-    }
-  }
-
-  async function authValid() {}
 }
 
 /**
@@ -431,12 +551,49 @@ async function updateInfoValid(ctx) {
  */
 async function removeValid(ctx) {
   try {
-    //参数处理
+    //组装处理参数
     await paramsHandle()
-    //参数验证
+    //校验请求参数合法性
     await paramsValid()
     //权限验证
     await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'ids': {
+            if (Util.isArray(requestAll[k])) {
+              const ids = requestAll[k]
+              if (ids.length) {
+                body.ids = ids
+              }
+            }
+          }
+        }
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {
+      const rules = {
+        ids: 'required',
+      }
+      const messages = {
+        'ids.required': 'ids is required',
+      }
+      const validation = await validate(ctx.body, rules, messages)
+      if (validation.fails()) {
+        throw new Error(validation.messages()[0].message)
+      }
+    }
+
+    async function authValid() {
+      const session = ctx.session
+    }
   } catch (err) {
     return Util.error2front({
       msg: err.message,
@@ -444,23 +601,7 @@ async function removeValid(ctx) {
     })
   }
 
-  async function paramsHandle() {
-    const { body } = ctx
-    ctx.body = body
-  }
 
-  async function paramsValid() {
-    const rules = {
-      id: 'required'
-    }
-
-    const validation = await validate(ctx.body, rules)
-    if (validation.fails()) {
-      throw new Error(validation.messages()[0].message)
-    }
-  }
-
-  async function authValid() {}
 }
 
-module.exports = ${module_name | capitalize}Controller
+module.exports = ${module_name | pascal}Controller

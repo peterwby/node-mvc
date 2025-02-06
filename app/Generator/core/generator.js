@@ -5,6 +5,7 @@ const Logger = require('../utils/logger')
 const TemplateEngine = require('./template')
 const SqlParser = require('./parser')
 const { getTargetPath } = require('../config/paths')
+const Database = use('Database')
 
 class CodeGenerator {
   constructor() {
@@ -234,7 +235,33 @@ class CodeGenerator {
             const targetPath = path.join(dir, fileName)
             if (fs.existsSync(targetPath)) {
               const originalContent = await fs.promises.readFile(targetPath, 'utf8')
-              await fs.promises.writeFile(targetPath, originalContent + '\n' + content, 'utf8')
+
+              // 处理@position标记
+              const lines = content.split('\n')
+              let updatedContent = originalContent
+              let currentPosition = ''
+              let currentBlock = []
+
+              for (const line of lines) {
+                if (line.startsWith('// @position:')) {
+                  // 如果有未处理的代码块，先插入到上一个位置
+                  if (currentPosition && currentBlock.length > 0) {
+                    updatedContent = this._insertAtPosition(updatedContent, currentPosition, currentBlock.join('\n'))
+                  }
+                  // 更新当前位置
+                  currentPosition = line.replace('// @position:', '').trim()
+                  currentBlock = []
+                } else {
+                  currentBlock.push(line)
+                }
+              }
+
+              // 处理最后一个代码块
+              if (currentPosition && currentBlock.length > 0) {
+                updatedContent = this._insertAtPosition(updatedContent, currentPosition, currentBlock.join('\n'))
+              }
+
+              await fs.promises.writeFile(targetPath, updatedContent, 'utf8')
               this.generatedFiles.add(targetPath)
             } else {
               await this._generateFile(templateName, dir, fileName, templateData)
@@ -243,6 +270,19 @@ class CodeGenerator {
             await this._generateFile(templateName, dir, fileName, templateData)
           }
         }
+      }
+
+      // 3. 生成权限和菜单配置
+      this.logger.debug('检查force_override参数:', {
+        force_override: params.options?.force_override,
+        params_keys: Object.keys(params),
+        options_keys: Object.keys(params.options || {}),
+      })
+
+      if (!params.options?.force_override) {
+        await this._generatePermissions(params)
+      } else {
+        this.logger.info('由于force_override=true，为了避免重复插入数据库，跳过生成权限和菜单配置')
       }
     } catch (error) {
       this.logger.error('生成配置文件失败', {
@@ -255,6 +295,226 @@ class CodeGenerator {
       }
       throw new GeneratorError(ERROR_CODES.GENERATOR_CONFIG_ERROR, ERROR_MESSAGES[ERROR_CODES.GENERATOR_CONFIG_ERROR], 'generator_config')
     }
+  }
+
+  /**
+   * 生成权限和菜单配置
+   * @private
+   */
+  async _generatePermissions(params) {
+    try {
+      const { moduleName } = params
+      this.logger.debug('开始生成权限和菜单配置', { moduleName })
+
+      // 1. 准备模板数据
+      const templateData = {
+        module_name: moduleName,
+        menu_url: moduleName.toLowerCase(),
+      }
+
+      // 2. 获取表模型
+      const PrimaryMenusTable = require('@Table/primary_menus')
+      const PermissionsTable = require('@Table/permissions')
+      const RolePermissionsTable = require('@Table/role_permissions')
+      const primaryMenusTable = new PrimaryMenusTable()
+      const permissionsTable = new PermissionsTable()
+      const rolePermissionsTable = new RolePermissionsTable()
+
+      // 3. 在一个事务中执行所有操作
+      await Database.transaction(async (trx) => {
+        // 3.1 创建父菜单
+        const parentResult = await primaryMenusTable.create(trx, {
+          title: `${moduleName} manage`,
+          title_cn: `${moduleName}管理`,
+          url: null,
+          icon: 'ki-file-document',
+          parent_id: 0,
+          sort: 10,
+          level: 1,
+          is_leaf: 0,
+          spread: 0,
+          status: 1,
+        })
+
+        if (!parentResult || parentResult.status === 0) {
+          throw new Error('创建父菜单失败')
+        }
+
+        const parentId = parentResult.data.new_id
+        this.logger.debug('父菜单创建成功', { parentId })
+
+        // 3.2 创建子菜单
+        const childResult = await primaryMenusTable.create(trx, {
+          title: `${moduleName} list`,
+          title_cn: `${moduleName}列表`,
+          url: `/admin/${moduleName.toLowerCase()}/list`,
+          icon: null,
+          parent_id: parentId,
+          sort: 10,
+          level: 2,
+          is_leaf: 1,
+          spread: 0,
+          status: 1,
+        })
+
+        if (!childResult || childResult.status === 0) {
+          throw new Error('创建子菜单失败')
+        }
+
+        this.logger.info('菜单配置生成完成')
+
+        // 3.3 创建权限记录
+        const permissions = [
+          // 菜单权限（4个）
+          {
+            name: `${moduleName}列表`,
+            type: 'menu',
+            key: `/admin/${moduleName.toLowerCase()}/list`,
+            description: `${moduleName}管理-列表页面`,
+          },
+          {
+            name: `${moduleName}查看`,
+            type: 'menu',
+            key: `/admin/${moduleName.toLowerCase()}/view/:id`,
+            description: `${moduleName}管理-查看页面`,
+          },
+          {
+            name: `${moduleName}编辑`,
+            type: 'menu',
+            key: `/admin/${moduleName.toLowerCase()}/edit/:id`,
+            description: `${moduleName}管理-编辑页面`,
+          },
+          {
+            name: `${moduleName}创建`,
+            type: 'menu',
+            key: `/admin/${moduleName.toLowerCase()}/create`,
+            description: `${moduleName}管理-创建页面`,
+          },
+          // API权限（4个）
+          {
+            name: `获取${moduleName}列表`,
+            type: 'api',
+            key: `/api/${moduleName.toLowerCase()}/get-list`,
+            description: `获取${moduleName}列表数据`,
+          },
+          {
+            name: `创建${moduleName}`,
+            type: 'api',
+            key: `/api/${moduleName.toLowerCase()}/create-info`,
+            description: `创建新${moduleName}`,
+          },
+          {
+            name: `更新${moduleName}`,
+            type: 'api',
+            key: `/api/${moduleName.toLowerCase()}/update-info`,
+            description: `更新${moduleName}信息`,
+          },
+          {
+            name: `删除${moduleName}`,
+            type: 'api',
+            key: `/api/${moduleName.toLowerCase()}/remove`,
+            description: `删除${moduleName}`,
+          },
+          // 元素权限（4个）
+          {
+            name: '编辑按钮',
+            type: 'element',
+            key: `/admin/${moduleName.toLowerCase()}/list@edit`,
+            description: `${moduleName}列表中的编辑按钮`,
+          },
+          {
+            name: '删除按钮',
+            type: 'element',
+            key: `/admin/${moduleName.toLowerCase()}/list@remove`,
+            description: `${moduleName}列表中的删除按钮`,
+          },
+          {
+            name: '创建按钮',
+            type: 'element',
+            key: `/admin/${moduleName.toLowerCase()}/list@create`,
+            description: `${moduleName}列表中的创建按钮`,
+          },
+          {
+            name: '批量删除按钮',
+            type: 'element',
+            key: `/admin/${moduleName.toLowerCase()}/list@batch-remove`,
+            description: `${moduleName}列表中的批量删除按钮`,
+          },
+        ]
+
+        const created_permission_ids = []
+        for (const perm of permissions) {
+          const result = await permissionsTable.create(trx, perm)
+          if (result.status === 1 && result.data.new_id) {
+            created_permission_ids.push(result.data.new_id)
+          } else {
+            throw new Error(`创建权限记录失败: ${result.msg}`)
+          }
+        }
+        this.logger.info(`创建权限记录完成: ${permissions.length}个`)
+
+        // 3.4 为超级管理员分配权限
+        for (const permission_id of created_permission_ids) {
+          const result = await rolePermissionsTable.create(trx, {
+            role_id: 1, // 超级管理员角色ID
+            permission_id: permission_id,
+          })
+          if (result.status !== 1) {
+            throw new Error(`分配权限失败: ${result.msg}`)
+          }
+        }
+        this.logger.info('为超级管理员分配权限完成')
+      })
+
+      this.logger.info('权限和菜单配置生成完成', {
+        module_name: moduleName,
+      })
+    } catch (error) {
+      this.logger.error('生成权限和菜单配置失败', {
+        error: error.message,
+        params,
+      })
+      throw new GeneratorError(ERROR_CODES.GENERATOR_CONFIG_ERROR, '生成权限和菜单配置失败', 'generator_permissions', { error: error.message })
+    }
+  }
+
+  /**
+   * 在指定位置插入代码
+   * @private
+   */
+  _insertAtPosition(content, position, newCode) {
+    const lines = content.split('\n')
+    let insertIndex = -1
+
+    // 根据position指令找到插入位置
+    if (position.startsWith('after ')) {
+      const targetLine = position.replace('after ', '').trim()
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes(targetLine)) {
+          insertIndex = i + 1
+          break
+        }
+      }
+    } else if (position.startsWith('before ')) {
+      const targetLine = position.replace('before ', '').trim()
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes(targetLine)) {
+          insertIndex = i
+          break
+        }
+      }
+    }
+
+    if (insertIndex !== -1) {
+      // 在找到的位置插入新代码
+      lines.splice(insertIndex, 0, newCode)
+    } else {
+      // 如果找不到指定位置，追加到文件末尾
+      this.logger.warn(`找不到指定位置: ${position}，代码将被追加到文件末尾`)
+      lines.push(newCode)
+    }
+
+    return lines.join('\n')
   }
 
   /**
