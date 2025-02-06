@@ -92,8 +92,9 @@
       const response = await axios.post('/api/member/sign-in', Object.fromEntries(formData));
       if (response.data.code == 0) {
         localStorage.setItem('token', response.data.data.token)
-        Util.successMsg('登录成功！');
-        window.location.href = '/admin/';
+        Util.successMsg('登录成功！', () => {
+          window.location.href = '/admin/';
+        });
         return null
       }
       throw new Error(response.data.msg)

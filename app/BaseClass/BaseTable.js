@@ -7,6 +7,96 @@ class BaseTable {
   constructor(obj = {}) {
     this.tableName = obj.table_name //表的名字，需跟数据库上的表名一模一样
     this.primaryKey = obj.primary_key || 'id' //表的主键，只支持单主键
+    this.data = obj
+  }
+
+  /**
+   * 验证数据
+   * @param {Object} data - 要验证的数据对象，通常是前端提交的表单数据，如 { name: '管理员', description: '系统管理员' }
+   * @param {Array} fields_to_validate - 需要验证的字段列表，如果为空则验证所有字段
+   * @returns {Object} - Util.end
+   */
+  async validate(data, fields_to_validate = null) {
+    try {
+      // 如果没有定义 fields，直接返回成功
+      if (!this.data.fields) {
+        return Util.end({
+          data: { is_valid: true },
+        })
+      }
+
+      const errors = []
+      const fields = fields_to_validate || Object.keys(this.data.fields)
+
+      fields.forEach((field) => {
+        // 跳过主键的验证
+        if (field === this.primaryKey) {
+          return
+        }
+
+        const field_def = this.data.fields[field]
+        const value = data[field]
+
+        // 如果字段定义不存在，跳过验证
+        if (!field_def) {
+          return
+        }
+
+        // 必填检查
+        if (!field_def.nullable && (value === null || value === undefined || value === '')) {
+          errors.push(`${field_def.comment || field}不能为空`)
+          return
+        }
+
+        // 如果值为空且允许为空，跳过后续验证
+        if (value === null || value === undefined || value === '') {
+          return
+        }
+
+        // 类型检查
+        switch (field_def.type) {
+          case 'int':
+            if (!Number.isInteger(Number(value))) {
+              errors.push(`${field_def.comment || field}必须是整数`)
+            }
+            break
+
+          case 'string':
+            if (typeof value !== 'string') {
+              errors.push(`${field_def.comment || field}必须是字符串`)
+            } else if (field_def.length && value.length > field_def.length) {
+              errors.push(`${field_def.comment || field}长度不能超过${field_def.length}个字符`)
+            }
+            break
+
+          case 'enum':
+            if (field_def.values && !field_def.values.includes(value)) {
+              errors.push(`${field_def.comment || field}的值必须是: ${field_def.values.join(', ')}`)
+            }
+            break
+
+          case 'datetime':
+            if (!(value instanceof Date) && isNaN(Date.parse(value))) {
+              errors.push(`${field_def.comment || field}必须是有效的日期时间格式`)
+            }
+            break
+        }
+      })
+
+      if (errors.length > 0) {
+        return Util.end({
+          data: { is_valid: false, status: 0, msg: errors.join('; ') },
+        })
+      }
+
+      return Util.end({
+        data: { is_valid: true },
+      })
+    } catch (err) {
+      return Util.end({
+        data: { is_valid: false, status: -1, msg: err.message },
+      })
+    }
   }
 
   /**
@@ -60,16 +150,27 @@ class BaseTable {
   }
 
   /**
-   * 插入一条记录
-   * @example
-   * await create(trx,  {
-   *  name: 'xx',
-   *  status: 0
-   * })
-   * @returns object
+   * 插入一条记录（带验证）
+   * @param {Object} trx - 事务对象
+   * @param {Object} data - 要插入的数据
+   * @param {Object} options - 选项，如 { skip_validation: true } 可跳过验证
+   * @returns {Object} - Util.end 或 Util.error 格式的返回值
    */
-  async create(trx, data) {
+  async create(trx, data, options = {}) {
     try {
+      // 1. 数据验证（除非明确跳过）
+      if (!options.skip_validation) {
+        const validate_result = await this.validate(data)
+        if (validate_result.status < 1) {
+          return Util.end({
+            msg: '新增失败: ' + validate_result.msg,
+            status: 0,
+            data: validate_result,
+          })
+        }
+      }
+
+      // 2. 执行插入
       let result = await trx.table(this.tableName).insert(data)
       if (result[0]) {
         return Util.end({
@@ -104,6 +205,27 @@ class BaseTable {
    */
   async createMany(trx, data) {
     try {
+      // 1. 基础参数验证
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error('请传入非空数组')
+      }
+
+      // 2. 数据验证（除非明确跳过）
+      if (!options.skip_validation) {
+        for (let i = 0; i < data.length; i++) {
+          const item = data[i]
+          const validate_result = await this.validate(item)
+          if (validate_result.status < 1) {
+            return Util.end({
+              msg: `第${i + 1}条数据验证失败: ${validate_result.msg}`,
+              status: 0,
+              data: validate_result,
+            })
+          }
+        }
+      }
+
+      // 3. 执行批量插入
       let result = await trx.batchInsert(this.tableName, data)
       if (!result[0]) {
         return Util.end({
@@ -130,13 +252,27 @@ class BaseTable {
   }
 
   /**
-   * 根据条件更新数据
-   * @example
-   * updateBy(trx, {where:[['id','=',1]], set:{xx:1,yy:2}})
-   * @returns object
+   * 更新记录（带验证）
+   * @param {Object} trx - 事务对象
+   * @param {Object} obj - 更新条件和数据
+   * @param {Object} options - 选项，如 { skip_validation: true } 可跳过验证
+   * @returns {Object} - Util.end 或 Util.error 格式的返回值
    */
-  async updateBy(trx, obj) {
+  async updateBy(trx, obj, options = {}) {
     try {
+      // 1. 数据验证（除非明确跳过）
+      if (!options.skip_validation && obj.set) {
+        const validate_result = await this.validate(obj.set, Object.keys(obj.set))
+        if (validate_result.status < 1) {
+          return Util.end({
+            msg: '更新失败: ' + validate_result.msg,
+            status: 0,
+            data: validate_result,
+          })
+        }
+      }
+
+      // 2. 执行更新
       if (!Util.isObj(obj)) throw new Error('请传入一个对象')
       const where = obj.where
       const set = obj.set

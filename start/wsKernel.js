@@ -30,6 +30,8 @@ const globalMiddleware = []
 */
 const namedMiddleware = {
   checkAuth: 'App/Middleware/CheckAuth',
+  checkApiAuth: 'App/Middleware/CheckApiAuth',
+  checkViewAuth: 'App/Middleware/CheckViewAuth',
 }
 
 Ws.registerGlobal(globalMiddleware).registerNamed(namedMiddleware)

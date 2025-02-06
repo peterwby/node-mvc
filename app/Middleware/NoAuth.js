@@ -15,7 +15,6 @@ class NoAuth {
       //view注入公共函数
       ctx.view.share({
         trans: (source) => {
-          console.log('trans:', Util.trans(source))
           return Util.trans(source)
         },
       })
@@ -35,7 +34,7 @@ class NoAuth {
       return ctx.response.send(
         Util.error2front({
           msg: err.message,
-          code: 1001,
+          code: 401,
           track: 'handle_' + url,
         })
       )

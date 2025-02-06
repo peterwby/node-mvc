@@ -14,11 +14,6 @@ const Server = use('Server')
 //const Scheduler = use('Adonis/Addons/Scheduler')
 //Scheduler.run()
 
-// 刷新翻译数据
-const CommonService = require(`@Services/CommonService`)
-const commonService = new CommonService()
-commonService.refreshCurrentLanguage()
-
 /*
 |--------------------------------------------------------------------------
 | Global Middleware//匹配到路由之后才按顺序执行
@@ -49,6 +44,8 @@ const globalMiddleware = ['Adonis/Middleware/BodyParser', 'Adonis/Middleware/Ses
 */
 const namedMiddleware = {
   checkAuth: 'App/Middleware/CheckAuth',
+  checkApiAuth: 'App/Middleware/CheckApiAuth',
+  checkViewAuth: 'App/Middleware/CheckViewAuth',
   checkAuthByRedis: 'App/Middleware/CheckAuthByRedis',
   checkAuthByString: 'App/Middleware/CheckAuthByString',
   noAuth: 'App/Middleware/NoAuth',

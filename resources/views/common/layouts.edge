@@ -13,7 +13,7 @@
   <link href="assets/media/app/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png" />
   <link href="assets/media/app/favicon.ico" rel="shortcut icon" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
-  <link href="assets/vendors/apexcharts/apexcharts.css" rel="stylesheet" />
+  {{--  <link href="assets/vendors/apexcharts/apexcharts.css" rel="stylesheet" />  --}}
   <link href="assets/vendors/keenicons/styles.bundle.css" rel="stylesheet" />
   <link href="assets/css/app.css" rel="stylesheet" />
   <link href="assets/js/rich_editor/quill.snow.css" rel="stylesheet">
@@ -35,6 +35,9 @@
     }, function (error) {
       return Promise.reject(error)
     })
+
+    // 注入全局变量
+    window.globalData = {{{ toJSON(globalData) }}}
   </script>
 </head>
 
@@ -1138,25 +1141,23 @@
 
   <script>
     // 局部声明需要使用的工具
-    const { Util, dayjs, cookie, trans } = window.Tools;
+    const { Util, dayjs, cookie, trans, hasPermission } = window.Tools;
 
     // 在页面加载时
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        //如果localStorage中没有translation，则从API获取
-        const translation = localStorage.getItem('translation')
-        if (!translation) {
-          // 获取翻译数据（示例：从API获取）
-          const response = await axios.post('/api/get-translation')
-          const translations = response.data.data.translation
-          localStorage.setItem('translation', translations)
-          // 设置翻译数据并移除加载遮罩
-          Util.setTranslation(translations)
-          return null
+        // 检查翻译是否需要更新
+        const needUpdate = await Util.checkTranslationUpdate()
+        if (needUpdate) {
+          // 需要更新翻译
+          await Util.updateTranslation()
+        } else {
+          // 不需要更新，直接设置翻译就绪状态
+          Util.setTranslation()
         }
-        // 设置翻译数据并移除加载遮罩
-        Util.setTranslation()
 
+        // 初始化菜单激活状态
+        Util.initMenuActive()
       } catch (error) {
         console.error('Failed to load translations:', error)
         // 处理错误情况
@@ -1165,10 +1166,11 @@
 
     async function handleLogout() {
       const response = await axios.post('/api/member/logout');
-      if (response.data.code == 1001) {
+      if (response.data.code == 401) {
         localStorage.removeItem('token')
-        Util.successMsg('已退出系统！');
-        window.location.href = '/admin/auth/sign-in';
+        Util.successMsg('已退出系统！', () => {
+          window.location.href = '/admin/auth/sign-in';
+        });
         return null
       }
     }

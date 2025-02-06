@@ -14,7 +14,15 @@
 
 /** @type {typeof import('@adonisjs/framework/src/Route/Manager')} */
 const Route = use('Route')
-const Util = require('@Lib/Util')
+const Util = require('../app/Lib/Util')
+
+// 刷新翻译数据
+const CommonService = require(`../app/Services/CommonService`)
+const commonService = new CommonService()
+commonService.refreshCurrentLanguage()
+
+// 引入代码生成器2.0路由
+require('../app/Generator/routes')()
 
 // 教程示例路由
 Route.group(() => {
@@ -28,7 +36,7 @@ Route.group(() => {
   //http://127.0.0.1:3000/tutorial/db-modify
   Route.post('db-modify', 'TutorialController.dbModify')
   //http请求
-  Route.get('http-request', 'TutorialController.httpRequest')
+  Route.get('httpRequest', 'TutorialController.httpRequest')
   //redis操作
   Route.get('redis-ops', 'TutorialController.redisOps')
   //文件操作
@@ -67,12 +75,15 @@ Route.group(() => {
 Route.group(() => {
   try {
     //通用
+
     Route.post('upload/image', 'CommonController.uploadImage')
+
     //用户
     Route.post('member/get-list', 'MemberController.getList')
     Route.post('member/logout', 'MemberController.logout')
     Route.post('member/update-password', 'MemberController.updatePassword')
     Route.post('member/update-info', 'MemberController.updateInfo')
+    Route.post('member/create-info', 'MemberController.createInfo')
     Route.post('member/remove', 'MemberController.remove')
   } catch (err) {
     return Util.end2front({
@@ -82,24 +93,29 @@ Route.group(() => {
   }
 })
   .prefix('api') //统一给这组路由的uri加入前缀
-  .middleware(['checkAuth']) //验证身份
+  .middleware(['checkApiAuth']) //验证身份
 
 // View层 - 需要验证身份的路由
 Route.group(() => {
   try {
     Route.get('/', 'HomeController.home')
+
     Route.get('member/list', 'MemberController.list')
     Route.get('member/view/:member_id', 'MemberController.view')
     Route.get('member/edit/:member_id', 'MemberController.edit')
     Route.post('member/edit-password', 'MemberController.updatePassword')
     Route.post('member/edit-info', 'MemberController.editInfo')
+    Route.get('member/create', 'MemberController.create')
     Route.post('member/logout', 'MemberController.logout')
   } catch (err) {
-    return view.render('error.404')
+    return Util.end2front({
+      msg: 'Not found the API',
+      code: 9992,
+    })
   }
 })
   .prefix('admin')
-  .middleware(['checkAuth'])
+  .middleware(['checkViewAuth'])
 
 // View层 - 无需验证身份的路由
 Route.group(() => {
@@ -107,7 +123,10 @@ Route.group(() => {
     Route.get('sign-in', 'AuthController.signIn')
     Route.get('sign-up', 'AuthController.signUp')
   } catch (err) {
-    return view.render('error.404')
+    return Util.end2front({
+      msg: 'Not found the API',
+      code: 9993,
+    })
   }
 })
   .prefix('admin/auth')

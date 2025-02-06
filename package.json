@@ -8,11 +8,15 @@
     "init": "bash init.sh",
     "start": "pnpm css:prod && node server.js",
     "debug": "node --inspect-brk=5858 server.js",
-    "test": "node ace test",
+    "test": "nyc node ace test",
     "dev": "concurrently \"adonis serve --dev\" \"pnpm css:watch\"",
+    "dev:no-watch": "adonis serve",
     "css:build": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css",
     "css:watch": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css --watch",
-    "css:prod": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css --minify"
+    "css:prod": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css --minify",
+    "coverage": "nyc report --reporter=html",
+    "test:generator": "nyc node app/Generator/tests/run.js",
+    "coverage:generator": "nyc report --reporter=html"
   },
   "keywords": [
     "chanshon"
@@ -48,17 +52,41 @@
     "moment": "^2.30.1",
     "mysql": "^2.18.1",
     "node-require-alias": "^1.0.1",
+    "node-sql-parser": "^5.3.6",
     "unzip-stream": "^0.3.0",
     "uuid": "^3.3.3",
     "xss": "^1.0.15"
   },
   "devDependencies": {
+    "@japa/assert": "^4.0.1",
+    "@japa/runner": "^4.2.0",
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.1.2",
+    "japa": "^4.0.0",
+    "module-alias": "^2.2.3",
+    "nyc": "^17.1.0",
     "postcss": "^8.4.49",
     "postcss-import": "^16.1.0",
     "postcss-nesting": "^13.0.1",
     "postcss-preset-env": "^10.1.3",
     "tailwindcss": "^3.4.17"
+  },
+  "nyc": {
+    "exclude": [
+      "test/**",
+      "app/Generator/templates/**",
+      "app/Generator/views/**",
+      "database/**",
+      "config/**"
+    ],
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "check-coverage": true,
+    "branches": 80,
+    "lines": 80,
+    "functions": 80,
+    "statements": 80
   }
 }

@@ -18,13 +18,13 @@ class CheckAuth {
           httpOnly: true,
           sameSite: 'lax',
         })
-        return ctx.response.redirect('/admin/auth/sign-in')
-        // return ctx.response.send(
-        //   Util.end2front({
-        //     msg: '身份已过期，请重新登录',
-        //     code: 1001,
-        //   })
-        // )
+
+        return ctx.response.send(
+          Util.end2front({
+            msg: '身份已过期，请重新登录',
+            code: 401,
+          })
+        )
       }
 
       //get func info
@@ -38,14 +38,6 @@ class CheckAuth {
 
       //get func time
       let from_time = new Date().getTime()
-
-      //view注入公共函数
-      ctx.view.share({
-        trans: (source) => {
-          console.log('trans:', Util.trans(source))
-          return Util.trans(source)
-        },
-      })
 
       await next()
 
@@ -99,7 +91,7 @@ class CheckAuth {
       return ctx.response.send(
         Util.error2front({
           msg: err.message,
-          code: 1001,
+          code: 401,
           track: 'handle_' + url,
         })
       )
