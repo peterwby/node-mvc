@@ -32,4 +32,7 @@ database/development.sqlite
 .idea
 .cursorrules
 .nyc_output
+
 public/upload/images/*
+coverage
+

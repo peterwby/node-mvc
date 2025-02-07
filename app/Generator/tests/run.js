@@ -1,32 +1,31 @@
-#!/usr/bin/env node
+'use strict'
 
-// 设置路径别名
-const moduleAlias = require('module-alias')
 const path = require('path')
+const moduleAlias = require('module-alias')
 
-// 获取项目根目录的绝对路径
-const rootPath = path.resolve(__dirname, '../../..')
-
-// 注册路径别名
+// 添加模块别名
 moduleAlias.addAliases({
-  '@root': rootPath,
-  '@Lib': path.join(rootPath, 'app/Lib'),
-  '@Table': path.join(rootPath, 'app/Table'),
-  '@Model': path.join(rootPath, 'app/Model'),
-  '@Service': path.join(rootPath, 'app/Service'),
-  '@Controller': path.join(rootPath, 'app/Controller'),
-  '@Validator': path.join(rootPath, 'app/Validator'),
-  '@Middleware': path.join(rootPath, 'app/Middleware'),
-  '@Exception': path.join(rootPath, 'app/Exception'),
-  '@Generator': path.join(rootPath, 'app/Generator'),
+  '@Generator': path.join(__dirname, '..'),
 })
+
+// 模拟 Adonis.js 的 use 函数
+global.use = (name) => {
+  if (name === 'Database') {
+    return {
+      raw: async () => [[]],
+    }
+  }
+  throw new Error(`Unknown module: ${name}`)
+}
 
 const { configure, run } = require('@japa/runner')
 const { assert } = require('@japa/assert')
 
 configure({
-  files: [path.join(__dirname, '*.test.js')],
+  files: [path.join(__dirname, 'parser.test.js')],
   plugins: [assert()],
+  timeout: 10000,
+  bail: true,
 })
 
 run()

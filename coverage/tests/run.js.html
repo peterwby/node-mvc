@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">91.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>8/8</span>
+                <span class='fraction'>11/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>1/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">91.66% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>8/8</span>
+                <span class='fraction'>11/12</span>
             </div>
         
             
@@ -94,9 +94,7 @@
 <a name='L29'></a><a href='#L29'>29</a>
 <a name='L30'></a><a href='#L30'>30</a>
 <a name='L31'></a><a href='#L31'>31</a>
-<a name='L32'></a><a href='#L32'>32</a>
-<a name='L33'></a><a href='#L33'>33</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L32'></a><a href='#L32'>32</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -105,17 +103,15 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -126,36 +122,37 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">#!/usr/bin/env node
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict'
 &nbsp;
-// 设置路径别名
-const moduleAlias = require('module-alias')
 const path = require('path')
+const moduleAlias = require('module-alias')
 &nbsp;
-// 获取项目根目录的绝对路径
-const rootPath = path.resolve(__dirname, '../../..')
-&nbsp;
-// 注册路径别名
+// 添加模块别名
 moduleAlias.addAliases({
-  '@root': rootPath,
-  '@Lib': path.join(rootPath, 'app/Lib'),
-  '@Table': path.join(rootPath, 'app/Table'),
-  '@Model': path.join(rootPath, 'app/Model'),
-  '@Service': path.join(rootPath, 'app/Service'),
-  '@Controller': path.join(rootPath, 'app/Controller'),
-  '@Validator': path.join(rootPath, 'app/Validator'),
-  '@Middleware': path.join(rootPath, 'app/Middleware'),
-  '@Exception': path.join(rootPath, 'app/Exception'),
-  '@Generator': path.join(rootPath, 'app/Generator'),
+  '@Generator': path.join(__dirname, '..'),
 })
+&nbsp;
+// 模拟 Adonis.js 的 use 函数
+global.use = (name) =&gt; {
+  <span class="missing-if-branch" title="else path not taken" >E</span>if (name === 'Database') {
+    return {
+      raw: async () =&gt; [[]],
+    }
+  }
+<span class="cstat-no" title="statement not covered" >  throw new Error(`Unknown module: ${name}`)</span>
+}
 &nbsp;
 const { configure, run } = require('@japa/runner')
 const { assert } = require('@japa/assert')
 &nbsp;
 configure({
-  files: [path.join(__dirname, '*.test.js')],
+  files: [path.join(__dirname, 'parser.test.js')],
   plugins: [assert()],
+  timeout: 10000,
+  bail: true,
 })
 &nbsp;
 run()
@@ -166,7 +163,7 @@ run()
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-02-05T04:29:52.446Z
+                at 2025-02-07T12:24:15.003Z
             </div>
         <script src="../prettify.js"></script>
         <script>
