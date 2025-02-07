@@ -40,7 +40,7 @@
                 <div class="flex">
                   <label class="input input-sm">
                     <i class="ki-filled ki-magnifier"></i>
-                    <input placeholder="{{ trans(${field.comment}) }}" name="${field.alias}" type="${field.type || 'text'}" value="{{ request.input('${field.alias}') || '' }}">
+                    <input placeholder="{{ trans('${field.comment}') }}" name="${field.alias}" type="${field.type || 'text'}" value="{{ request.input('${field.alias}') || '' }}">
                   </label>
                 </div>
                 <%endif%>
