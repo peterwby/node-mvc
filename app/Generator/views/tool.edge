@@ -91,7 +91,79 @@
           <!-- 预览结果区域 -->
           <div id="previewArea" class="d-none mt-5">
             <h3 class="text-lg font-medium mb-3">预览结果</h3>
-            <pre id="previewResult" class="bg-gray-100 p-4 rounded"></pre>
+            <div class="grid gap-5">
+              <!-- 表信息 -->
+              <div class="card">
+                <div class="card-header">
+                  <h4 class="card-title">表信息</h4>
+                </div>
+                <div class="card-body">
+                  <pre id="previewTables" class="bg-gray-100 p-4 rounded"></pre>
+                </div>
+              </div>
+
+              <!-- 字段信息 -->
+              <div class="card">
+                <div class="card-header">
+                  <h4 class="card-title">字段信息</h4>
+                </div>
+                <div class="card-body">
+                  <pre id="previewFields" class="bg-gray-100 p-4 rounded"></pre>
+                </div>
+              </div>
+
+              <!-- 配置信息 -->
+              <div class="card">
+                <div class="card-header">
+                  <h4 class="card-title">配置信息</h4>
+                </div>
+                <div class="card-body">
+                  <pre id="previewConfig" class="bg-gray-100 p-4 rounded"></pre>
+                </div>
+              </div>
+
+              <!-- 文件生成预览 -->
+              <div class="card">
+                <div class="card-header">
+                  <h4 class="card-title">将生成的文件</h4>
+                </div>
+                <div class="card-body">
+                  <div class="grid gap-4">
+                    <div id="previewFrontendFiles">
+                      <h5 class="text-base font-medium mb-2">前端文件</h5>
+                      <ul class="list-disc list-inside text-gray-600"></ul>
+                    </div>
+                    <div id="previewBackendFiles">
+                      <h5 class="text-base font-medium mb-2">后端文件</h5>
+                      <ul class="list-disc list-inside text-gray-600"></ul>
+                    </div>
+                    <div id="previewConfigFiles">
+                      <h5 class="text-base font-medium mb-2">配置文件</h5>
+                      <ul class="list-disc list-inside text-gray-600"></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 数据库操作预览 -->
+              <div class="card">
+                <div class="card-header">
+                  <h4 class="card-title">将执行的数据库操作</h4>
+                </div>
+                <div class="card-body">
+                  <div class="grid gap-4">
+                    <div id="previewMenus">
+                      <h5 class="text-base font-medium mb-2">菜单记录</h5>
+                      <pre class="bg-gray-100 p-4 rounded"></pre>
+                    </div>
+                    <div id="previewPermissions">
+                      <h5 class="text-base font-medium mb-2">权限记录</h5>
+                      <pre class="bg-gray-100 p-4 rounded"></pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -208,11 +280,85 @@
       if (data.code === 0) {
         // 显示预览区域
         document.getElementById('previewArea').classList.remove('d-none');
+
         // 格式化显示结果
-        document.getElementById('previewResult').textContent =
-          JSON.stringify(data.data, null, 2);
+        const formatJson = (obj) => JSON.stringify(obj, null, 2);
+
+        // 显示表信息
+        document.getElementById('previewTables').textContent = formatJson(data.data.tables);
+
+        // 显示字段信息
+        document.getElementById('previewFields').textContent = formatJson(data.data.fields);
+
+        // 显示配置信息
+        document.getElementById('previewConfig').textContent = formatJson(data.data.config);
+
+        // 显示文件生成预览
+        const menu_path = document.getElementById('menu_path').value;
+        const module = menu_path ? menu_path.split('/').pop() : data.data.tables[0].name;
+
+        // 替换文件路径中的占位符
+        const replacePlaceholder = (path) => {
+          if (!path) return '';
+          return path
+            .replace(/{module}/g, module)
+            .replace(/{Module}/g, module.charAt(0).toUpperCase() + module.slice(1));
+        };
+
+        // 显示前端文件
+        const frontendFiles = document.querySelector('#previewFrontendFiles ul');
+        const frontendGroup = data.data.files.find(group => group.type === 'frontend');
+        frontendFiles.innerHTML = frontendGroup && frontendGroup.files ?
+          frontendGroup.files.map(file => '<li>' + replacePlaceholder(file) + '</li>').join('') :
+          '<li class="text-gray-400">无文件</li>';
+
+        // 显示后端文件
+        const backendFiles = document.querySelector('#previewBackendFiles ul');
+        const backendGroup = data.data.files.find(group => group.type === 'backend');
+        backendFiles.innerHTML = backendGroup && backendGroup.files ?
+          backendGroup.files.map(file => '<li>' + replacePlaceholder(file) + '</li>').join('') :
+          '<li class="text-gray-400">无文件</li>';
+
+        // 显示配置文件
+        const configFiles = document.querySelector('#previewConfigFiles ul');
+        const configGroup = data.data.files.find(group => group.type === 'config');
+        configFiles.innerHTML = configGroup && configGroup.files ?
+          configGroup.files.map(file => '<li>' + replacePlaceholder(file) + '</li>').join('') :
+          '<li class="text-gray-400">无文件</li>';
+
+        // 显示数据库操作预览
+        const formatDbOperation = (items) => {
+          if (!items || !Array.isArray(items)) return [];
+          return items.map(item => ({
+            ...item,
+            data: item.data ? {
+              ...item.data,
+              // 替换路径中的占位符
+              ...(item.data.url && { url: replacePlaceholder(item.data.url) }),
+              ...(item.data.key && { key: replacePlaceholder(item.data.key) })
+            } : {}
+          }));
+        };
+
+        // 显示菜单操作
+        if (data.data.database?.menus) {
+          document.querySelector('#previewMenus pre').textContent =
+            formatJson(formatDbOperation(data.data.database.menus));
+        }
+
+        // 显示权限操作
+        if (data.data.database?.permissions) {
+          document.querySelector('#previewPermissions pre').textContent =
+            formatJson(formatDbOperation(data.data.database.permissions));
+        }
+
       } else {
-        Util.errorMsg(data.msg);
+        // 如果有错误位置信息，显示更详细的错误
+        if (data.data?.line) {
+          Util.errorMsg(data.msg + ' (第' + data.data.line + '行, 位置' + data.data.position + ')');
+        } else {
+          Util.errorMsg(data.msg);
+        }
       }
     } catch (err) {
       Util.errorMsg('预览失败：' + err.message);

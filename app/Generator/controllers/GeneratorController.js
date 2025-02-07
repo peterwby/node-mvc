@@ -50,27 +50,263 @@ class GeneratorController {
    */
   async previewSql({ request, response }) {
     try {
-      const { sql } = request.all()
-      this.logger.info('预览SQL解析结果', { sql })
+      const { sql, primary_key } = request.all()
+      this.logger.info('预览SQL解析结果', { sql, primary_key })
 
       // 解析SQL
       this.logger.debug('开始解析SQL')
       const result = await this.parser.parse(sql)
 
+      // 如果提供了primary_key,标记主键字段
+      if (primary_key) {
+        result.fields = result.fields.map((field) => ({
+          ...field,
+          is_primary: field.name === primary_key,
+        }))
+      }
+
+      // 添加更多调试信息
       this.logger.info('SQL解析成功', {
         tableCount: result.tables?.length,
         fieldCount: result.fields?.length,
+        primary_key,
+        has_rich_editor: result.has_rich_editor,
+        rich_editor_fields: result.rich_editor_fields?.map((f) => f.name),
       })
+
+      // 格式化返回结果
+      const preview = {
+        // 表信息
+        tables: result.tables.map((table) => ({
+          name: table.name,
+          alias: table.alias,
+          type: table.type,
+          join_condition: table.on,
+        })),
+        // 字段信息
+        fields: result.fields.map((field) => ({
+          name: field.name,
+          original: field.original,
+          type: field.type,
+          is_primary: field.is_primary || false,
+          form_type: field.form_type,
+          list_type: field.list_type,
+          searchable: field.searchable,
+          sortable: field.sortable,
+        })),
+        // 配置信息
+        config: {
+          has_rich_editor: result.has_rich_editor,
+          primary_key: primary_key || null,
+        },
+        // 将生成的文件列表
+        files: [
+          {
+            type: 'frontend',
+            files: [
+              'resources/views/admin/{module}/list.edge',
+              'resources/views/admin/{module}/create.edge',
+              'resources/views/admin/{module}/edit.edge',
+              'resources/views/admin/{module}/view.edge',
+            ],
+          },
+          {
+            type: 'backend',
+            files: ['app/Controllers/Http/Admin/{Module}Controller.js', 'app/Services/{Module}Service.js', 'app/Models/{Module}.js'],
+          },
+          {
+            type: 'config',
+            files: ['start/routes.js'],
+          },
+        ],
+        // 将执行的数据库操作
+        database: {
+          // 菜单记录
+          menus: [
+            {
+              operation: 'INSERT',
+              table: 'primary_menus',
+              data: {
+                title: `${result.tables[0].name} manage`,
+                title_cn: `${result.tables[0].name}管理`,
+                url: null,
+                icon: 'ki-file-document',
+                parent_id: 0,
+                sort: 10,
+                level: 1,
+                is_leaf: 0,
+                spread: 0,
+                status: 1,
+              },
+            },
+            {
+              operation: 'INSERT',
+              table: 'primary_menus',
+              data: {
+                title: `${result.tables[0].name} list`,
+                title_cn: `${result.tables[0].name}列表`,
+                url: '/admin/{module}/list',
+                icon: null,
+                parent_id: '${parent_id}', // 这里用占位符,实际生成时会替换为上一条记录的ID
+                sort: 10,
+                level: 2,
+                is_leaf: 1,
+                spread: 0,
+                status: 1,
+              },
+            },
+          ],
+          // 权限记录
+          permissions: [
+            // 菜单权限（4个）
+            {
+              operation: 'INSERT',
+              table: 'permissions',
+              data: {
+                name: `${result.tables[0].name}列表`,
+                type: 'menu',
+                key: '/admin/{module}/list',
+                description: `${result.tables[0].name}管理-列表页面`,
+              },
+            },
+            {
+              operation: 'INSERT',
+              table: 'permissions',
+              data: {
+                name: `${result.tables[0].name}查看`,
+                type: 'menu',
+                key: '/admin/{module}/view/:id',
+                description: `${result.tables[0].name}管理-查看页面`,
+              },
+            },
+            {
+              operation: 'INSERT',
+              table: 'permissions',
+              data: {
+                name: `${result.tables[0].name}编辑`,
+                type: 'menu',
+                key: '/admin/{module}/edit/:id',
+                description: `${result.tables[0].name}管理-编辑页面`,
+              },
+            },
+            {
+              operation: 'INSERT',
+              table: 'permissions',
+              data: {
+                name: `${result.tables[0].name}创建`,
+                type: 'menu',
+                key: '/admin/{module}/create',
+                description: `${result.tables[0].name}管理-创建页面`,
+              },
+            },
+            // API权限（4个）
+            {
+              operation: 'INSERT',
+              table: 'permissions',
+              data: {
+                name: `获取${result.tables[0].name}列表`,
+                type: 'api',
+                key: '/api/{module}/get-list',
+                description: `获取${result.tables[0].name}列表数据`,
+              },
+            },
+            {
+              operation: 'INSERT',
+              table: 'permissions',
+              data: {
+                name: `创建${result.tables[0].name}`,
+                type: 'api',
+                key: '/api/{module}/create-info',
+                description: `创建新${result.tables[0].name}`,
+              },
+            },
+            {
+              operation: 'INSERT',
+              table: 'permissions',
+              data: {
+                name: `更新${result.tables[0].name}`,
+                type: 'api',
+                key: '/api/{module}/update-info',
+                description: `更新${result.tables[0].name}信息`,
+              },
+            },
+            {
+              operation: 'INSERT',
+              table: 'permissions',
+              data: {
+                name: `删除${result.tables[0].name}`,
+                type: 'api',
+                key: '/api/{module}/remove',
+                description: `删除${result.tables[0].name}`,
+              },
+            },
+            // 元素权限（4个）
+            {
+              operation: 'INSERT',
+              table: 'permissions',
+              data: {
+                name: '编辑按钮',
+                type: 'element',
+                key: '/admin/{module}/list@edit',
+                description: `${result.tables[0].name}列表中的编辑按钮`,
+              },
+            },
+            {
+              operation: 'INSERT',
+              table: 'permissions',
+              data: {
+                name: '删除按钮',
+                type: 'element',
+                key: '/admin/{module}/list@remove',
+                description: `${result.tables[0].name}列表中的删除按钮`,
+              },
+            },
+            {
+              operation: 'INSERT',
+              table: 'permissions',
+              data: {
+                name: '创建按钮',
+                type: 'element',
+                key: '/admin/{module}/list@create',
+                description: `${result.tables[0].name}列表中的创建按钮`,
+              },
+            },
+            {
+              operation: 'INSERT',
+              table: 'permissions',
+              data: {
+                name: '批量删除按钮',
+                type: 'element',
+                key: '/admin/{module}/list@batch-remove',
+                description: `${result.tables[0].name}列表中的批量删除按钮`,
+              },
+            },
+          ],
+          // 角色权限关联
+          role_permissions: [
+            {
+              operation: 'INSERT',
+              table: 'role_permissions',
+              data: {
+                role_id: 1, // 超级管理员角色ID
+                permission_id: '${permission_id}', // 这里用占位符,实际生成时会替换为权限记录的ID
+              },
+              description: '为超级管理员分配权限',
+            },
+          ],
+        },
+      }
 
       return response.json({
         code: 0,
-        data: result,
+        data: preview,
       })
     } catch (error) {
       this.logger.error('SQL解析失败', {
         error: error.message,
         stack: error.stack,
         sql: request.input('sql'),
+        primary_key: request.input('primary_key'),
       })
 
       if (error instanceof GeneratorError) {
@@ -78,6 +314,11 @@ class GeneratorController {
           code: error.code,
           msg: error.message,
           track: error.track,
+          data: {
+            line: error.line,
+            position: error.position,
+            context: error.context,
+          },
         })
       }
 
