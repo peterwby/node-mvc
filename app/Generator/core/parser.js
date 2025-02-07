@@ -115,16 +115,17 @@ class SqlParser {
       // 获取字段名和别名
       const originalName = this._getOriginalName(column.expr)
       const defaultAlias = this._getDefaultAlias(column.expr)
+      const safeAlias = this._getSafeAlias(column.as || defaultAlias)
 
       this.logger.debug('字段名称信息:', {
         original: originalName,
-        alias: column.as || defaultAlias,
+        alias: safeAlias,
         column_expr: column.expr,
       })
 
       const field = {
         original: originalName,
-        alias: column.as || defaultAlias,
+        alias: safeAlias,
         type: this._inferType(column.expr),
       }
 
@@ -166,12 +167,23 @@ class SqlParser {
     // 处理所有表
     for (let i = 0; i < ast.from.length; i++) {
       const table = ast.from[i]
-      tables.push({
+      const tableInfo = {
         name: table.table,
         alias: table.as || table.table,
         type: i === 0 ? 'main' : this._getJoinType(table),
         on: table.on ? this._stringifyExpr(table.on) : null,
-      })
+      }
+
+      // 处理子查询
+      if (table.expr) {
+        try {
+          tableInfo.name = `(${this._stringifyExpr(table.expr)})`
+        } catch (err) {
+          this.logger.warn('子查询字符串化失败:', { error: err, expr: table.expr })
+        }
+      }
+
+      tables.push(tableInfo)
     }
 
     return tables
@@ -191,7 +203,7 @@ class SqlParser {
         const fields = await Database.raw('SHOW FULL COLUMNS FROM ??', [table.name])
         if (!fields || !fields[0]) {
           this.logger.warn('未获取到表字段信息', { table_name: table.name })
-          continue
+          throw new GeneratorError(ERROR_CODES.TABLE_FIELDS_ERROR, `表[${table.name}]不存在或无字段信息`, 'parser_get_table_fields_empty')
         }
         tableFields[table.name] = fields[0].reduce((acc, field) => {
           acc[field.Field] = field
@@ -207,6 +219,9 @@ class SqlParser {
           table_name: table.name,
           stack: err.stack,
         })
+        if (err instanceof GeneratorError) {
+          throw err
+        }
         throw new GeneratorError(ERROR_CODES.TABLE_FIELDS_ERROR, `获取表[${table.name}]字段信息失败: ${err.message}`, 'parser_get_table_fields')
       }
     }
@@ -218,32 +233,38 @@ class SqlParser {
    * @private
    * @param {Object} expr - 字段表达式
    * @returns {string} 原始字段名
+   * @throws {GeneratorError} 处理表达式时出错
    */
   _getOriginalName(expr) {
-    if (expr.type === 'column_ref') {
-      return expr.table ? `${expr.table}.${expr.column}` : expr.column
-    }
+    try {
+      if (expr.type === 'column_ref') {
+        return expr.table ? `${expr.table}.${expr.column}` : expr.column
+      }
 
-    // 处理聚合函数
-    if (expr.type === 'aggr_func') {
-      const args = Array.isArray(expr.args) ? expr.args : [expr.args]
-      // 为args.expr添加parent引用
-      args.forEach((arg) => {
-        if (arg.expr) {
-          arg.expr.parent = expr
-        }
-      })
-      return `${expr.name}(${args.map((arg) => this._getOriginalName(arg.expr)).join(', ')})`
-    }
+      // 处理聚合函数
+      if (expr.type === 'aggr_func') {
+        const args = Array.isArray(expr.args) ? expr.args : [expr.args]
+        // 为args.expr添加parent引用
+        args.forEach((arg) => {
+          if (arg.expr) {
+            arg.expr.parent = expr
+          }
+        })
+        return `${expr.name}(${args.map((arg) => this._getOriginalName(arg.expr)).join(', ')})`
+      }
 
-    // 处理普通函数
-    if (expr.type === 'function') {
-      const funcName = expr.name.name[0].value
-      const args = expr.args.value
-      return `${funcName}(${args.map((arg) => this._getOriginalName(arg)).join(', ')})`
-    }
+      // 处理普通函数
+      if (expr.type === 'function') {
+        const funcName = expr.name.name[0].value
+        const args = expr.args.value
+        return `${funcName}(${args.map((arg) => this._getOriginalName(arg)).join(', ')})`
+      }
 
-    return this._stringifyExpr(expr)
+      return this._stringifyExpr(expr)
+    } catch (err) {
+      this.logger.error('获取字段原始名称失败', { error: err, expr })
+      throw new GeneratorError(ERROR_CODES.FIELD_NAME_ERROR, `获取字段原始名称失败: ${err.message}`, 'parser_get_original_name')
+    }
   }
 
   /**
@@ -253,25 +274,126 @@ class SqlParser {
    * @returns {string} 默认别名
    */
   _getDefaultAlias(expr) {
-    if (expr.type === 'column_ref') {
-      return expr.column
+    try {
+      if (expr.type === 'column_ref') {
+        return expr.column
+      }
+
+      if (expr.type === 'aggr_func') {
+        const args = Array.isArray(expr.args) ? expr.args : [expr.args]
+        const argsStr = args
+          .map((arg) => {
+            if (arg.expr.type === 'star') {
+              return 'all'
+            }
+            return this._getDefaultAlias(arg.expr)
+          })
+          .join('_')
+        return `${expr.name.toLowerCase()}_${argsStr}`
+      }
+
+      if (expr.type === 'function') {
+        const funcName = expr.name.name[0].value.toLowerCase()
+        const args = expr.args.value
+        const argsStr = args.map((arg) => this._getDefaultAlias(arg)).join('_')
+        return `${funcName}_${argsStr}`
+      }
+
+      if (expr.type === 'binary_expr') {
+        const left = this._getDefaultAlias(expr.left)
+        const right = this._getDefaultAlias(expr.right)
+        return `${left}_${expr.operator}_${right}`
+      }
+
+      if (expr.type === 'cast') {
+        const value = this._getDefaultAlias(expr.expr)
+        const targetType = Array.isArray(expr.target) ? expr.target[0]?.dataType : expr.target.dataType
+        return `${value}_as_${targetType.toLowerCase()}`
+      }
+
+      if (expr.type === 'case') {
+        return 'case_result'
+      }
+
+      return 'expr_result'
+    } catch (err) {
+      this.logger.error('获取默认别名失败:', { error: err, expr })
+      return 'expr_result'
+    }
+  }
+
+  /**
+   * 检查是否是MySQL保留字
+   * @private
+   * @param {string} word - 要检查的词
+   * @returns {boolean} 是否是保留字
+   */
+  _isMySQLReservedWord(word) {
+    const reservedWords = [
+      'current_time',
+      'current_timestamp',
+      'current_date',
+      'current_user',
+      'database',
+      'schema',
+      'table',
+      'column',
+      'index',
+      'key',
+      'primary',
+      'foreign',
+      'constraint',
+      'default',
+      'null',
+      'not',
+      'and',
+      'or',
+      'like',
+      'in',
+      'between',
+      'is',
+      'true',
+      'false',
+      'all',
+      'any',
+      'exists',
+      'case',
+      'when',
+      'then',
+      'else',
+      'end',
+      'cast',
+      'as',
+      'binary',
+      'char',
+      'date',
+      'datetime',
+      'decimal',
+      'signed',
+      'unsigned',
+      'time',
+      'timestamp',
+    ]
+    return reservedWords.includes(word.toLowerCase())
+  }
+
+  /**
+   * 生成安全的字段别名
+   * @private
+   * @param {string} alias - 原始别名
+   * @returns {string} 安全的别名
+   */
+  _getSafeAlias(alias) {
+    if (!alias) {
+      return 'field_result'
     }
 
-    // 为函数生成别名
-    if (expr.type === 'aggr_func') {
-      return `${expr.name.toLowerCase()}_result`
+    // 如果是保留字，加上前缀
+    if (this._isMySQLReservedWord(alias)) {
+      return `field_${alias}`
     }
 
-    if (expr.type === 'function') {
-      return `${expr.name.name[0].value.toLowerCase()}_result`
-    }
-
-    // 为表达式生成一个有意义的别名
-    return this._stringifyExpr(expr)
-      .toLowerCase()
-      .replace(/[^a-z0-9_]/g, '_')
-      .replace(/_+/g, '_')
-      .replace(/^_+|_+$/g, '')
+    return alias
   }
 
   /**
@@ -300,7 +422,7 @@ class SqlParser {
     switch (expr.type) {
       case 'number':
         this.logger.debug('数字类型')
-        return 'number'
+        return 'decimal'
       case 'string':
         this.logger.debug('字符串类型')
         return 'string'
@@ -316,8 +438,9 @@ class SqlParser {
         this.logger.debug('函数类型:', { funcType })
         return funcType
       case 'binary_expr':
-        this.logger.debug('二元表达式，返回布尔类型')
-        return 'boolean'
+        const binaryType = this._inferBinaryExprType(expr)
+        this.logger.debug('二元表达式类型:', { binaryType })
+        return binaryType
       case 'case':
         const caseType = this._inferCaseType(expr)
         this.logger.debug('CASE表达式类型:', { caseType })
@@ -333,6 +456,35 @@ class SqlParser {
   }
 
   /**
+   * 推断二元表达式的返回类型
+   * @private
+   * @param {Object} expr - 二元表达式
+   * @returns {string} 返回值类型
+   */
+  _inferBinaryExprType(expr) {
+    // 比较运算符返回布尔值
+    const compareOps = ['=', '!=', '<>', '>', '<', '>=', '<=', 'IN', 'NOT IN', 'LIKE', 'NOT LIKE']
+    if (compareOps.includes(expr.operator.toUpperCase())) {
+      return 'boolean'
+    }
+
+    // 逻辑运算符返回布尔值
+    const logicOps = ['AND', 'OR', 'NOT']
+    if (logicOps.includes(expr.operator.toUpperCase())) {
+      return 'boolean'
+    }
+
+    // 算术运算符返回数值
+    const mathOps = ['+', '-', '*', '/', '%']
+    if (mathOps.includes(expr.operator)) {
+      return 'decimal'
+    }
+
+    // 默认返回字符串
+    return 'string'
+  }
+
+  /**
    * 推断聚合函数返回值类型
    * @private
    * @param {Object} expr - 聚合函数表达式
@@ -345,11 +497,12 @@ class SqlParser {
 
       switch (funcName) {
         case 'count':
+          return 'integer'
         case 'sum':
         case 'avg':
         case 'min':
         case 'max':
-          return 'number'
+          return 'decimal'
         default:
           this.logger.debug('未知的聚合函数，返回string:', { funcName })
           return 'string'
@@ -381,7 +534,12 @@ class SqlParser {
 
     // 数值函数
     if (['abs', 'round', 'ceil', 'floor'].includes(funcName)) {
-      return 'number'
+      return 'decimal'
+    }
+
+    // 字符串函数
+    if (['concat', 'substring', 'trim', 'upper', 'lower'].includes(funcName)) {
+      return 'string'
     }
 
     return 'string'
@@ -427,14 +585,16 @@ class SqlParser {
       this.logger.debug('CAST目标类型:', { targetType, expr })
 
       switch (targetType) {
+        case 'signed':
         case 'int':
         case 'integer':
+          return 'integer'
         case 'decimal':
         case 'float':
         case 'double':
         case 'number':
         case 'numeric':
-          return 'number'
+          return 'decimal'
         case 'datetime':
         case 'timestamp':
         case 'date':
@@ -444,6 +604,9 @@ class SqlParser {
         case 'boolean':
         case 'tinyint':
           return 'boolean'
+        case 'char':
+        case 'varchar':
+        case 'text':
         default:
           this.logger.debug('未知的CAST目标类型，返回string:', { targetType })
           return 'string'
@@ -459,6 +622,7 @@ class SqlParser {
    * @private
    * @param {Object} expr - 表达式对象
    * @returns {string} 字符串形式的表达式
+   * @throws {GeneratorError} 处理表达式时出错
    */
   _stringifyExpr(expr) {
     try {
@@ -530,20 +694,19 @@ class SqlParser {
       }
 
       if (expr.type === 'cast') {
-        const value = this._stringifyExpr(expr.expr)
-        const targetType = Array.isArray(expr.target) ? expr.target[0]?.dataType : expr.target.dataType
-        return `CAST(${value} AS ${targetType})`
+        const target = Array.isArray(expr.target) ? expr.target[0] : expr.target
+        return `CAST(${this._stringifyExpr(expr.expr)} AS ${target.dataType})`
       }
 
       if (expr.type === 'star') {
         return '*'
       }
 
-      this.logger.debug('使用默认SQL字符串化:', { type: expr.type })
-      return this.parser.sqlify(expr)
-    } catch (err) {
-      this.logger.warn('表达式字符串化失败:', { error: err, expr })
+      this.logger.warn('未知的表达式类型:', { type: expr.type, expr })
       return expr.toString()
+    } catch (err) {
+      this.logger.error('表达式字符串化失败:', { error: err, expr })
+      throw new GeneratorError(ERROR_CODES.EXPR_STRINGIFY_ERROR, `表达式字符串化失败: ${err.message}`, 'parser_stringify_expr')
     }
   }
 
@@ -558,14 +721,31 @@ class SqlParser {
       return 'cross'
     }
 
-    switch (table.join.type) {
+    const joinType = table.join.type?.toUpperCase()
+    this.logger.debug('获取JOIN类型:', { joinType, table })
+
+    // 处理子查询
+    if (table.expr) {
+      this.logger.debug('检测到子查询:', { expr: table.expr })
+      return table.join.type?.toUpperCase() || 'cross'
+    }
+
+    switch (joinType) {
       case 'LEFT':
+      case 'LEFT OUTER':
         return 'left'
       case 'RIGHT':
+      case 'RIGHT OUTER':
         return 'right'
       case 'INNER':
+      case 'JOIN':
+        return 'inner'
+      case 'CROSS':
+        return 'cross'
+      case 'NATURAL':
         return 'inner'
       default:
+        this.logger.debug('未知的JOIN类型，使用cross:', { joinType })
         return 'cross'
     }
   }

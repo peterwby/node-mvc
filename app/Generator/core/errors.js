@@ -148,7 +148,16 @@ class GeneratorError extends Error {
    * @param {string} [track] - 错误追踪ID，格式：模块_函数_13位随机数
    */
   constructor(code, message, track = null) {
-    super(message)
+    // 如果第一个参数是字符串，则认为是消息
+    if (typeof code === 'string' && !ERROR_CODES[code] && !message) {
+      message = code
+      code = ERROR_CODES.UNKNOWN
+    }
+    // 如果没有提供消息，使用默认消息
+    if (!message && ERROR_MESSAGES[code]) {
+      message = ERROR_MESSAGES[code]
+    }
+    super(message || '')
     this.name = 'GeneratorError'
     this.code = code
     this.track = track

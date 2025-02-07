@@ -100,8 +100,8 @@ class FieldEnhancer {
       const enhanced = {
         ...field,
         name: field.name || field.alias || field.original, // 优先使用name，其次是alias，最后是original
-        required: tableField ? tableField.Null === 'NO' : false,
-        comment: tableField?.Comment || field.name || field.alias || field.original,
+        required: this._isRequired(field, tableField),
+        comment: this._getComment(field, tableField),
         html_type: this._inferHtmlType(field.name, field.type),
         form_type: this._inferFormType(field.name, tableField),
         validation: {},
@@ -138,6 +138,93 @@ class FieldEnhancer {
       }
       throw new GeneratorError(ERROR_CODES.FIELD_ENHANCE_ERROR, `字段[${field?.name || 'unknown'}]增强失败: ${err.message}`, 'field_enhancer_enhance')
     }
+  }
+
+  /**
+   * 判断字段是否必填
+   * @private
+   * @param {Object} field - 字段信息
+   * @param {Object} tableField - 数据库表字段信息
+   * @returns {boolean} 是否必填
+   */
+  _isRequired(field, tableField) {
+    // 1. 如果是主键，必填
+    if (tableField?.Key === 'PRI') {
+      return true
+    }
+
+    // 2. 如果数据库定义为NOT NULL，必填
+    if (tableField?.Null === 'NO') {
+      return true
+    }
+
+    // 3. 如果字段名是id结尾，必填
+    if (field.name.toLowerCase().endsWith('_id')) {
+      return true
+    }
+
+    // 4. 如果是基础信息字段，必填
+    const requiredFields = ['name', 'title', 'code']
+    if (requiredFields.includes(field.name.toLowerCase())) {
+      return true
+    }
+
+    return false
+  }
+
+  /**
+   * 获取字段注释
+   * @private
+   * @param {Object} field - 字段信息
+   * @param {Object} tableField - 数据库表字段信息
+   * @returns {string} 字段注释
+   */
+  _getComment(field, tableField) {
+    // 1. 优先使用数据库中的注释
+    if (tableField?.Comment) {
+      return tableField.Comment
+    }
+
+    // 2. 使用预定义的注释
+    const commentMap = {
+      id: '主键ID',
+      name: '名称',
+      title: '标题',
+      code: '编码',
+      type: '类型',
+      status: '状态',
+      remark: '备注',
+      description: '描述',
+      content: '内容',
+      sort: '排序',
+      parent_id: '父级ID',
+      created_at: '创建时间',
+      updated_at: '更新时间',
+      deleted_at: '删除时间',
+      email: '邮箱',
+      phone: '电话',
+      mobile: '手机',
+      address: '地址',
+      password: '密码',
+      avatar: '头像',
+      url: '链接',
+      ip: 'IP地址',
+      version: '版本号',
+      is_enabled: '是否启用',
+      is_deleted: '是否删除',
+      is_default: '是否默认',
+    }
+
+    // 3. 尝试从字段名生成注释
+    const name = field.name.toLowerCase()
+    for (const [key, value] of Object.entries(commentMap)) {
+      if (name === key || name.endsWith(`_${key}`)) {
+        return value
+      }
+    }
+
+    // 4. 使用字段名作为注释
+    return field.name
   }
 
   /**
@@ -358,32 +445,57 @@ class FieldEnhancer {
    * @param {Object} field - 字段信息
    */
   _addValidationRules(field) {
-    // 必填验证
+    // 1. 必填验证
     if (field.required) {
       field.validation.notEmpty = {
         message: 'please enter in the correct format',
       }
     }
 
-    // 邮箱验证
-    if (field.html_type === 'email') {
+    // 2. 根据HTML类型添加验证
+    switch (field.html_type) {
+      case 'email':
+        field.validation.emailAddress = {
+          message: 'please enter in the correct format',
+        }
+        break
+      case 'tel':
+        field.validation.phone = {
+          message: 'please enter in the correct format',
+        }
+        break
+      case 'url':
+        field.validation.url = {
+          message: 'please enter in the correct format',
+        }
+        break
+      case 'number':
+        field.validation.numeric = {
+          message: 'please enter in the correct format',
+        }
+        break
+    }
+
+    // 3. 根据字段名添加验证
+    const name = field.name.toLowerCase()
+    if (name.includes('password')) {
+      field.validation.password = {
+        message: 'please enter in the correct format',
+      }
+    } else if (name.includes('email')) {
       field.validation.emailAddress = {
         message: 'please enter in the correct format',
       }
-    }
-
-    // 密码验证
-    if (field.form_type === 'password') {
-      field.validation.stringLength = {
-        min: 6,
-        max: 16,
+    } else if (name.includes('phone') || name.includes('mobile')) {
+      field.validation.phone = {
         message: 'please enter in the correct format',
       }
-    }
-
-    // 手机号验证
-    if (field.html_type === 'tel') {
-      field.validation.phone = {
+    } else if (name.includes('url') || name.includes('link')) {
+      field.validation.url = {
+        message: 'please enter in the correct format',
+      }
+    } else if (name.includes('ip')) {
+      field.validation.ip = {
         message: 'please enter in the correct format',
       }
     }
