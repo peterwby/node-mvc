@@ -36,9 +36,9 @@
               </label>
               <div class="flex flex-col w-full gap-1">
                 <input type="text" class="input max-w-[300px]" id="menu_path" name="menu_path"
-                  placeholder="例如：system/users" />
+                  placeholder="例如：/admin/users" />
                 <span class="text-xs text-gray-500">
-                  用于生成路由和菜单，不要以斜杠开头
+                  请输入以/admin/开头的路径，例如：/admin/users
                 </span>
               </div>
             </div>
@@ -52,7 +52,7 @@
                   style="background-color: var(--tw-light-active); border: 1px solid var(--tw-gray-300); border-radius: 0.375rem; padding: 0.75rem;"
                   placeholder="例如：SELECT a.order_id, a.order_no, a.status, b.customer_name FROM orders a LEFT JOIN customers b ON b.customer_id = a.customer_id"></textarea>
                 <span class="text-xs text-gray-500">
-                  支持多表联合查询，字段可以使用AS指定别名
+                  支持多表联合查询，字段可以使用AS指定别名，SQL结尾不能有;号
                 </span>
               </div>
             </div>
@@ -238,6 +238,13 @@
       if (isValid === 'Invalid') {
         throw new Error('表单验证失败');
       }
+
+      // 处理SQL语句，去掉末尾的分号
+      const sqlInput = formData.get('sql');
+      if (sqlInput) {
+        formData.set('sql', sqlInput.trim().replace(/;+$/, ''));
+      }
+
       const response = await axios.post('/generator/generate', formData, {
         headers: {
           'token': localStorage.getItem('token')
@@ -265,7 +272,8 @@
         return;
       }
 
-      const sql = document.getElementById('sql').value;
+      // 处理SQL语句，去掉末尾的分号
+      const sql = document.getElementById('sql').value.trim().replace(/;+$/, '');
       const primary_key = document.getElementById('primary_key').value;
       const response = await fetch('/generator/preview-sql', {
         method: 'POST',

@@ -39,6 +39,13 @@ class SqlParser {
       try {
         ast = this.parser.astify(sql, this.options)
         this.logger.debug('SQL解析结果', { ast })
+        // 处理ast可能是数组的情况
+        if (Array.isArray(ast)) {
+          if (ast.length > 1) {
+            throw new GeneratorError(ERROR_CODES.INVALID_SQL, '不支持多条SQL语句', 'parser_parse_multiple')
+          }
+          ast = ast[0]
+        }
       } catch (err) {
         // SQL语法错误，直接抛出错误
         this.logger.error('SQL解析失败', { error: err.message })
