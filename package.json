@@ -16,6 +16,7 @@
     "css:prod": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css --minify",
     "coverage": "nyc report --reporter=html",
     "test:generator": "nyc node app/Generator/tests/run.js",
+    "test:generator:tmp": "nyc node app/Generator/tests/run.js tmp",
     "coverage:generator": "nyc report --reporter=html"
   },
   "keywords": [
