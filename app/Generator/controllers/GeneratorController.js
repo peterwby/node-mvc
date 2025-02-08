@@ -112,7 +112,7 @@ class GeneratorController {
           },
           {
             type: 'backend',
-            files: ['app/Controllers/Http/Admin/{Module}Controller.js', 'app/Services/{Module}Service.js', 'app/Models/{Module}.js'],
+            files: ['app/Controllers/Http/Admin/{Module}Controller.js', 'app/Services/{Module}Service.js', 'app/Models/Table/相关表文件'],
           },
           {
             type: 'config',

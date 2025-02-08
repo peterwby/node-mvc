@@ -10,7 +10,7 @@
     "debug": "node --inspect-brk=5858 server.js",
     "test": "nyc node ace test",
     "dev": "concurrently \"adonis serve --dev\" \"pnpm css:watch\"",
-    "dev:no-watch": "adonis serve",
+    "generator": "adonis serve",
     "css:build": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css",
     "css:watch": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css --watch",
     "css:prod": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css --minify",
