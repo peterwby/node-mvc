@@ -2,6 +2,8 @@
 
 const path = require('path')
 const moduleAlias = require('module-alias')
+const { configure, run } = require('@japa/runner')
+const { assert } = require('@japa/assert')
 
 // 添加模块别名
 moduleAlias.addAliases({
@@ -18,13 +20,10 @@ global.use = (name) => {
   throw new Error(`Unknown module: ${name}`)
 }
 
-const { configure, run } = require('@japa/runner')
-const { assert } = require('@japa/assert')
-
 configure({
-  files: [path.join(__dirname, 'parser.test.js')],
+  files: process.argv[2] === 'tmp' ? [path.join(__dirname, 'tmp.test.js')] : [path.join(__dirname, '**/parser.test.js')],
   plugins: [assert()],
-  timeout: 10000,
+  timeout: 0,
   bail: true,
 })
 
