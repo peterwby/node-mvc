@@ -10,12 +10,12 @@ const Database = use('Database')
  * SQL解析器类
  */
 class SqlParser {
-  constructor() {
+  constructor(options = {}) {
     this.parser = new Parser()
     this.options = {
       database: 'mysql', // 设置数据库类型
     }
-    this.logger = new Logger({ module: 'SqlParser' })
+    this.logger = options.logger || new Logger({ module: 'SqlParser' })
     this.fieldEnhancer = new FieldEnhancer()
   }
 
@@ -201,7 +201,7 @@ class SqlParser {
       try {
         this.logger.debug('获取表字段信息', { table_name: table.name })
         const fields = await Database.raw('SHOW FULL COLUMNS FROM ??', [table.name])
-        if (!fields || !fields[0]) {
+        if (!fields || !fields[0] || !fields[0].length) {
           this.logger.warn('未获取到表字段信息', { table_name: table.name })
           throw new GeneratorError(ERROR_CODES.TABLE_FIELDS_ERROR, `表[${table.name}]不存在或无字段信息`, 'parser_get_table_fields_empty')
         }

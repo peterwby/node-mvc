@@ -99,13 +99,18 @@ class FieldEnhancer {
       // 1. 基本信息
       const enhanced = {
         ...field,
-        name: field.name || field.alias || field.original, // 优先使用name，其次是alias，最后是original
-        required: this._isRequired(field, tableField),
-        comment: this._getComment(field, tableField),
-        html_type: this._inferHtmlType(field.name, field.type),
-        form_type: this._inferFormType(field.name, tableField),
-        validation: {},
       }
+
+      // 1.1 设置基础属性
+      enhanced.name = field.name || field.alias
+      this.logger.debug('基础属性设置完成:', { name: enhanced.name })
+
+      // 1.2 设置依赖于name的派生属性
+      enhanced.required = this._isRequired(enhanced, tableField)
+      enhanced.comment = this._getComment(enhanced, tableField)
+      enhanced.html_type = this._inferHtmlType(enhanced.name, field.type)
+      enhanced.form_type = this._inferFormType(enhanced.name, tableField)
+      enhanced.validation = {}
       this.logger.debug('基本信息设置完成:', { enhanced })
 
       // 2. 可编辑性
