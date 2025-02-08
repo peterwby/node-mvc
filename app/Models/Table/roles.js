@@ -40,6 +40,28 @@ class RolesTable extends BaseTable {
     }
     super(data)
   }
+
+  /**
+   * 获取关联信息
+   * @example
+   * fetchDetailById(id)
+   */
+  async fetchDetailById(id) {
+    try {
+      let result = await Database.select('a.role_id', 'a.name', 'a.description', 'a.created_at', 'a.updated_at').from('roles as a').where('a.role_id', id)
+      let data = result[0] || {}
+      return Util.end({
+        data,
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        data: { table: this.tableName },
+        track: 'table_fetchDetailById_1586339053',
+      })
+    }
+  }
 }
 
 module.exports = RolesTable

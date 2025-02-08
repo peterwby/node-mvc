@@ -77,6 +77,17 @@ Route.group(() => {
     //通用
 
     Route.post('upload/image', 'CommonController.uploadImage')
+    // permissions
+    Route.post('permissions/get-list', 'PermissionsController.getList')
+    Route.post('permissions/create-info', 'PermissionsController.createInfo')
+    Route.post('permissions/update-info', 'PermissionsController.updateInfo')
+    Route.post('permissions/remove', 'PermissionsController.remove')
+
+    // roles
+    Route.post('roles/get-list', 'RolesController.getList')
+    Route.post('roles/create-info', 'RolesController.createInfo')
+    Route.post('roles/update-info', 'RolesController.updateInfo')
+    Route.post('roles/remove', 'RolesController.remove')
 
     //用户
     Route.post('member/get-list', 'MemberController.getList')
@@ -99,6 +110,17 @@ Route.group(() => {
 Route.group(() => {
   try {
     Route.get('/', 'HomeController.home')
+    // permissions
+    Route.get('permissions/list', 'PermissionsController.list')
+    Route.get('permissions/create', 'PermissionsController.create')
+    Route.get('permissions/edit/:id', 'PermissionsController.edit')
+    Route.get('permissions/view/:id', 'PermissionsController.view')
+
+    // roles
+    Route.get('roles/list', 'RolesController.list')
+    Route.get('roles/create', 'RolesController.create')
+    Route.get('roles/edit/:id', 'RolesController.edit')
+    Route.get('roles/view/:id', 'RolesController.view')
 
     Route.get('member/list', 'MemberController.list')
     Route.get('member/view/:member_id', 'MemberController.view')

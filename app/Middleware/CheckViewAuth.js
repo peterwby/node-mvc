@@ -40,6 +40,7 @@ class CheckViewAuth {
 
       // 菜单权限检查
       if (!Util.checkPermission(viewPath, permissions)) {
+        console.log('已有权限：', permissions)
         console.log('没有该权限：', viewPath)
         return ctx.response.redirect('/admin/auth/sign-in')
       }

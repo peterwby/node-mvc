@@ -53,6 +53,30 @@ class PermissionsTable extends BaseTable {
     }
     super(data)
   }
+
+  /**
+   * 获取关联信息
+   * @example
+   * fetchDetailById(id)
+   */
+  async fetchDetailById(id) {
+    try {
+      let result = await Database.select('a.permission_id', 'a.name', 'a.key', 'a.type', 'a.description', 'a.created_at', 'a.updated_at')
+        .from('permissions  as a')
+        .where('a.permission_id', id)
+      let data = result[0] || {}
+      return Util.end({
+        data,
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        data: { table: this.tableName },
+        track: 'table_fetchDetailById_1586339053',
+      })
+    }
+  }
 }
 
 module.exports = PermissionsTable
