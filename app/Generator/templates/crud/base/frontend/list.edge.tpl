@@ -125,7 +125,7 @@
       <%if(has_primary_key)%>
       ${primary_key}: {
         render: (item) => {
-          return '<input class="form-check-input m-0 align-middle" type="checkbox" value="' + item + '">'
+          return '<input class="checkbox checkbox-sm" data-datatable-row-check="true" type="checkbox" value="' + item + '">'
         },
       },
       <%endif%>
