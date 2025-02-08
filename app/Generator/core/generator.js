@@ -417,25 +417,25 @@ class CodeGenerator {
           },
           // 元素权限（4个）
           {
-            name: '编辑按钮',
+            name: `${moduleName}编辑按钮`,
             type: 'element',
             key: `/admin/${moduleName.toLowerCase()}/list@edit`,
             description: `${moduleName}列表中的编辑按钮`,
           },
           {
-            name: '删除按钮',
+            name: `${moduleName}删除按钮`,
             type: 'element',
             key: `/admin/${moduleName.toLowerCase()}/list@remove`,
             description: `${moduleName}列表中的删除按钮`,
           },
           {
-            name: '创建按钮',
+            name: `${moduleName}创建按钮`,
             type: 'element',
             key: `/admin/${moduleName.toLowerCase()}/list@create`,
             description: `${moduleName}列表中的创建按钮`,
           },
           {
-            name: '批量删除按钮',
+            name: `${moduleName}批量删除按钮`,
             type: 'element',
             key: `/admin/${moduleName.toLowerCase()}/list@batch-remove`,
             description: `${moduleName}列表中的批量删除按钮`,
