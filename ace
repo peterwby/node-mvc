@@ -1,5 +1,14 @@
 'use strict'
-
+const path = require('path')
+require('node-require-alias').setAlias({
+  ['@Table']: path.join(__dirname, '/app/Models/Table'),
+  ['@Join']: path.join(__dirname, '/app/Models/Join.js'),
+  ['@Models']: path.join(__dirname, '/app/Models'),
+  ['@Services']: path.join(__dirname, '/app/Services'),
+  ['@Lib']: path.join(__dirname, '/app/Lib'),
+  ['@BaseClass']: path.join(__dirname, '/app/BaseClass'),
+  ['@Middleware']: path.join(__dirname, '/app/Middleware'),
+})
 /*
 |--------------------------------------------------------------------------
 | Ace Commands
@@ -15,7 +24,4 @@
 
 const { Ignitor } = require('@adonisjs/ignitor')
 
-new Ignitor(require('@adonisjs/fold'))
-  .appRoot(__dirname)
-  .fireAce()
-  .catch(console.error)
+new Ignitor(require('@adonisjs/fold')).appRoot(__dirname).fireAce().catch(console.error)

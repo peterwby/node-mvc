@@ -128,23 +128,23 @@
 <script src="/assets/vendors/@form-validation/form-validation.bundle.js"></script>
 <script>
   // 声明为全局变量
-  
-    
-  
-    
-  
-    
+
+
+
+
+
+
   var descriptionEditor;
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
+
+
+
+
+
+
+
+
+
+
   var validator;
 
   /**
@@ -155,8 +155,8 @@
 
     validator = FormValidation.formValidation(form, {
       fields: {
-        
-          
+
+
         id: {
           validators: {
             notEmpty: {
@@ -164,9 +164,9 @@
             }
           }
         },
-          
-        
-          
+
+
+
         role_name: {
           validators: {
             notEmpty: {
@@ -174,9 +174,9 @@
             }
           }
         },
-          
-        
-          
+
+
+
         description: {
           validators: {
             notEmpty: {
@@ -184,9 +184,9 @@
             }
           }
         },
-          
-        
-          
+
+
+
         created_at: {
           validators: {
             notEmpty: {
@@ -194,9 +194,9 @@
             }
           }
         },
-          
-        
-          
+
+
+
         updated_at: {
           validators: {
             notEmpty: {
@@ -204,9 +204,9 @@
             }
           }
         },
-          
-        
-          
+
+
+
         permission_count: {
           validators: {
             notEmpty: {
@@ -214,9 +214,9 @@
             }
           }
         },
-          
-        
-          
+
+
+
         member_count: {
           validators: {
             notEmpty: {
@@ -224,8 +224,8 @@
             }
           }
         },
-          
-        
+
+
       },
       plugins: {
         trigger: new FormValidation.plugins.Trigger(),
@@ -244,12 +244,12 @@
 
   document.addEventListener('DOMContentLoaded', async function() {
     try {
-      
-        
-      
-        
-      
-        
+
+
+
+
+
+
       // 创建编辑器实例
       descriptionEditor = await new RichEditor('#description', 'simple');
 
@@ -258,16 +258,16 @@
       if (descriptionData) {
         descriptionEditor.setContents(descriptionData);
       }
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
+
+
+
+
+
+
+
+
+
+
 
       // 初始化表单验证
       validator = initFormValidation();
@@ -289,27 +289,27 @@
         throw new Error(trans('please check the form'));
       }
 
-      
-        
-      
-        
-      
-        
+
+
+
+
+
+
       // 获取富文本框内容并添加到表单数据
       if (descriptionEditor) {
         const content = descriptionEditor.getContents();
         formData.append('description', JSON.stringify(content));
       }
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
+
+
+
+
+
+
+
+
+
+
 
       const response = await axios.post('/api/roles/update-info', formData, {
         headers: {
