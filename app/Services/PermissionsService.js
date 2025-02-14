@@ -3,7 +3,7 @@
 const Database = use('Database')
 const BaseService = require('@BaseClass/BaseService')
 const Util = require('@Lib/Util')
-const log = use('Logger')
+const moment = require('moment')
 const PermissionsTable = require('@Table/permissions')
 const permissionsTable = new PermissionsTable()
 
@@ -31,28 +31,12 @@ class PermissionsService extends BaseService {
    */
   async getList(ctx) {
     try {
+      let result = {}
       const { body } = ctx
-      const { page = 1, limit = 10, ...filters } = body
-
-      // 构建查询条件
-      const where = []
-
-      if (filters.id) {
-        where.push(['id', 'like', `%filters.id}%`])
-      }
-
-      if (filters.permission_name) {
-        where.push(['permission_name', 'like', `%filters.permission_name}%`])
-      }
-
-      // 查询数据
-      const result = await permissionsTable.fetchAll({
-        where,
-        page,
-        limit,
+      result = await permissionsTable.fetchListBy(body)
+      return Util.end({
+        data: result.data,
       })
-
-      return result
     } catch (err) {
       return Util.error({
         msg: err.message,
@@ -66,10 +50,12 @@ class PermissionsService extends BaseService {
    */
   async create(ctx) {
     try {
+      const type_list = ['menu', 'api', 'element']
+      const data = {
+        type_list,
+      }
       return Util.end({
-        data: {
-          title: '创建permissions',
-        },
+        data,
       })
     } catch (err) {
       return Util.error({
@@ -96,10 +82,21 @@ class PermissionsService extends BaseService {
         })
       }
 
+      const type_list = ['menu', 'api', 'element']
+
+      const info = {
+        ...result.data,
+        id: result.data.permission_id,
+        permission_name: result.data.name,
+        created_at: moment(result.data.created_at).format('YYYY-MM-DD HH:mm:ss'),
+        updated_at: moment(result.data.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+      }
+
       return Util.end({
         data: {
           title: '编辑permissions',
-          info: result.data,
+          type_list,
+          info: info,
         },
       })
     } catch (err) {
@@ -127,10 +124,18 @@ class PermissionsService extends BaseService {
         })
       }
 
+      const info = {
+        ...result.data,
+        id: result.data.permission_id,
+        permission_name: result.data.name,
+        created_at: moment(result.data.created_at).format('YYYY-MM-DD HH:mm:ss'),
+        updated_at: moment(result.data.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+      }
+
       return Util.end({
         data: {
           title: 'permissions详情',
-          info: result.data,
+          info: info,
         },
       })
     } catch (err) {
@@ -149,7 +154,7 @@ class PermissionsService extends BaseService {
       let result = {}
       const { body } = ctx
       //检查数据是否已存在
-      result = await permissionsTable.checkExistByColumn({ id: body.id })
+      result = await permissionsTable.checkExistByColumn({ name: body.permission_name })
       if (result.data.is_exist) {
         return Util.end({
           status: 0,
@@ -184,8 +189,8 @@ class PermissionsService extends BaseService {
 
       await Database.transaction(async (trx) => {
         result = await permissionsTable.updateBy(trx, {
-          where: [],
-          set: {},
+          where: [['permission_id', '=', body.id]],
+          set: { name: body.permission_name, key: body.key, description: body.description },
         })
         if (result.status === 0) {
           throw new Error('保存失败')

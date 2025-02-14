@@ -304,27 +304,108 @@ class MemberController {
 
   async remove(ctx) {
     try {
-      let result = {}
       //检查参数合法性
       const resultValid = await removeValid(ctx)
       if (resultValid) return resultValid
+
       //调用业务逻辑Service
-      result = await memberService.remove(ctx)
-      //组装从Service返回的数据，返回给前端
+      const result = await memberService.remove(ctx)
+
+      return Util.end2front({
+        msg: '删除成功',
+        data: result.data,
+      })
+    } catch (err) {
+      return Util.error2front({
+        msg: err.message,
+        track: 'controller_remove_1586096752',
+      })
+    }
+  }
+
+  /**
+   * 显示角色配置页面
+   */
+  async roles(ctx) {
+    try {
+      //检查参数合法性
+      const resultValid = await rolesValid(ctx)
+      if (resultValid) return resultValid
+
+      //调用业务逻辑Service
+      const result = await memberService.edit(ctx)
       if (result.status === 0) {
         return Util.end2front({
           msg: result.msg,
           code: 9000,
         })
       }
+
+      //组装从Service返回的数据，返回给前端
+      const data = result.data
+
+      //渲染视图
+      return ctx.view.render('admin.member.roles', data)
+    } catch (err) {
+      console.log(err)
+      return ctx.view.render('error.404')
+    }
+  }
+
+  /**
+   * 获取用户角色列表
+   */
+  async getRoles(ctx) {
+    try {
+      //检查参数合法性
+      const resultValid = await getRolesValid(ctx)
+      if (resultValid) return resultValid
+
+      //调用业务逻辑Service
+      const result = await memberService.getRoles(ctx)
+      if (result.status === 0) {
+        return Util.end2front({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
+
       return Util.end2front({
-        msg: '已删除',
+        data: result.data,
       })
     } catch (err) {
       return Util.error2front({
-        //isShowMsg: true,
         msg: err.message,
-        track: 'controller_remove_1586354164',
+        track: 'controller_getRoles_1586096752',
+      })
+    }
+  }
+
+  /**
+   * 保存用户角色配置
+   */
+  async saveRoles(ctx) {
+    try {
+      //检查参数合法性
+      const resultValid = await saveRolesValid(ctx)
+      if (resultValid) return resultValid
+
+      //调用业务逻辑Service
+      const result = await memberService.saveRoles(ctx)
+      if (result.status === 0) {
+        return Util.end2front({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
+
+      return Util.end2front({
+        msg: result.msg,
+      })
+    } catch (err) {
+      return Util.error2front({
+        msg: err.message,
+        track: 'controller_saveRoles_1586096752',
       })
     }
   }
@@ -873,7 +954,7 @@ async function editValid(ctx) {
       let body = {}
       for (let k in requestAll) {
         switch (k.toLowerCase()) {
-          case 'id':
+          case 'member_id':
             {
               const tmp = Util.decode(requestAll[k])
               if (tmp) body.member_id = tmp
@@ -1015,4 +1096,147 @@ async function createInfoValid(ctx) {
     })
   }
 }
+
+/**
+ * 角色配置页面参数验证
+ */
+async function rolesValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //校验权限
+    const resultAuth = await authValid()
+    if (resultAuth) return resultAuth
+
+    return null
+  } catch (err) {
+    return Util.error2front({
+      msg: err.message,
+      track: 'valid_roles_1586096752',
+    })
+  }
+
+  async function paramsHandle() {
+    const { params } = ctx
+    let id = null
+    const tmp = params.id ? Util.decode(params.id) : null
+    if (tmp) id = tmp
+    ctx.body = {
+      member_id: id,
+    }
+  }
+
+  async function paramsValid() {
+    const rules = {
+      member_id: 'required|integer',
+    }
+    const validation = await validate(ctx.body, rules)
+    if (validation.fails()) {
+      throw new Error('参数错误')
+    }
+  }
+
+  async function authValid() {
+    return null
+  }
+}
+
+/**
+ * 获取角色列表参数验证
+ */
+async function getRolesValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //校验权限
+    const resultAuth = await authValid()
+    if (resultAuth) return resultAuth
+
+    return null
+  } catch (err) {
+    return Util.error2front({
+      msg: err.message,
+      track: 'valid_getRoles_1586096752',
+    })
+  }
+
+  async function paramsHandle() {
+    const { params } = ctx
+    let id = null
+    const tmp = params.id ? Util.decode(params.id) : null
+    if (tmp) id = tmp
+    ctx.body = {
+      id: id,
+    }
+  }
+
+  async function paramsValid() {
+    const rules = {
+      id: 'required|integer',
+    }
+    const validation = await validate(ctx.body, rules)
+    if (validation.fails()) {
+      throw new Error('参数错误')
+    }
+  }
+
+  async function authValid() {
+    return null
+  }
+}
+
+/**
+ * 保存角色参数验证
+ */
+async function saveRolesValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //校验权限
+    const resultAuth = await authValid()
+    if (resultAuth) return resultAuth
+
+    return null
+  } catch (err) {
+    return Util.error2front({
+      msg: err.message,
+      track: 'valid_saveRoles_1586096752',
+    })
+  }
+
+  async function paramsHandle() {
+    const { params, request } = ctx
+
+    let id = null
+    const tmp = params.id ? Util.decode(params.id) : null
+    if (tmp) id = tmp
+    ctx.body = {
+      id: id,
+      role_ids: request.body.role_ids || [],
+    }
+  }
+
+  async function paramsValid() {
+    const rules = {
+      id: 'required|integer',
+      role_ids: 'array',
+      'role_ids.*': 'integer',
+    }
+    const validation = await validate(ctx.body, rules)
+    if (validation.fails()) {
+      throw new Error('参数错误')
+    }
+  }
+
+  async function authValid() {
+    return null
+  }
+}
+
 module.exports = MemberController

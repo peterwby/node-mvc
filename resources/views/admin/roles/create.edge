@@ -17,7 +17,9 @@
         <button type="submit" class="btn btn-sm btn-primary" form="create_form" id="submit_btn">
           <span class="indicator-label">{{ trans('submit') }}</span>
           <span class="indicator-progress hidden">
-            <span class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full" role="status" aria-label="loading"></span>
+            <span
+              class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
+              role="status" aria-label="loading"></span>
           </span>
         </button>
       </div>
@@ -28,91 +30,27 @@
       <div class="card min-w-full">
         <div class="card-body">
           <form id="create_form" class="grid gap-5" method="POST">
-            
-              
-              
-                <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
-                  <label class="form-label max-w-56">
-                    {{ trans('主键ID') }}
-                  </label>
-                  <input id="id" name="id" class="input max-w-[300px]"
-                    placeholder="{{ trans('主键ID') }}" type="text"
-                    />
-                </div>
-              
-            
-              
-              
-                <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
-                  <label class="form-label max-w-56">
-                    {{ trans('角色名称') }}
-                  </label>
-                  <input id="role_name" name="role_name" class="input max-w-[300px]"
-                    placeholder="{{ trans('角色名称') }}" type="text"
-                    />
-                </div>
-              
-            
-              
-                <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5 h-[400px] content-start">
-                  <label class="form-label max-w-56">
-                    {{ trans('描述') }}
-                  </label>
-                  <div class="grow h-[250px] max-w-[800px]">
-                    <div id="description"></div>
-                  </div>
-                </div>
-              
-              
-            
-              
-              
-                <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
-                  <label class="form-label max-w-56">
-                    {{ trans('创建时间') }}
-                  </label>
-                  <input id="created_at" name="created_at" class="input max-w-[300px]"
-                    placeholder="{{ trans('创建时间') }}" type="text"
-                    />
-                </div>
-              
-            
-              
-              
-                <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
-                  <label class="form-label max-w-56">
-                    {{ trans('更新时间') }}
-                  </label>
-                  <input id="updated_at" name="updated_at" class="input max-w-[300px]"
-                    placeholder="{{ trans('更新时间') }}" type="text"
-                    />
-                </div>
-              
-            
-              
-              
-                <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
-                  <label class="form-label max-w-56">
-                    {{ trans('permission_count') }}
-                  </label>
-                  <input id="permission_count" name="permission_count" class="input max-w-[300px]"
-                    placeholder="{{ trans('permission_count') }}" type="text"
-                    />
-                </div>
-              
-            
-              
-              
-                <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
-                  <label class="form-label max-w-56">
-                    {{ trans('member_count') }}
-                  </label>
-                  <input id="member_count" name="member_count" class="input max-w-[300px]"
-                    placeholder="{{ trans('member_count') }}" type="text"
-                    />
-                </div>
-              
-            
+
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('name') }}
+              </label>
+              <input id="role_name" name="role_name" class="input max-w-[300px]" placeholder="{{ trans('name') }}"
+                type="text" />
+            </div>
+
+
+
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('description') }}
+              </label>
+              <textarea id="description" name="description" class="textarea max-w-[300px] h-[200px]"
+                placeholder="{{ trans('description') }}"></textarea>
+            </div>
+
+
           </form>
         </div>
       </div>
@@ -127,23 +65,7 @@
 <script src="/assets/vendors/@form-validation/form-validation.bundle.js"></script>
 <script>
   // 声明为全局变量
-  
-    
-  
-    
-  
-    
-  var descriptionEditor;
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
+
   var validator;
 
   /**
@@ -154,18 +76,7 @@
 
     validator = FormValidation.formValidation(form, {
       fields: {
-        
-          
-        id: {
-          validators: {
-            notEmpty: {
-              message: trans('please enter in the correct format')
-            }
-          }
-        },
-          
-        
-          
+
         role_name: {
           validators: {
             notEmpty: {
@@ -173,9 +84,7 @@
             }
           }
         },
-          
-        
-          
+
         description: {
           validators: {
             notEmpty: {
@@ -183,48 +92,7 @@
             }
           }
         },
-          
-        
-          
-        created_at: {
-          validators: {
-            notEmpty: {
-              message: trans('please enter in the correct format')
-            }
-          }
-        },
-          
-        
-          
-        updated_at: {
-          validators: {
-            notEmpty: {
-              message: trans('please enter in the correct format')
-            }
-          }
-        },
-          
-        
-          
-        permission_count: {
-          validators: {
-            notEmpty: {
-              message: trans('please enter in the correct format')
-            }
-          }
-        },
-          
-        
-          
-        member_count: {
-          validators: {
-            notEmpty: {
-              message: trans('please enter in the correct format')
-            }
-          }
-        },
-          
-        
+
       },
       plugins: {
         trigger: new FormValidation.plugins.Trigger(),
@@ -243,25 +111,6 @@
 
   document.addEventListener('DOMContentLoaded', async function() {
     try {
-      
-        
-      
-        
-      
-        
-      // 创建编辑器实例
-      descriptionEditor = await new RichEditor('#description', 'simple');
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-
       // 初始化表单验证
       validator = initFormValidation();
 
@@ -281,28 +130,6 @@
       if (isValid === 'Invalid') {
         throw new Error(trans('please check the form'));
       }
-
-      
-        
-      
-        
-      
-        
-      // 获取富文本框内容并添加到表单数据
-      if (descriptionEditor) {
-        const content = descriptionEditor.getContents();
-        formData.append('description', JSON.stringify(content));
-      }
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
 
       const response = await axios.post('/api/roles/create-info', formData, {
         headers: {

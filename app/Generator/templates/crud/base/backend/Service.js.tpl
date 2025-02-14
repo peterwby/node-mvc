@@ -31,31 +31,12 @@ class ${module_name | pascal}Service extends BaseService {
    */
   async getList(ctx) {
     try {
+      let result = {}
       const { body } = ctx
-      const { page = 1, limit = 10, ...filters } = body
-
-      // 构建查询条件
-      const where = []
-      <%each(field in fields)%>
-        <%if(field.filterable)%>
-          if (filters.${field.name}) {
-            <%if(field.type === 'string')%>
-              where.push(['${field.name}', 'like', `%${filters.${field.name}}%`])
-            <%else%>
-              where.push(['${field.name}', '=', filters.${field.name}])
-            <%endif%>
-          }
-        <%endif%>
-      <%endeach%>
-
-      // 查询数据
-      const result = await ${module_name}Table.fetchAll({
-        where,
-        page,
-        limit
+      result = await ${module_name}Table.fetchListBy(body)
+      return Util.end({
+        data: result.data,
       })
-
-      return result
     } catch (err) {
       return Util.error({
         msg: err.message,

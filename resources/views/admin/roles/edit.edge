@@ -14,6 +14,10 @@
         <button type="button" class="btn btn-sm btn-light" onclick="window.history.back()">
           {{ trans('back') }}
         </button>
+        <a href="/admin/roles/permissions/{{ info.id }}" class="btn btn-sm btn-info">
+          <i class="fas fa-key"></i>
+          {{ trans('configure_permissions') }}
+        </a>
         <button type="submit" class="btn btn-sm btn-primary" form="edit_form" id="submit_btn">
           <span class="indicator-label">{{ trans('submit') }}</span>
           <span class="indicator-progress hidden">
@@ -33,86 +37,21 @@
             <input type="hidden" name="id" value="{{ info.id }}">
 
 
-
-
-
             <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
               <label class="form-label max-w-56">
-                {{ trans('主键ID') }}
+                {{ trans('name') }}
               </label>
-              <input id="id" name="id" class="input max-w-[300px]" placeholder="{{ trans('主键ID') }}" type="text"
-                value="{{ info.id || '' }}" />
-            </div>
-
-
-
-
-
-            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
-              <label class="form-label max-w-56">
-                {{ trans('角色名称') }}
-              </label>
-              <input id="role_name" name="role_name" class="input max-w-[300px]" placeholder="{{ trans('角色名称') }}"
+              <input id="role_name" name="role_name" class="input max-w-[300px]" placeholder="{{ trans('name') }}"
                 type="text" value="{{ info.role_name || '' }}" />
             </div>
 
-
-
-            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5 h-[400px] content-start">
-              <label class="form-label max-w-56">
-                {{ trans('描述') }}
-              </label>
-              <div class="grow h-[250px] max-w-[800px]">
-                <div id="description"></div>
-              </div>
-            </div>
-
-
-
             <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
               <label class="form-label max-w-56">
-                {{ trans('创建时间') }}
+                {{ trans('description') }}
               </label>
-              <input id="created_at" name="created_at" class="input max-w-[300px]" placeholder="{{ trans('创建时间') }}"
-                type="text" value="{{ info.created_at || '' }}" />
+              <textarea id="description" name="description" class="textarea max-w-[300px] h-[200px]"
+                placeholder="{{ trans('description') }}">{{ info.description || '' }}</textarea>
             </div>
-
-
-
-
-
-            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
-              <label class="form-label max-w-56">
-                {{ trans('更新时间') }}
-              </label>
-              <input id="updated_at" name="updated_at" class="input max-w-[300px]" placeholder="{{ trans('更新时间') }}"
-                type="text" value="{{ info.updated_at || '' }}" />
-            </div>
-
-
-
-
-
-            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
-              <label class="form-label max-w-56">
-                {{ trans('permission_count') }}
-              </label>
-              <input id="permission_count" name="permission_count" class="input max-w-[300px]"
-                placeholder="{{ trans('permission_count') }}" type="text" value="{{ info.permission_count || '' }}" />
-            </div>
-
-
-
-
-
-            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
-              <label class="form-label max-w-56">
-                {{ trans('member_count') }}
-              </label>
-              <input id="member_count" name="member_count" class="input max-w-[300px]"
-                placeholder="{{ trans('member_count') }}" type="text" value="{{ info.member_count || '' }}" />
-            </div>
-
 
           </form>
         </div>
@@ -128,23 +67,7 @@
 <script src="/assets/vendors/@form-validation/form-validation.bundle.js"></script>
 <script>
   // 声明为全局变量
-
-
-
-
-
-
   var descriptionEditor;
-
-
-
-
-
-
-
-
-
-
   var validator;
 
   /**
@@ -155,18 +78,6 @@
 
     validator = FormValidation.formValidation(form, {
       fields: {
-
-
-        id: {
-          validators: {
-            notEmpty: {
-              message: trans('please enter in the correct format')
-            }
-          }
-        },
-
-
-
         role_name: {
           validators: {
             notEmpty: {
@@ -175,8 +86,6 @@
           }
         },
 
-
-
         description: {
           validators: {
             notEmpty: {
@@ -184,48 +93,6 @@
             }
           }
         },
-
-
-
-        created_at: {
-          validators: {
-            notEmpty: {
-              message: trans('please enter in the correct format')
-            }
-          }
-        },
-
-
-
-        updated_at: {
-          validators: {
-            notEmpty: {
-              message: trans('please enter in the correct format')
-            }
-          }
-        },
-
-
-
-        permission_count: {
-          validators: {
-            notEmpty: {
-              message: trans('please enter in the correct format')
-            }
-          }
-        },
-
-
-
-        member_count: {
-          validators: {
-            notEmpty: {
-              message: trans('please enter in the correct format')
-            }
-          }
-        },
-
-
       },
       plugins: {
         trigger: new FormValidation.plugins.Trigger(),
@@ -244,30 +111,6 @@
 
   document.addEventListener('DOMContentLoaded', async function() {
     try {
-
-
-
-
-
-
-      // 创建编辑器实例
-      descriptionEditor = await new RichEditor('#description', 'simple');
-
-      // 如果有初始数据，设置到编辑器中
-      const descriptionData = '{{{ info.description || '' }}}';
-      if (descriptionData) {
-        descriptionEditor.setContents(descriptionData);
-      }
-
-
-
-
-
-
-
-
-
-
 
       // 初始化表单验证
       validator = initFormValidation();
@@ -288,28 +131,6 @@
       if (isValid === 'Invalid') {
         throw new Error(trans('please check the form'));
       }
-
-
-
-
-
-
-
-      // 获取富文本框内容并添加到表单数据
-      if (descriptionEditor) {
-        const content = descriptionEditor.getContents();
-        formData.append('description', JSON.stringify(content));
-      }
-
-
-
-
-
-
-
-
-
-
 
       const response = await axios.post('/api/roles/update-info', formData, {
         headers: {

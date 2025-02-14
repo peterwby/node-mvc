@@ -50,11 +50,9 @@ class PermissionsController {
       const { data } = result.data
       const finalData = data.map((item) => {
         return {
+          ...item,
           id: item.permission_id,
           permission_name: item.name,
-          identifier: item.key,
-          type: item.type,
-          description: item.description,
           created_at: moment(item.created_at).format('YYYY-MM-DD HH:mm:ss'),
         }
       })
@@ -312,6 +310,9 @@ async function getListValid(ctx) {
           case 'sortfield':
             body.sortField = requestAll[k]
             break
+          case 'permission_name':
+            body.permission_name = requestAll[k]
+            break
         }
       }
       if (!body.page) {
@@ -494,6 +495,20 @@ async function createInfoValid(ctx) {
       const requestAll = ctx.request.all()
       let body = {}
       for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'permission_name':
+            body.permission_name = Util.filterXss(requestAll[k])
+            break
+          case 'type':
+            body.type = Util.filterXss(requestAll[k])
+            break
+          case 'key':
+            body.key = Util.filterXss(requestAll[k])
+            break
+          case 'description':
+            body.description = Util.filterXss(requestAll[k])
+            break
+        }
       }
       ctx.body = Util.deepClone(body)
     }
@@ -529,6 +544,25 @@ async function updateInfoValid(ctx) {
       const requestAll = ctx.request.all()
       let body = {}
       for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'id':
+            {
+              body.id = parseInt(requestAll[k])
+            }
+            break
+          case 'permission_name':
+            body.permission_name = Util.filterXss(requestAll[k])
+            break
+          case 'type':
+            body.type = Util.filterXss(requestAll[k])
+            break
+          case 'key':
+            body.key = Util.filterXss(requestAll[k])
+            break
+          case 'description':
+            body.description = Util.filterXss(requestAll[k])
+            break
+        }
       }
       ctx.body = Util.deepClone(body)
     }

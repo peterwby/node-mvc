@@ -36,12 +36,10 @@
           <div class="flex flex-wrap gap-2 lg:gap-5">
             <form id="filter_form" class="flex flex-wrap gap-2 lg:gap-5" method="GET" action="/admin/permissions/list">
 
-
-
               <div class="flex">
                 <label class="input input-sm">
                   <i class="ki-filled ki-magnifier"></i>
-                  <input placeholder="{{ trans('权限名称') }}" name="permission_name" type="string"
+                  <input placeholder="{{ trans('name') }}" name="permission_name" type="string"
                     value="{{ request.input('permission_name') || '' }}">
                 </label>
               </div>
@@ -71,56 +69,37 @@
                       <input class="checkbox checkbox-sm" data-datatable-check="true" type="checkbox" />
                     </th>
 
-
-
                     <th class="min-w-[120px]">
                       <span class="sort ">
                         <span class="sort-label font-normal text-gray-700">
-                          {{ trans('权限名称') }}
+                          {{ trans('name') }}
                         </span>
                         <span class="sort-icon"></span>
                       </span>
                     </th>
 
-
-
                     <th class="min-w-[120px]">
                       <span class="sort ">
                         <span class="sort-label font-normal text-gray-700">
-                          {{ trans('identifier') }}
+                          {{ trans('type') }}
                         </span>
                         <span class="sort-icon"></span>
                       </span>
                     </th>
 
-
-
                     <th class="min-w-[120px]">
                       <span class="sort ">
                         <span class="sort-label font-normal text-gray-700">
-                          {{ trans('描述') }}
+                          {{ trans('key') }}
                         </span>
                         <span class="sort-icon"></span>
                       </span>
                     </th>
-
-
 
                     <th class="min-w-[120px]">
                       <span class="sort ">
                         <span class="sort-label font-normal text-gray-700">
                           {{ trans('创建时间') }}
-                        </span>
-                        <span class="sort-icon"></span>
-                      </span>
-                    </th>
-
-
-
-                    <th class="min-w-[120px]">
-                      <span class="sort ">
-                        <span class="sort-label font-normal text-gray-700">
-                          {{ trans('role_count') }}
                         </span>
                         <span class="sort-icon"></span>
                       </span>
@@ -169,71 +148,57 @@
     pageSize: initialState.pageSize,
     initialPage: initialState.page,
     columns: {
-
       id: {
-        render: (item) => {
-          return '<input class="checkbox checkbox-sm" data-datatable-row-check="true" type="checkbox" value="' + item + '">'
-        },
+      render: (item) => {
+      return '<input class="checkbox checkbox-sm" data-datatable-row-check="true" type="checkbox" value="' + item + '">'
+      },
+      },
+
+      permission_name: {
+
+      render: (item) => {
+
+      return '<div>' + (item || trans('no data')) + '</div>'
+
+      },
+
       },
 
 
-        permission_name: {
 
-          render: (item) => {
+      key: {
 
-            return '<div>' + (item || trans('no data')) + '</div>'
+      render: (item) => {
 
-          },
+      return '<div>' + (item || trans('no data')) + '</div>'
 
-        },
+      },
 
-
-
-        identifier: {
-
-          render: (item) => {
-
-            return '<div>' + (item || trans('no data')) + '</div>'
-
-          },
-
-        },
+      },
 
 
 
-        description: {
+      type: {
 
-          render: (item) => {
+      render: (item) => {
 
-            return '<div>' + (item || trans('no data')) + '</div>'
+      return '<div>' + (item || trans('no data')) + '</div>'
 
-          },
+      },
 
-        },
-
-
-
-        created_at: {
-
-          render: (item) => {
-
-            return '<div>' + (item || trans('no data')) + '</div>'
-
-          },
-
-        },
+      },
 
 
 
-        role_count: {
+      created_at: {
 
-          render: (item) => {
+      render: (item) => {
 
-            return '<div>' + (item || trans('no data')) + '</div>'
+      return '<div>' + (item || trans('no data')) + '</div>'
 
-          },
+      },
 
-        },
+      },
 
 
       action: {

@@ -462,7 +462,7 @@ class Service extends BaseService {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: 'service_view_' + Date.now(),
+        track: 'service_view_173763702235',
       })
     }
   }
@@ -506,7 +506,75 @@ class Service extends BaseService {
     } catch (err) {
       return Util.error({
         msg: err.message,
-        track: 'service_edit_' + Date.now(),
+        track: 'service_edit_173763705235',
+      })
+    }
+  }
+
+  /**
+   * 获取用户角色列表
+   */
+  async getRoles(ctx) {
+    try {
+      let result = {}
+      const { body } = ctx
+      const { id } = body
+
+      // 获取所有角色
+      const allRoles = await Database.table('roles').select('role_id', 'name', 'description').orderBy('role_id', 'asc')
+
+      // 获取用户当前角色
+      const userRoles = await Database.table('member_roles').where('member_id', id).pluck('role_id')
+
+      // 标记用户已有的角色
+      const roles = allRoles.map((role) => ({
+        ...role,
+        checked: userRoles.includes(role.role_id),
+      }))
+
+      return Util.end({
+        data: roles,
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        track: 'service_getRoles_1586096752',
+      })
+    }
+  }
+
+  /**
+   * 保存用户角色配置
+   */
+  async saveRoles(ctx) {
+    const trx = await Database.beginTransaction()
+    try {
+      const { body } = ctx
+      const { id, role_ids } = body
+
+      // 删除用户现有角色
+      await Database.table('member_roles').where('member_id', id).transacting(trx).delete()
+
+      // 添加新角色
+      if (role_ids.length > 0) {
+        const roleData = role_ids.map((role_id) => ({
+          member_id: id,
+          role_id,
+        }))
+
+        await Database.table('member_roles').transacting(trx).insert(roleData)
+      }
+
+      await trx.commit()
+
+      return Util.end({
+        msg: '保存成功',
+      })
+    } catch (err) {
+      await trx.rollback()
+      return Util.error({
+        msg: err.message,
+        track: 'service_saveRoles_1586096752',
       })
     }
   }

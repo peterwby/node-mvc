@@ -75,7 +75,6 @@ Route.group(() => {
 Route.group(() => {
   try {
     //通用
-
     Route.post('upload/image', 'CommonController.uploadImage')
     // permissions
     Route.post('permissions/get-list', 'PermissionsController.getList')
@@ -88,6 +87,8 @@ Route.group(() => {
     Route.post('roles/create-info', 'RolesController.createInfo')
     Route.post('roles/update-info', 'RolesController.updateInfo')
     Route.post('roles/remove', 'RolesController.remove')
+    Route.get('roles/get-permissions/:id', 'RolesController.getPermissions')
+    Route.post('roles/save-permissions/:id', 'RolesController.savePermissions')
 
     //用户
     Route.post('member/get-list', 'MemberController.getList')
@@ -96,6 +97,8 @@ Route.group(() => {
     Route.post('member/update-info', 'MemberController.updateInfo')
     Route.post('member/create-info', 'MemberController.createInfo')
     Route.post('member/remove', 'MemberController.remove')
+    Route.get('member/get-roles/:id', 'MemberController.getRoles')
+    Route.post('member/save-roles/:id', 'MemberController.saveRoles')
   } catch (err) {
     return Util.end2front({
       msg: 'Not found the API',
@@ -121,14 +124,14 @@ Route.group(() => {
     Route.get('roles/create', 'RolesController.create')
     Route.get('roles/edit/:id', 'RolesController.edit')
     Route.get('roles/view/:id', 'RolesController.view')
+    Route.get('roles/permissions/:id', 'RolesController.permissions')
 
     Route.get('member/list', 'MemberController.list')
     Route.get('member/view/:member_id', 'MemberController.view')
     Route.get('member/edit/:member_id', 'MemberController.edit')
-    Route.post('member/edit-password', 'MemberController.updatePassword')
     Route.post('member/edit-info', 'MemberController.editInfo')
     Route.get('member/create', 'MemberController.create')
-    Route.post('member/logout', 'MemberController.logout')
+    Route.get('member/roles/:id', 'MemberController.roles')
   } catch (err) {
     return Util.end2front({
       msg: 'Not found the API',

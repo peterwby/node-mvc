@@ -28,7 +28,7 @@ const Util = {
       }
       let result = transObj[`node#${source}`]
       if (!result) {
-        console.log('找不到翻译:', source)
+        console.log('服务端找不到翻译:', source)
         return source
       }
 

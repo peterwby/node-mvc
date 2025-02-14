@@ -54,7 +54,7 @@ class CommonService extends BaseService {
       if (!currentLangInfo) {
         throw new Error('No selected or default language found')
       }
-      // console.log('currentLangInfo', currentLangInfo)
+
       const transResponse = await Request.get(currentLangInfo.url)
       if (!transResponse || !transResponse.data) {
         throw new Error('Invalid translation data')

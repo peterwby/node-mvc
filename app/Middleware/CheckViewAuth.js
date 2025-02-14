@@ -30,8 +30,10 @@ class CheckViewAuth {
       const permissions = session.get('permissions') || {}
       const url = ctx.request.url()
       // 去掉 query 参数
-      const viewPath = url.split('?')[0]
-
+      let viewPath = url.split('?')[0]
+      if (viewPath === '/admin') {
+        viewPath = '/admin/'
+      }
       // 检查是否在白名单中
       if (CheckViewAuth.whiteList.includes(viewPath)) {
         await next()

@@ -17,7 +17,7 @@ class PermissionsTable extends BaseTable {
           type: 'string',
           length: 100,
           nullable: false,
-          comment: '权限名称',
+          comment: 'name',
         },
         type: {
           type: 'enum',
@@ -74,6 +74,36 @@ class PermissionsTable extends BaseTable {
         stack: err.stack,
         data: { table: this.tableName },
         track: 'table_fetchDetailById_1586339053',
+      })
+    }
+  }
+
+  /**
+   * 列表信息
+   * @example
+   * fetchListBy({ role_name, page, limit })
+   */
+  async fetchListBy(obj) {
+    try {
+      let result = {}
+      const table = Database.clone()
+      table
+        .select('a.permission_id', 'a.name', 'a.key', 'a.type', 'a.description', 'a.created_at', 'a.updated_at')
+        .from('permissions as a')
+        .orderBy('a.permission_id', 'desc')
+
+      if (obj.permission_name) {
+        table.where('a.name', 'like', `%${obj.permission_name}%`)
+      }
+      result = await table.paginate(obj.page, obj.limit)
+      return Util.end({
+        data: result,
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        data: { table: this.tableName },
+        track: 'fetchListBy_1581552645',
       })
     }
   }

@@ -17,7 +17,7 @@ class RolesTable extends BaseTable {
           type: 'string',
           length: 50,
           nullable: false,
-          comment: '角色名称',
+          comment: 'name',
         },
         description: {
           type: 'string',
@@ -48,7 +48,19 @@ class RolesTable extends BaseTable {
    */
   async fetchDetailById(id) {
     try {
-      let result = await Database.select('a.role_id', 'a.name', 'a.description', 'a.created_at', 'a.updated_at').from('roles as a').where('a.role_id', id)
+      let result = await Database.select(
+        'a.role_id',
+        'a.name',
+        'a.description',
+        'a.created_at',
+        'a.updated_at',
+        Database.raw('COUNT(DISTINCT b.member_id) as member_count') // 添加成员数量统计
+      )
+        .from('roles as a')
+        .leftJoin('member_roles as b', 'a.role_id', 'b.role_id') // 添加左连接
+        .where('a.role_id', id)
+        .groupBy('a.role_id', 'a.name', 'a.description', 'a.created_at', 'a.updated_at') // 添加分组
+        .orderBy('a.role_id', 'desc')
       let data = result[0] || {}
       return Util.end({
         data,
@@ -59,6 +71,45 @@ class RolesTable extends BaseTable {
         stack: err.stack,
         data: { table: this.tableName },
         track: 'table_fetchDetailById_1586339053',
+      })
+    }
+  }
+
+  /**
+   * 列表信息
+   * @example
+   * fetchListBy({ role_name, page, limit })
+   */
+  async fetchListBy(obj) {
+    try {
+      let result = {}
+      const table = Database.clone()
+      table
+        .select(
+          'a.role_id',
+          'a.name',
+          'a.description',
+          'a.created_at',
+          'a.updated_at',
+          Database.raw('COUNT(DISTINCT b.member_id) as member_count') // 添加成员数量统计
+        )
+        .from('roles as a')
+        .leftJoin('member_roles as b', 'a.role_id', 'b.role_id') // 添加左连接
+        .groupBy('a.role_id', 'a.name', 'a.description', 'a.created_at', 'a.updated_at') // 添加分组
+        .orderBy('a.role_id', 'desc')
+
+      if (obj.role_name) {
+        table.where('a.name', 'like', `%${obj.role_name}%`)
+      }
+      result = await table.paginate(obj.page, obj.limit)
+      return Util.end({
+        data: result,
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        data: { table: this.tableName },
+        track: 'fetchListBy_1581552645',
       })
     }
   }

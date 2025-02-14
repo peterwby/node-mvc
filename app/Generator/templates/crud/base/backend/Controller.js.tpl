@@ -155,6 +155,12 @@ class ${module_name | pascal}Controller {
 
       //调用业务逻辑Service
       const result = await ${module_name}Service.createInfo(ctx)
+      if (result.status === 0) {
+        return Util.end2front({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
 
       return Util.end2front({
         msg: '保存成功',

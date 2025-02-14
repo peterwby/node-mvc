@@ -15,6 +15,10 @@
         <button type="button" class="btn btn-sm btn-light" onclick="window.history.back()">
           {{ trans('back') }}
         </button>
+        <a href="/admin/member/roles/{{ member_info.member_id }}" class="btn btn-sm btn-info">
+          <i class="fas fa-users"></i>
+          {{ trans('configure_roles') }}
+        </a>
         <button type="submit" class="btn btn-sm btn-primary" form="edit_form" id="submit_btn">
           <span class="indicator-label">{{ trans('submit') }}</span>
           <span class="indicator-progress hidden">

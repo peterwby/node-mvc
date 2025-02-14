@@ -27,98 +27,63 @@
       <div class="card min-w-full">
         <div class="card-table scrollable-x-auto pb-3">
           <table class="table align-middle text-sm text-gray-500">
-            
-              
-              <tr>
-                <td class="py-2 text-gray-600 font-normal">
-                  {{ trans('主键ID') }}
-                </td>
-                <td class="py-2 text-gray-700 font-normal text-sm">
-                  
-                  {{ info.id }}
-                  
-                </td>
-              </tr>
-              
-            
-              
-              <tr>
-                <td class="py-2 text-gray-600 font-normal">
-                  {{ trans('角色名称') }}
-                </td>
-                <td class="py-2 text-gray-700 font-normal text-sm">
-                  
-                  {{ info.role_name }}
-                  
-                </td>
-              </tr>
-              
-            
-              
-              <tr>
-                <td class="py-2 text-gray-600 font-normal">
-                  {{ trans('描述') }}
-                </td>
-                <td class="py-2 text-gray-700 font-normal text-sm">
-                  
-                  <div id="description" class="h-[150px]"></div>
-                  
-                </td>
-              </tr>
-              
-            
-              
-              <tr>
-                <td class="py-2 text-gray-600 font-normal">
-                  {{ trans('创建时间') }}
-                </td>
-                <td class="py-2 text-gray-700 font-normal text-sm">
-                  
-                  {{ info.created_at }}
-                  
-                </td>
-              </tr>
-              
-            
-              
-              <tr>
-                <td class="py-2 text-gray-600 font-normal">
-                  {{ trans('更新时间') }}
-                </td>
-                <td class="py-2 text-gray-700 font-normal text-sm">
-                  
-                  {{ info.updated_at }}
-                  
-                </td>
-              </tr>
-              
-            
-              
-              <tr>
-                <td class="py-2 text-gray-600 font-normal">
-                  {{ trans('permission_count') }}
-                </td>
-                <td class="py-2 text-gray-700 font-normal text-sm">
-                  
-                  {{ info.permission_count }}
-                  
-                </td>
-              </tr>
-              
-            
-              
-              <tr>
-                <td class="py-2 text-gray-600 font-normal">
-                  {{ trans('member_count') }}
-                </td>
-                <td class="py-2 text-gray-700 font-normal text-sm">
-                  
-                  {{ info.member_count }}
-                  
-                </td>
-              </tr>
-              
-            
+
+            <tr>
+              <td class="py-2 text-gray-600 font-normal">
+                {{ trans('name') }}
+              </td>
+              <td class="py-2 text-gray-700 font-normal text-sm">
+
+                {{ info.role_name }}
+
+              </td>
+            </tr>
+
+            <tr>
+              <td class="py-2 text-gray-600 font-normal">
+                {{ trans('创建时间') }}
+              </td>
+              <td class="py-2 text-gray-700 font-normal text-sm">
+
+                {{ info.created_at }}
+
+              </td>
+            </tr>
+
+            <tr>
+              <td class="py-2 text-gray-600 font-normal">
+                {{ trans('更新时间') }}
+              </td>
+              <td class="py-2 text-gray-700 font-normal text-sm">
+
+                {{ info.updated_at }}
+
+              </td>
+            </tr>
+
+            <tr>
+              <td class="py-2 text-gray-600 font-normal">
+                {{ trans('member_count') }}
+              </td>
+              <td class="py-2 text-gray-700 font-normal text-sm">
+
+                {{ info.member_count }}
+
+              </td>
+            </tr>
+
+            <tr>
+              <td class="py-2 text-gray-600 font-normal">
+                {{ trans('description') }}
+              </td>
+              <td class="py-2 text-gray-700 font-normal text-sm">
+
+                {{ info.description }}
+
+              </td>
+            </tr>
+
+
           </table>
         </div>
       </div>
@@ -129,37 +94,8 @@
 @endsection
 
 @section('scripts')
-<script src="/assets/js/rich_editor/rich_editor.js"></script>
+
 <script>
-  document.addEventListener('DOMContentLoaded', async function() {
-    try {
-      
-        
-      
-        
-      
-        
-        // 创建只读编辑器实例
-        const descriptionEditor = await new RichEditor('#description', 'readonly');
-        // 如果有内容，则设置到编辑器中
-        const descriptionData = '{{{ info.description || '' }}}';
-        if (descriptionData) {
-          descriptionEditor.setContents(descriptionData);
-        }
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    } catch (error) {
-      console.error('编辑器初始化失败:', error);
-      Util.errorMsg(trans('please refresh the page and try again'));
-    }
-  });
+
 </script>
 @endsection

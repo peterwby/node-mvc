@@ -50,9 +50,9 @@ class RolesController {
       const { data } = result.data
       const finalData = data.map((item) => {
         return {
+          ...item,
           id: item.role_id,
           role_name: item.name,
-          description: item.description,
           created_at: moment(item.created_at).format('YYYY-MM-DD HH:mm:ss'),
         }
       })
@@ -163,6 +163,12 @@ class RolesController {
 
       //调用业务逻辑Service
       const result = await rolesService.createInfo(ctx)
+      if (result.status === 0) {
+        return Util.end2front({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
 
       return Util.end2front({
         msg: '保存成功',
@@ -226,6 +232,93 @@ class RolesController {
       return Util.error2front({
         msg: err.message,
         track: 'controller_remove_1739012356882',
+      })
+    }
+  }
+
+  /**
+   * 显示角色权限配置页面
+   */
+  async permissions(ctx) {
+    try {
+      //检查参数合法性
+      const resultValid = await permissionsValid(ctx)
+      if (resultValid) return resultValid
+
+      //调用业务逻辑Service
+      const result = await rolesService.edit(ctx)
+      if (result.status === 0) {
+        return Util.end2front({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
+
+      //组装从Service返回的数据，返回给前端
+      const data = result.data
+
+      //渲染视图
+      return ctx.view.render('admin.roles.permissions', data)
+    } catch (err) {
+      console.log(err)
+      return ctx.view.render('error.404')
+    }
+  }
+
+  /**
+   * 获取角色权限列表
+   */
+  async getPermissions(ctx) {
+    try {
+      //检查参数合法性
+      const resultValid = await getPermissionsValid(ctx)
+      if (resultValid) return resultValid
+
+      //调用业务逻辑Service
+      const result = await rolesService.getPermissions(ctx)
+      if (result.status === 0) {
+        return Util.end2front({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
+
+      return Util.end2front({
+        data: result.data,
+      })
+    } catch (err) {
+      return Util.error2front({
+        msg: err.message,
+        track: 'controller_getPermissions_1739012356882',
+      })
+    }
+  }
+
+  /**
+   * 保存角色权限
+   */
+  async savePermissions(ctx) {
+    try {
+      //检查参数合法性
+      const resultValid = await savePermissionsValid(ctx)
+      if (resultValid) return resultValid
+
+      //调用业务逻辑Service
+      const result = await rolesService.savePermissions(ctx)
+      if (result.status === 0) {
+        return Util.end2front({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
+
+      return Util.end2front({
+        msg: result.msg,
+      })
+    } catch (err) {
+      return Util.error2front({
+        msg: err.message,
+        track: 'controller_savePermissions_1739012356882',
       })
     }
   }
@@ -309,6 +402,9 @@ async function getListValid(ctx) {
             break
           case 'sortfield':
             body.sortField = requestAll[k]
+            break
+          case 'role_name':
+            body.role_name = requestAll[k]
             break
         }
       }
@@ -492,6 +588,14 @@ async function createInfoValid(ctx) {
       const requestAll = ctx.request.all()
       let body = {}
       for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'role_name':
+            body.role_name = Util.filterXss(requestAll[k])
+            break
+          case 'description':
+            body.description = Util.filterXss(requestAll[k])
+            break
+        }
       }
       ctx.body = Util.deepClone(body)
     }
@@ -527,6 +631,19 @@ async function updateInfoValid(ctx) {
       const requestAll = ctx.request.all()
       let body = {}
       for (let k in requestAll) {
+        switch (k.toLowerCase()) {
+          case 'id':
+            {
+              body.id = parseInt(requestAll[k])
+            }
+            break
+          case 'role_name':
+            body.role_name = Util.filterXss(requestAll[k])
+            break
+          case 'description':
+            body.description = Util.filterXss(requestAll[k])
+            break
+        }
       }
       ctx.body = Util.deepClone(body)
     }
@@ -597,6 +714,138 @@ async function removeValid(ctx) {
       msg: err.message,
       track: 'removeValid_1739012356882',
     })
+  }
+}
+
+/**
+ * 权限配置页面参数验证
+ */
+async function permissionsValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //校验权限
+    const resultAuth = await authValid()
+    if (resultAuth) return resultAuth
+
+    return null
+  } catch (err) {
+    return Util.error2front({
+      msg: err.message,
+      track: 'valid_permissions_1739012356882',
+    })
+  }
+
+  async function paramsHandle() {
+    const { params } = ctx
+    ctx.body = {
+      id: params.id,
+    }
+  }
+
+  async function paramsValid() {
+    const rules = {
+      id: 'required|integer',
+    }
+    const validation = await validate(ctx.body, rules)
+    if (validation.fails()) {
+      throw new Error('参数错误')
+    }
+  }
+
+  async function authValid() {
+    return null
+  }
+}
+
+/**
+ * 获取权限列表参数验证
+ */
+async function getPermissionsValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //校验权限
+    const resultAuth = await authValid()
+    if (resultAuth) return resultAuth
+
+    return null
+  } catch (err) {
+    return Util.error2front({
+      msg: err.message,
+      track: 'valid_getPermissions_1739012356882',
+    })
+  }
+
+  async function paramsHandle() {
+    const { params } = ctx
+    ctx.body = {
+      id: params.id,
+    }
+  }
+
+  async function paramsValid() {
+    const rules = {
+      id: 'required|integer',
+    }
+    const validation = await validate(ctx.body, rules)
+    if (validation.fails()) {
+      throw new Error('参数错误')
+    }
+  }
+
+  async function authValid() {
+    return null
+  }
+}
+
+/**
+ * 保存权限参数验证
+ */
+async function savePermissionsValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //校验权限
+    const resultAuth = await authValid()
+    if (resultAuth) return resultAuth
+
+    return null
+  } catch (err) {
+    return Util.error2front({
+      msg: err.message,
+      track: 'valid_savePermissions_1739012356882',
+    })
+  }
+
+  async function paramsHandle() {
+    const { params, request } = ctx
+    ctx.body = {
+      id: params.id,
+      permission_ids: request.body.permission_ids || [],
+    }
+  }
+
+  async function paramsValid() {
+    const rules = {
+      id: 'required|integer',
+      permission_ids: 'array',
+      'permission_ids.*': 'integer',
+    }
+    const validation = await validate(ctx.body, rules)
+    if (validation.fails()) {
+      throw new Error('参数错误')
+    }
+  }
+
+  async function authValid() {
+    return null
   }
 }
 

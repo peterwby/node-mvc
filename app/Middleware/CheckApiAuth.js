@@ -41,7 +41,9 @@ class CheckApiAuth {
       }
 
       // 检查权限
+
       if (!Util.checkPermission(url, permissions)) {
+        console.log('checkPermission:', url, permissions)
         return ctx.response.send(
           Util.end2front({
             msg: '没有访问权限',
