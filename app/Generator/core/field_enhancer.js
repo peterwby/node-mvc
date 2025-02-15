@@ -36,8 +36,6 @@ class FieldEnhancer {
         status: 'select',
         type: 'select',
         _id: 'select', // 外键字段
-        content: 'rich_editor', // 添加 content 字段的映射
-        description: 'rich_editor', // 添加 description 字段的映射
       },
       // 数据库类型到表单控件类型的映射
       dbTypes: {
