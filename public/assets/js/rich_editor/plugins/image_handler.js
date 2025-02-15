@@ -222,7 +222,7 @@ class ImageHandler {
       this.showProgress(false)
       // 恢复光标位置
       this.quill.setSelection(range.index, 0)
-      window.Tools.Util.errorMsg(error.message)
+      window.showError(error.message)
     }
   }
 }

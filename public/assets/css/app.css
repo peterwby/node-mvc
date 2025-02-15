@@ -2319,6 +2319,17 @@ video {
   outline: none;
 }
 
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--tw-gray-200);
+  padding-inline-start: 1.25rem;
+  padding-inline-end: 1.25rem;
+  padding-block-start: 0.625rem;
+  padding-block-end: 0.625rem;
+}
+
 .modal-table .table th:first-child, .modal-table .table td:first-child {
   padding-inline-start: 1.25rem;
 }
@@ -4120,10 +4131,6 @@ label.rating-label {
   margin-top: 1rem;
 }
 
-.mt-1 {
-  margin-top: 0.25rem;
-}
-
 .block {
   display: block;
 }
@@ -4480,10 +4487,6 @@ label.rating-label {
 
 .max-w-none {
   max-width: none;
-}
-
-.flex-1 {
-  flex: 1 1 0%;
 }
 
 .shrink-0 {
@@ -4950,10 +4953,6 @@ label.rating-label {
 
 .p-5 {
   padding: 1.25rem;
-}
-
-.p-4 {
-  padding: 1rem;
 }
 
 .px-0 {

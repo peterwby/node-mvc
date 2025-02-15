@@ -6,7 +6,23 @@ module.exports = {
     './resources/metronic/app/**/*.{ts,js}', // Metronic 应用代码
     './resources/metronic/core/components/**/*.{ts,js}', // Metronic 组件
   ],
-  safelist: ['demo1', 'hidden', 'ki-filled', 'ki-outline', 'ki-duotone', 'ki-solid', { pattern: /^apexcharts-.*$/ }, { pattern: /^leaflet-.*$/ }],
+  safelist: [
+    'demo1',
+    'hidden',
+    'ki-filled',
+    'ki-outline',
+    'ki-duotone',
+    'ki-solid',
+    // Metronic modal classes
+    'modal',
+    'modal-footer',
+    'modal-header',
+    'modal-body',
+    'modal-content',
+    'modal-title',
+    { pattern: /^apexcharts-.*$/ },
+    { pattern: /^leaflet-.*$/ },
+  ],
   darkMode: 'class',
   theme: {
     extend: {

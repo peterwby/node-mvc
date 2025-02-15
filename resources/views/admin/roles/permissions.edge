@@ -92,11 +92,11 @@ async function initPermissionTree() {
       permissions = response.data.data.permissions
       renderPermissionTree()
     } else {
-      Util.errorMsg(response.data.msg || trans('load_failed'))
+      showError(response.data.msg || trans('load_failed'))
     }
   } catch (error) {
     console.error('加载权限树失败:', error)
-    Util.errorMsg(trans('error'))
+    showError(trans('error'))
   } finally {
 
   }
@@ -215,15 +215,17 @@ async function savePermissions() {
     })
 
     if (response.data.code === 0) {
-      Util.successMsg(trans('operation success'), () => {
-        window.history.back()
+      showSuccess(trans('operation success'), {
+        onConfirm: () => {
+          window.history.back()
+        }
       })
     } else {
-      Util.errorMsg(response.data.msg || trans('operation failed'))
+      showError(response.data.msg || trans('operation failed'))
     }
   } catch (error) {
     console.error('保存权限失败:', error)
-    Util.errorMsg(trans('error'))
+    showError(trans('error'))
   } finally {
     // 恢复按钮状态
     if (indicatorLabel && indicatorProgress) {

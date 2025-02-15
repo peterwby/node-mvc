@@ -92,14 +92,17 @@
       const response = await axios.post('/api/member/sign-in', Object.fromEntries(formData));
       if (response.data.code == 0) {
         localStorage.setItem('token', response.data.data.token)
-        Util.successMsg('登录成功！', () => {
-          window.location.href = '/admin/';
-        });
+        showSuccess(trans('login success'), {
+          autoClose: 1000,
+          onConfirm: () => {
+            window.location.href = '/admin/';
+          }
+        })
         return null
       }
       throw new Error(response.data.msg)
     } catch (e) {
-      Util.errorMsg(e.message || '发生错误，请稍后重试');
+      showError(e.message || '发生错误，请稍后重试');
     } finally {
       // 恢复按钮状态
       submitButton.querySelector('.indicator-label').classList.remove('hidden');
@@ -115,12 +118,12 @@
     const password = form.querySelector('[name="password"]').value;
 
     if (!username) {
-      Util.errorMsg('请输入用户名');
+      showError('请输入用户名');
       return false;
     }
 
     if (!password) {
-      Util.errorMsg('请输入密码');
+      showError('请输入密码');
       return false;
     }
 

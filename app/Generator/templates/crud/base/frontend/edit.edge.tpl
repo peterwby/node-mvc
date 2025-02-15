@@ -137,7 +137,7 @@
 
     } catch (error) {
       console.error('初始化失败:', error);
-      Util.errorMsg(trans('please refresh the page and try again'));
+      showError(trans('please refresh the page and try again'));
     }
   });
 
@@ -169,9 +169,11 @@
       });
 
       if (response.data.code === 0) {
-        Util.successMsg(trans('operation success'), () => {
-          window.location.href = '/admin/${module_name}/list';
-        });
+        showSuccess(trans('operation success'), {
+          onConfirm: () => {
+            window.location.href = '/admin/${module_name}/list';
+          }
+        })
         return response.data;
       } else {
         throw new Error(response.data.msg || trans('operation failed'));

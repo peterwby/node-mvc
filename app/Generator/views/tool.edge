@@ -252,7 +252,7 @@
       });
 
       if (response.data.code === 0) {
-        Util.successMsg(response.data.msg || '操作成功');
+        showSuccess(response.data.msg || trans('operation success'))
         return response.data;
       } else {
         throw new Error(response.data.msg || '操作失败');
@@ -363,13 +363,13 @@
       } else {
         // 如果有错误位置信息，显示更详细的错误
         if (data.data?.line) {
-          Util.errorMsg(data.msg + ' (第' + data.data.line + '行, 位置' + data.data.position + ')');
+          showError(data.msg + ' (第' + data.data.line + '行, 位置' + data.data.position + ')');
         } else {
-          Util.errorMsg(data.msg);
+          showError(data.msg);
         }
       }
     } catch (err) {
-      Util.errorMsg('预览失败：' + err.message);
+      showError('预览失败：' + err.message);
     }
   }
 

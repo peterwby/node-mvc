@@ -1135,7 +1135,7 @@
   <script src="assets/js/tools.js"></script>
   <script src="assets/js/rich_editor/quill.js"></script>
   <script src="assets/js/rich_editor/plugins/image_handler.js"></script>
-
+  <script src="assets/js/message.js"></script>
 
   <!-- End of Scripts -->
 
@@ -1168,9 +1168,12 @@
       const response = await axios.post('/api/member/logout');
       if (response.data.code == 401) {
         localStorage.removeItem('token')
-        Util.successMsg('已退出系统！', () => {
-          window.location.href = '/admin/auth/sign-in';
-        });
+        showSuccess(trans('logout success'), {
+          autoClose: 1000,
+          onConfirm: () => {
+            window.location.href = '/admin/auth/sign-in';
+          }
+        })
         return null
       }
     }

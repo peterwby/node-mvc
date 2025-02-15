@@ -93,11 +93,11 @@
         if (response.data.code === 0) {
           renderRoles(response.data.data)
         } else {
-          Util.errorMsg(response.data.msg)
+          showError(response.data.msg)
         }
       } catch (error) {
         console.error(error)
-        Util.errorMsg(error.message)
+        showError(error.message)
       }
     }
 
@@ -128,14 +128,14 @@
         })
 
         if (response.data.code === 0) {
-          Util.successMsg(response.data.msg)
+          showSuccess(response.data.msg)
           window.history.back()
         } else {
-          Util.errorMsg(response.data.msg)
+          showError(response.data.msg)
         }
       } catch (error) {
         console.error(error)
-        Util.errorMsg(error.message)
+        showError(error.message)
       }
     }
 

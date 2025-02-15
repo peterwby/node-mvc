@@ -70,7 +70,7 @@
       <%endeach%>
     } catch (error) {
       console.error('编辑器初始化失败:', error);
-      Util.errorMsg(trans('please refresh the page and try again'));
+      showError(trans('please refresh the page and try again'));
     }
   });
 </script>

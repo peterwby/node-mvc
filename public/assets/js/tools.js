@@ -1216,7 +1216,7 @@ class Tools {
               options.onError(err)
             } else {
               // 默认错误处理
-              Util.errorMsg(err.message || '操作失败')
+              showError(err.message || '操作失败')
             }
           } finally {
             // 恢复按钮状态
@@ -1460,13 +1460,15 @@ class Tools {
             })
 
             if (response.data.code === 0) {
-              Util.successMsg('删除成功', onSuccess)
+              showSuccess('删除成功', {
+                onConfirm: onSuccess,
+              })
             } else {
-              Util.errorMsg(response.data.message || '删除失败')
+              showError(response.data.message || '删除失败')
             }
           } catch (error) {
             console.error('删除失败:', error)
-            Util.errorMsg('删除失败，请稍后重试')
+            showError('删除失败，请稍后重试')
           } finally {
             // 恢复按钮状态
             loadingEl.textContent = originalText
@@ -1525,13 +1527,15 @@ class Tools {
             })
 
             if (response.data.code === 0) {
-              Util.successMsg('批量删除成功', onSuccess)
+              showSuccess('批量删除成功', {
+                onConfirm: onSuccess,
+              })
             } else {
-              Util.errorMsg(response.data.message || '批量删除失败')
+              showError(response.data.message || '批量删除失败')
             }
           } catch (error) {
             console.error('批量删除失败:', error)
-            Util.errorMsg('批量删除失败，请稍后重试')
+            showError('批量删除失败，请稍后重试')
           } finally {
             // 恢复按钮状态
             this.textContent = originalText
