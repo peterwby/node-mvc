@@ -4465,6 +4465,10 @@ label.rating-label {
   max-width: 370px;
 }
 
+.max-w-\[400px\] {
+  max-width: 400px;
+}
+
 .max-w-\[450px\] {
   max-width: 450px;
 }
@@ -4495,10 +4499,6 @@ label.rating-label {
 
 .max-w-none {
   max-width: none;
-}
-
-.max-w-\[400px\] {
-  max-width: 400px;
 }
 
 .shrink-0 {
@@ -4595,10 +4595,6 @@ label.rating-label {
 
 .place-items-center {
   place-items: center;
-}
-
-.content-center {
-  align-content: center;
 }
 
 .content-start {
