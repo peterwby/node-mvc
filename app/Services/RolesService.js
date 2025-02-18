@@ -214,6 +214,14 @@ class RolesService extends BaseService {
     try {
       let result = {}
       const { body } = ctx
+      // 如果要删除的角色id已被分配给用户，则不能删除
+      const userResult = await Database.table('member_roles').whereIn('role_id', body.ids).first()
+      if (userResult) {
+        return Util.end({
+          status: 0,
+          msg: '无法删除，角色已被分配给用户',
+        })
+      }
       await Database.transaction(async (trx) => {
         result = await rolesTable.deleteByIds(trx, body.ids)
         if (result.status === 0) {

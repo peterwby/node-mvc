@@ -51,6 +51,7 @@ class CommonService extends BaseService {
       })
 
       let currentLangInfo = langList.find((item) => item.is_selected === 1)
+      // console.log('currentLangInfo', currentLangInfo)
       if (!currentLangInfo) {
         throw new Error('No selected or default language found')
       }

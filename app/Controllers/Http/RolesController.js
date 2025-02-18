@@ -223,6 +223,12 @@ class RolesController {
 
       //调用业务逻辑Service
       const result = await rolesService.remove(ctx)
+      if (result.status === 0) {
+        return Util.end2front({
+          msg: result.msg,
+          code: 9000,
+        })
+      }
 
       return Util.end2front({
         msg: '删除成功',

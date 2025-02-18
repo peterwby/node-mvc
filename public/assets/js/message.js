@@ -65,14 +65,14 @@ class MessageModal {
       : ''
 
     const modalHtml =
-      '<div class="modal-content max-w-[600px] top-[20%]">' +
+      '<div class="modal-content max-w-[400px] top-[20%]">' +
       '<div class="modal-header">' +
       '<h3 class="modal-title">' +
       this._escapeHtml(this.options.title) +
       '</h3>' +
       closeButton +
       '</div>' +
-      '<div class="modal-body">' +
+      '<div class="modal-body min-h-[80px] content-center">' +
       this._escapeHtml(this.options.content) +
       '</div>' +
       '<div class="modal-footer justify-end">' +
@@ -185,28 +185,37 @@ window.MessageModal = MessageModal
 
 // 快捷方法
 window.showConfirm = function (content, options = {}) {
-  const modal = new MessageModal({
-    title: options.title || trans('info'),
-    content,
-    persistent: options.persistent === undefined || options.persistent === null ? true : options.persistent,
-    buttons: {
-      confirm: {
-        text: options.confirmText || trans('confirm'),
-        class: options.confirmClass || 'btn btn-primary',
+  return new Promise((resolve) => {
+    const modal = new MessageModal({
+      title: options.title || trans('info'),
+      content,
+      persistent: options.persistent === undefined || options.persistent === null ? true : options.persistent,
+      buttons: {
+        confirm: {
+          text: options.confirmText || trans('confirm'),
+          class: options.confirmClass || 'btn btn-primary',
+        },
+        cancel: {
+          text: options.cancelText || trans('cancel'),
+          class: options.cancelClass || 'btn btn-light',
+        },
       },
-      cancel: {
-        text: options.cancelText || trans('cancel'),
-        class: options.cancelClass || 'btn btn-light',
-      },
-    },
+    })
+
+    // 确认按钮回调
+    modal.onConfirm(() => {
+      if (options.onConfirm) options.onConfirm()
+      resolve(true)
+    })
+
+    // 取消按钮回调
+    modal.onCancel(() => {
+      if (options.onCancel) options.onCancel()
+      resolve(false)
+    })
+
+    modal.show()
   })
-
-  // 如果有回调函数，先绑定再显示
-  if (options.onConfirm) modal.onConfirm(options.onConfirm)
-  if (options.onCancel) modal.onCancel(options.onCancel)
-
-  modal.show()
-  return modal
 }
 
 window.showSuccess = function (content, options = {}) {

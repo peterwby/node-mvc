@@ -1439,7 +1439,12 @@ class Tools {
           const btn = e.target.closest('.remove-btn')
           if (!btn) return
 
-          if (!confirm('确定要删除这条记录吗？')) {
+          const confirmed = await showConfirm('确定要删除这条记录吗？', {
+            persistent: true,
+            confirmText: '删除',
+            cancelText: '取消',
+          })
+          if (!confirmed) {
             return
           }
 
@@ -1464,7 +1469,7 @@ class Tools {
                 onConfirm: onSuccess,
               })
             } else {
-              showError(response.data.message || '删除失败')
+              showError(response.data.msg || '删除失败')
             }
           } catch (error) {
             console.error('删除失败:', error)
@@ -1513,8 +1518,15 @@ class Tools {
           if (checkedRows.length === 0) return
 
           const message = typeof confirmMessage === 'function' ? confirmMessage(checkedRows.length) : '确定要删除选中的 ' + checkedRows.length + ' 条记录吗？'
-
-          if (!confirm(message)) return
+          console.log('message:', message)
+          const confirmed = await showConfirm(message, {
+            persistent: true,
+            confirmText: '删除',
+            cancelText: '取消',
+          })
+          if (!confirmed) {
+            return
+          }
 
           // 显示加载状态
           const originalText = this.textContent
@@ -1531,7 +1543,7 @@ class Tools {
                 onConfirm: onSuccess,
               })
             } else {
-              showError(response.data.message || '批量删除失败')
+              showError(response.data.msg || '批量删除失败')
             }
           } catch (error) {
             console.error('批量删除失败:', error)

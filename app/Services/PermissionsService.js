@@ -213,6 +213,14 @@ class PermissionsService extends BaseService {
     try {
       let result = {}
       const { body } = ctx
+      // 如果要删除的权限id已被分配给角色，则不能删除
+      const roleResult = await Database.table('role_permissions').whereIn('permission_id', body.ids).first()
+      if (roleResult) {
+        return Util.end({
+          status: 0,
+          msg: '无法删除，权限已被分配给角色',
+        })
+      }
       await Database.transaction(async (trx) => {
         result = await permissionsTable.deleteByIds(trx, body.ids)
         if (result.status === 0) {

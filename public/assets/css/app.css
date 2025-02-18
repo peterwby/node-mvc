@@ -4004,6 +4004,10 @@ label.rating-label {
   top: 15%;
 }
 
+.top-\[20\%\] {
+  top: 20%;
+}
+
 .z-10 {
   z-index: 10;
 }
@@ -4321,6 +4325,10 @@ label.rating-label {
   min-height: 400px;
 }
 
+.min-h-\[80px\] {
+  min-height: 80px;
+}
+
 .w-16 {
   width: 4rem;
 }
@@ -4489,6 +4497,10 @@ label.rating-label {
   max-width: none;
 }
 
+.max-w-\[400px\] {
+  max-width: 400px;
+}
+
 .shrink-0 {
   flex-shrink: 0;
 }
@@ -4583,6 +4595,10 @@ label.rating-label {
 
 .place-items-center {
   place-items: center;
+}
+
+.content-center {
+  align-content: center;
 }
 
 .content-start {
