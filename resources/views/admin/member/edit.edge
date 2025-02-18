@@ -57,7 +57,7 @@
               <label class="form-label max-w-56">
                 日期
               </label>
-              <input id="email" name="email" class="input max-w-[300px]" placeholder="年-月-日" type="text" value="" />
+              <input id="date" name="date" class="input max-w-[300px]" placeholder="年-月-日" type="text" value="" />
             </div>
 
             <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
@@ -157,6 +157,17 @@
 
   document.addEventListener('DOMContentLoaded', async function() {
     try {
+      // 初始化日期选择器
+      let datepicker = new Datepicker('#date', {
+        i18n: {
+          weekdays: ['一', '二', '三', '四', '五', '六', '日'],
+          months: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+        },
+        serialize: (d) => {
+          return dayjs(d).format('YYYY-MM-DD')
+        }
+      });
+
       // 创建编辑器实例（不再需要显式初始化）
       editor = await new RichEditor('#remark', 'simple');
 
