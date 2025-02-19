@@ -33,7 +33,7 @@ class ${module_name | pascal}Service extends BaseService {
     try {
       let result = {}
       const { body } = ctx
-      result = await ${module_name}Table.fetchListBy(body)
+      result = await ${table_name | camel}Table.fetchListBy(body)
       return Util.end({
         data: result.data,
       })
@@ -72,7 +72,7 @@ class ${module_name | pascal}Service extends BaseService {
       const { id } = body
 
       // 获取详情
-      const result = await ${module_name}Table.fetchDetailById(id)
+      const result = await ${table_name | camel}Table.fetchDetailById(id)
       if (result.status === 0) {
         return Util.end({
           msg: result.msg,
@@ -103,7 +103,7 @@ class ${module_name | pascal}Service extends BaseService {
       const { id } = body
 
       // 获取详情
-      const result = await ${module_name}Table.fetchDetailById(id)
+      const result = await ${table_name | camel}Table.fetchDetailById(id)
       if (result.status === 0) {
         return Util.end({
           msg: result.msg,
@@ -133,7 +133,7 @@ class ${module_name | pascal}Service extends BaseService {
       let result = {}
       const { body } = ctx
       //检查数据是否已存在
-      result = await ${module_name}Table.checkExistByColumn({ id: body.id })
+      result = await ${table_name | camel}Table.checkExistByColumn({ id: body.id })
       if (result.data.is_exist) {
         return Util.end({
           status: 0,
@@ -142,7 +142,7 @@ class ${module_name | pascal}Service extends BaseService {
       }
       //开始创建新记录
       await Database.transaction(async (trx) => {
-        result = await ${module_name}Table.create(trx, body)
+        result = await ${table_name | camel}Table.create(trx, body)
         if (result.status === 0) {
           throw new Error('新增失败')
         }
@@ -168,7 +168,7 @@ class ${module_name | pascal}Service extends BaseService {
 
 
       await Database.transaction(async (trx) => {
-        result = await ${module_name}Table.updateBy(trx, {
+        result = await ${table_name | camel}Table.updateBy(trx, {
           where: [],
           set: { },
         })
@@ -194,7 +194,7 @@ class ${module_name | pascal}Service extends BaseService {
       let result = {}
       const { body } = ctx
       await Database.transaction(async (trx) => {
-        result = await ${module_name}Table.deleteByIds(trx, body.ids)
+        result = await ${table_name | camel}Table.deleteByIds(trx, body.ids)
         if (result.status === 0) {
           throw new Error('删除失败')
         }
