@@ -6,7 +6,7 @@ const Util = require('@Lib/Util')
 const moment = require('moment')
 moment.locale('zh-cn')
 const ${module_name | pascal}Service = require(`@Services/${module_name | pascal}Service`)
-const ${module_name}Service = new ${module_name | pascal}Service()
+const ${module_name | camel}Service = new ${module_name | pascal}Service()
 
 class ${module_name | pascal}Controller {
   constructor() {}
@@ -21,7 +21,7 @@ class ${module_name | pascal}Controller {
       if (resultValid) return resultValid
 
       //调用业务逻辑Service
-      const result = await ${module_name}Service.list(ctx)
+      const result = await ${module_name | camel}Service.list(ctx)
 
       //组装从Service返回的数据，返回给前端
       const data = result.data
@@ -44,7 +44,7 @@ class ${module_name | pascal}Controller {
       if (resultValid) return resultValid
 
       //调用业务逻辑Service
-      const result = await ${module_name}Service.getList(ctx)
+      const result = await ${module_name | camel}Service.getList(ctx)
 
       //组装从Service返回的数据，返回给前端
       const { data } = result.data
@@ -73,7 +73,7 @@ class ${module_name | pascal}Controller {
       if (resultValid) return resultValid
 
       //调用业务逻辑Service
-      const result = await ${module_name}Service.create(ctx)
+      const result = await ${module_name | camel}Service.create(ctx)
 
       //组装从Service返回的数据，返回给前端
       const data = result.data
@@ -96,7 +96,7 @@ class ${module_name | pascal}Controller {
       if (resultValid) return resultValid
 
       //调用业务逻辑Service
-      const result = await ${module_name}Service.edit(ctx)
+      const result = await ${module_name | camel}Service.edit(ctx)
       if (result.status === 0) {
         return Util.end2front({
           msg: result.msg,
@@ -125,7 +125,7 @@ class ${module_name | pascal}Controller {
       if (resultValid) return resultValid
 
       //调用业务逻辑Service
-      const result = await ${module_name}Service.view(ctx)
+      const result = await ${module_name | camel}Service.view(ctx)
       if (result.status === 0) {
         return Util.end2front({
           msg: result.msg,
@@ -154,7 +154,7 @@ class ${module_name | pascal}Controller {
       if (resultValid) return resultValid
 
       //调用业务逻辑Service
-      const result = await ${module_name}Service.createInfo(ctx)
+      const result = await ${module_name | camel}Service.createInfo(ctx)
       if (result.status === 0) {
         return Util.end2front({
           msg: result.msg,
@@ -184,7 +184,7 @@ class ${module_name | pascal}Controller {
       if (resultValid) return resultValid
 
       //调用业务逻辑Service
-      const result = await ${module_name}Service.updateInfo(ctx)
+      const result = await ${module_name | camel}Service.updateInfo(ctx)
       if (result.status === 0) {
         return Util.end2front({
           msg: result.msg,
@@ -214,7 +214,7 @@ class ${module_name | pascal}Controller {
       if (resultValid) return resultValid
 
       //调用业务逻辑Service
-      const result = await ${module_name}Service.remove(ctx)
+      const result = await ${module_name | camel}Service.remove(ctx)
 
       return Util.end2front({
         msg: '删除成功',
