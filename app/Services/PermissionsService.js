@@ -154,7 +154,7 @@ class PermissionsService extends BaseService {
       let result = {}
       const { body } = ctx
       //检查数据是否已存在
-      result = await permissionsTable.checkExistByColumn({ name: body.permission_name })
+      result = await permissionsTable.checkExistByColumn({ name: body.name })
       if (result.data.is_exist) {
         return Util.end({
           status: 0,

@@ -502,7 +502,7 @@ async function createInfoValid(ctx) {
       for (let k in requestAll) {
         switch (k.toLowerCase()) {
           case 'permission_name':
-            body.permission_name = Util.filterXss(requestAll[k])
+            body.name = Util.filterXss(requestAll[k])
             break
           case 'type':
             body.type = Util.filterXss(requestAll[k])
