@@ -4,8 +4,8 @@ const Database = use('Database')
 const BaseService = require('@BaseClass/BaseService')
 const Util = require('@Lib/Util')
 const log = use('Logger')
-const ${module_name | pascal}Table = require('@Table/${module_name}')
-const ${module_name}Table = new ${module_name | pascal}Table()
+const ${table_name | pascal}Table = require('@Table/${table_name}')
+const ${table_name | camel}Table = new ${table_name | pascal}Table()
 
 class ${module_name | pascal}Service extends BaseService {
   /**

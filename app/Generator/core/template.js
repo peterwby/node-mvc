@@ -35,6 +35,23 @@ class TemplateEngine {
         })
         return transformed
       },
+      camel: (str) => {
+        // 将蛇形命名转换为驼峰命名（如：user_info -> userInfo）
+        const words = str.split('_')
+        const transformed =
+          words[0].toLowerCase() +
+          words
+            .slice(1)
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join('')
+
+        this.logger.debug('执行camel过滤器:', {
+          input: str,
+          output: transformed,
+          segments: words, // 记录拆分后的单词段
+        })
+        return transformed
+      },
     }
     // Edge语法标记列表
     this.edgeSyntaxPatterns = [
