@@ -327,7 +327,7 @@ class CodeGenerator {
           title: `${moduleName} manage`,
           title_cn: `${moduleName}管理`,
           url: null,
-          icon: 'ki-file-document',
+          icon: 'ki-profile-circle',
           parent_id: 0,
           sort: 10,
           level: 1,

@@ -112,7 +112,7 @@ class GeneratorController {
           },
           {
             type: 'backend',
-            files: ['app/Controllers/Http/Admin/{Module}Controller.js', 'app/Services/{Module}Service.js', 'app/Models/Table/相关表文件'],
+            files: ['app/Controllers/Http/{Module}Controller.js', 'app/Services/{Module}Service.js', 'app/Models/Table/相关表文件'],
           },
           {
             type: 'config',
@@ -130,7 +130,7 @@ class GeneratorController {
                 title: `${result.tables[0].name} manage`,
                 title_cn: `${result.tables[0].name}管理`,
                 url: null,
-                icon: 'ki-file-document',
+                icon: 'ki-profile-circle',
                 parent_id: 0,
                 sort: 10,
                 level: 1,

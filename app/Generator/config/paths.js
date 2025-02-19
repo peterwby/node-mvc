@@ -21,13 +21,27 @@ const TARGET_DIRS = {
     controllers: {
       base: 'app/Controllers/Http',
       templates: {
-        'backend/Controller.js': (moduleName) => `${moduleName.charAt(0).toUpperCase() + moduleName.slice(1)}Controller.js`,
+        'backend/Controller.js': (moduleName) => {
+          // 将蛇形命名转换为帕斯卡命名（如：user_info -> UserInfo）
+          const transformed = moduleName
+            .split('_')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join('')
+          return `${transformed}Controller.js`
+        },
       },
     },
     services: {
       base: 'app/Services',
       templates: {
-        'backend/Service.js': (moduleName) => `${moduleName.charAt(0).toUpperCase() + moduleName.slice(1)}Service.js`,
+        'backend/Service.js': (moduleName) => {
+          // 将蛇形命名转换为帕斯卡命名（如：user_info -> UserInfo）
+          const transformed = moduleName
+            .split('_')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join('')
+          return `${transformed}Service.js`
+        },
       },
     },
     models: {

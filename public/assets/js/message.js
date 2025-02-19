@@ -23,12 +23,12 @@ class MessageModal {
       persistent: options.persistent || false,
       buttons: {
         confirm: {
-          text: options.buttons?.confirm?.text || trans('confirm'),
+          text: options.buttons?.confirm?.text || window.Tools.trans('confirm'),
           class: options.buttons?.confirm?.class || 'btn btn-primary',
         },
         cancel: options.buttons?.cancel
           ? {
-              text: options.buttons.cancel.text || trans('cancel'),
+              text: options.buttons.cancel.text || window.Tools.trans('cancel'),
               class: options.buttons.cancel.class || 'btn btn-light',
             }
           : null,
@@ -187,16 +187,16 @@ window.MessageModal = MessageModal
 window.showConfirm = function (content, options = {}) {
   return new Promise((resolve) => {
     const modal = new MessageModal({
-      title: options.title || trans('info'),
+      title: options.title || window.Tools.trans('info'),
       content,
       persistent: options.persistent === undefined || options.persistent === null ? true : options.persistent,
       buttons: {
         confirm: {
-          text: options.confirmText || trans('confirm'),
+          text: options.confirmText || window.Tools.trans('confirm'),
           class: options.confirmClass || 'btn btn-primary',
         },
         cancel: {
-          text: options.cancelText || trans('cancel'),
+          text: options.cancelText || window.Tools.trans('cancel'),
           class: options.cancelClass || 'btn btn-light',
         },
       },
@@ -220,12 +220,12 @@ window.showConfirm = function (content, options = {}) {
 
 window.showSuccess = function (content, options = {}) {
   const modal = new MessageModal({
-    title: options.title || trans('info'),
+    title: options.title || window.Tools.trans('info'),
     content,
     persistent: options.persistent === undefined || options.persistent === null ? false : options.persistent,
     buttons: {
       confirm: {
-        text: options.confirmText || trans('confirm'),
+        text: options.confirmText || window.Tools.trans('confirm'),
         class: options.confirmClass || 'btn btn-primary',
       },
     },
@@ -261,12 +261,12 @@ window.showSuccess = function (content, options = {}) {
 
 window.showError = function (content, options = {}) {
   const modal = new MessageModal({
-    title: options.title || trans('error'),
+    title: options.title || window.Tools.trans('error'),
     content,
     persistent: options.persistent === undefined || options.persistent === null ? false : options.persistent,
     buttons: {
       confirm: {
-        text: options.confirmText || trans('confirm'),
+        text: options.confirmText || window.Tools.trans('confirm'),
         class: options.confirmClass || 'btn btn-danger',
       },
     },
