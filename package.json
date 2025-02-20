@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "init": "bash init.sh",
-    "start": "pnpm css:prod && node server.js",
+    "start": "node server.js",
     "debug": "node --inspect-brk=5858 server.js",
     "test": "nyc node ace test",
     "dev": "concurrently \"adonis serve --dev\" \"pnpm css:watch\"",
@@ -17,7 +17,8 @@
     "coverage": "nyc report --reporter=html",
     "test:generator": "nyc node app/Generator/tests/run.js",
     "test:generator:tmp": "nyc node app/Generator/tests/run.js tmp",
-    "coverage:generator": "nyc report --reporter=html"
+    "coverage:generator": "nyc report --reporter=html",
+    "build": "npm run css:prod"
   },
   "keywords": [
     "chanshon"
