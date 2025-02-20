@@ -86,9 +86,9 @@ class Service extends BaseService {
       ctx.response.cookie('token', token, {
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30天后过期
         httpOnly: true,
-        secure: true,
+        //secure: true,
         path: '/',
-        sameSite: 'lax',
+        //sameSite: 'lax',
       })
       let data = {
         token,

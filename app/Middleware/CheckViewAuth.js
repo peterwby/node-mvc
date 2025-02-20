@@ -19,9 +19,9 @@ class CheckViewAuth {
         ctx.response.clearCookie('token', {
           path: '/',
           domain: ctx.request.hostname(),
-          secure: true,
+          //secure: true,
           httpOnly: true,
-          sameSite: 'lax',
+          //sameSite: 'lax',
         })
         return ctx.response.redirect('/admin/auth/sign-in')
       }

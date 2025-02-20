@@ -4135,18 +4135,6 @@ label.rating-label {
   margin-top: 1rem;
 }
 
-.mb-6 {
-  margin-bottom: 1.5rem;
-}
-
-.me-2 {
-  margin-inline-end: 0.5rem;
-}
-
-.ms-2 {
-  margin-inline-start: 0.5rem;
-}
-
 .block {
   display: block;
 }
@@ -5057,16 +5045,6 @@ label.rating-label {
 .py-\[8px\] {
   padding-top: 8px;
   padding-bottom: 8px;
-}
-
-.px-9 {
-  padding-left: 2.25rem;
-  padding-right: 2.25rem;
-}
-
-.py-6 {
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
 }
 
 .pb-1\.5 {
