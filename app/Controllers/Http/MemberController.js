@@ -913,7 +913,7 @@ async function viewValid(ctx) {
       let body = {}
       for (let k in requestAll) {
         switch (k.toLowerCase()) {
-          case 'id':
+          case 'member_id':
             {
               const tmp = Util.decode(requestAll[k])
               if (tmp) body.member_id = tmp
