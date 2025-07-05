@@ -73,7 +73,7 @@ class Service extends BaseService {
       //把sessionid存入token
       const jwt = require('jsonwebtoken')
       let secret = Env.get('JWT_SECRET')
-      let sessionid = ctx.session.getSessionId()
+      let sessionid = await ctx.session.getSessionId()
       let token = jwt.sign(
         {
           sessionid: sessionid,
@@ -212,7 +212,7 @@ class Service extends BaseService {
       //把sessionid存入token
       const jwt = require('jsonwebtoken')
       let secret = Env.get('JWT_SECRET')
-      let sessionid = ctx.session.getSessionId()
+      let sessionid = await ctx.session.getSessionId()
       let token = jwt.sign(
         {
           sessionid: sessionid,
