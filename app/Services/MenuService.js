@@ -128,8 +128,8 @@ class MenuService extends BaseService {
           }
         })
 
-        // 4. 缓存原始菜单树到 Redis，设置 15 分钟过期
-        await Redis.set(cacheKey, JSON.stringify(tree), 'EX', 900)
+        // 4. 缓存原始菜单树到 Redis，设置 1 分钟过期
+        await Redis.set(cacheKey, JSON.stringify(tree), 'EX', 60)
       }
 
       // 5. 根据权限过滤菜单树

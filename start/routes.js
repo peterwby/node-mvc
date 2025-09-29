@@ -23,6 +23,8 @@ commonService.refreshCurrentLanguage()
 
 // 引入代码生成器2.0路由
 require('../app/Generator/routes')()
+// View 层路由拆分至独立文件
+require('./routes_views')()
 
 // 教程示例路由
 Route.group(() => {
@@ -108,54 +110,6 @@ Route.group(() => {
 })
   .prefix('api') //统一给这组路由的uri加入前缀
   .middleware(['checkApiAuth']) //验证身份
-
-// View层 - 需要验证身份的路由
-Route.group(() => {
-  try {
-    Route.get('/', 'HomeController.home')
-    // permissions
-    Route.get('permissions/list', 'PermissionsController.list')
-    Route.get('permissions/create', 'PermissionsController.create')
-    Route.get('permissions/edit/:id', 'PermissionsController.edit')
-    Route.get('permissions/view/:id', 'PermissionsController.view')
-
-    // roles
-    Route.get('roles/list', 'RolesController.list')
-    Route.get('roles/create', 'RolesController.create')
-    Route.get('roles/edit/:id', 'RolesController.edit')
-    Route.get('roles/view/:id', 'RolesController.view')
-    Route.get('roles/permissions/:id', 'RolesController.permissions')
-
-    Route.get('member/list', 'MemberController.list')
-    Route.get('member/view/:member_id', 'MemberController.view')
-    Route.get('member/edit/:member_id', 'MemberController.edit')
-    Route.post('member/edit-info', 'MemberController.editInfo')
-    Route.get('member/create', 'MemberController.create')
-    Route.get('member/roles/:id', 'MemberController.roles')
-  } catch (err) {
-    return Util.end2front({
-      msg: 'Not found the API',
-      code: 9992,
-    })
-  }
-})
-  .prefix('admin')
-  .middleware(['checkViewAuth'])
-
-// View层 - 无需验证身份的路由
-Route.group(() => {
-  try {
-    Route.get('sign-in', 'AuthController.signIn')
-    Route.get('sign-up', 'AuthController.signUp')
-  } catch (err) {
-    return Util.end2front({
-      msg: 'Not found the API',
-      code: 9993,
-    })
-  }
-})
-  .prefix('admin/auth')
-  .middleware(['noAuth'])
 
 //兜底：如果都匹配不到路由，则转到404页面
 //Route.any('*', ({ view }) => view.render('error.404'))

@@ -4,7 +4,6 @@ const { validate } = use('Validator')
 const log = use('Logger')
 const Util = require('@Lib/Util')
 const moment = require('moment')
-moment.locale('zh-cn')
 const ${module_name | pascal}Service = require(`@Services/${module_name | pascal}Service`)
 const ${module_name | camel}Service = new ${module_name | pascal}Service()
 

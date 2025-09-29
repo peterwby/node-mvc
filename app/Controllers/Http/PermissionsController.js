@@ -4,7 +4,6 @@ const { validate } = use('Validator')
 const log = use('Logger')
 const Util = require('@Lib/Util')
 const moment = require('moment')
-moment.locale('zh-cn')
 const PermissionsService = require(`@Services/PermissionsService`)
 const permissionsService = new PermissionsService()
 

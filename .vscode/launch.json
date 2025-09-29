@@ -10,7 +10,6 @@
       "name": "调试node",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run-script", "debug"],
-      "port": 5858,
       "skipFiles": ["<node_internals>/**"],
       "cwd": "${workspaceFolder}/"
     }

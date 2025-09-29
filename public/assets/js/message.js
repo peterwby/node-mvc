@@ -235,22 +235,60 @@ window.showSuccess = function (content, options = {}) {
 
   // 自动关闭功能
   const autoCloseDelay = options.autoClose === undefined ? 3000 : options.autoClose
-  let autoCloseTimer = null
 
   if (autoCloseDelay !== false) {
-    autoCloseTimer = setTimeout(() => {
-      const confirmBtn = document.getElementById(modal.modalElement.id + '_confirm')
-      if (confirmBtn) {
-        confirmBtn.click()
-      }
-    }, autoCloseDelay)
+    // 获取确认按钮元素
+    const confirmBtn = document.getElementById(modal.modalElement.id + '_confirm')
+    const originalText = confirmBtn.textContent
 
-    // 如果用户手动点击了按钮，清除定时器
+    // 倒计时显示函数
+    const startCountdown = () => {
+      const totalSeconds = Math.ceil(autoCloseDelay / 1000)
+      let remainingSeconds = totalSeconds
+
+      // 立即显示第一个倒计时
+      confirmBtn.textContent = `${originalText} (${remainingSeconds})`
+
+      modal.countdownTimer = setInterval(() => {
+        // 检查弹窗是否还存在
+        if (!modal.modal || !modal.modalElement || !document.contains(modal.modalElement)) {
+          clearInterval(modal.countdownTimer)
+          modal.countdownTimer = null
+          return
+        }
+
+        remainingSeconds--
+        if (remainingSeconds > 0) {
+          confirmBtn.textContent = `${originalText} (${remainingSeconds})`
+        } else {
+          // 倒计时结束，清除定时器并点击按钮
+          clearInterval(modal.countdownTimer)
+          modal.countdownTimer = null
+          confirmBtn.textContent = originalText
+          if (confirmBtn && document.contains(confirmBtn)) {
+            confirmBtn.click()
+          }
+        }
+      }, 1000)
+    }
+
+    // 延迟启动倒计时，给用户一点时间看到原始按钮文本
+    modal.autoCloseTimer = setTimeout(() => {
+      startCountdown()
+    }, 100)
+
+    // 如果用户手动点击了按钮，清除所有定时器
     modal.onConfirm(() => {
-      if (autoCloseTimer) {
-        clearTimeout(autoCloseTimer)
-        autoCloseTimer = null
+      if (modal.autoCloseTimer) {
+        clearTimeout(modal.autoCloseTimer)
+        modal.autoCloseTimer = null
       }
+      if (modal.countdownTimer) {
+        clearInterval(modal.countdownTimer)
+        modal.countdownTimer = null
+      }
+      // 恢复按钮原始文本
+      confirmBtn.textContent = originalText
       if (options.onConfirm) options.onConfirm()
     })
   }
