@@ -71,7 +71,7 @@ class CommonService extends BaseService {
       })
       // console.log('filterTransData', filterTransData)
       // 将翻译数据存储到缓存
-      Cache.set('translation', filterTransData)
+      Cache.set('translation', filterTransData, 'EX', 3600)
       console.log('刷新翻译完成')
       return Util.end({})
     } catch (err) {
