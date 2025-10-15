@@ -4,7 +4,6 @@ const axios = require('axios')
 const axiosRetry = require('axios-retry')
 const log = use('Logger')
 const Util = require('./Util')
-const uuidv4 = require('uuid/v4')
 const Redis = use('Redis')
 const Env = use('Env')
 

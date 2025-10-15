@@ -3,7 +3,7 @@
 const Database = use('Database')
 const BaseService = require('@BaseClass/BaseService')
 const Util = require('@Lib/Util')
-const moment = require('moment')
+const moment = require('dayjs')
 const RolesTable = require('@Table/roles')
 const rolesTable = new RolesTable()
 const log = use('Logger')

@@ -3,7 +3,7 @@
 const { validate } = use('Validator')
 const log = use('Logger')
 const Util = require('@Lib/Util')
-const moment = require('moment') //日期格式化插件
+const moment = require('dayjs') //日期格式化插件
 const MemberService = require(`@Services/MemberService`)
 const memberService = new MemberService()
 

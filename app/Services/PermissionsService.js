@@ -3,7 +3,7 @@
 const Database = use('Database')
 const BaseService = require('@BaseClass/BaseService')
 const Util = require('@Lib/Util')
-const moment = require('moment')
+const moment = require('dayjs')
 const PermissionsTable = require('@Table/permissions')
 const permissionsTable = new PermissionsTable()
 

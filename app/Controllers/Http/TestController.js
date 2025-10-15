@@ -2,7 +2,7 @@
 
 const { validate } = use('Validator')
 const log = use('Logger')
-const moment = require('moment') //日期格式化插件
+const moment = require('dayjs') //日期格式化插件
 const Util = require('@Lib/Util')
 //引用Service里的类并初始化
 const TestService = require(`@Services/TestService`)
@@ -197,7 +197,7 @@ class TestController {
       this.wrap(`str2`, `反转字符串`, `Util.strReverse('abc')`)
       this.wrap(`str2`, `按字母顺序排序`, `Util.strSort('badce')`)
       //日期
-      //const moment = require('moment') //日期格式化插件
+      //const moment = require('dayjs') //日期格式化插件
       //http://momentjs.cn/docs/#/displaying/format/
       this.wrap(`str3`, `格式化日期`, `moment(new Date('2019-1-1')).format("YYYY-MM-DD HH:mm:ss")`)
       this.wrap(`str3`, `日期减去10分钟`, `moment('2019-01-01 00:00:00').subtract(10, "minutes")`)

@@ -3,7 +3,7 @@
 const { validate } = use('Validator')
 const log = use('Logger')
 const Util = require('@Lib/Util')
-const moment = require('moment')
+const moment = require('dayjs')
 const RolesService = require(`@Services/RolesService`)
 const rolesService = new RolesService()
 
