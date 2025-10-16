@@ -6,6 +6,9 @@ const Util = require('@Lib/Util')
 const moment = require('dayjs')
 const PermissionsTable = require('@Table/permissions')
 const permissionsTable = new PermissionsTable()
+const Route = use('Route')
+const RolePermissionsTable = require('@Table/role_permissions')
+const rolePermissionsTable = new RolePermissionsTable()
 
 class PermissionsService extends BaseService {
   /**
@@ -237,6 +240,145 @@ class PermissionsService extends BaseService {
         track: 'service_remove_1739012451430',
       })
     }
+  }
+
+  /**
+   * 路由与权限差异预览（只读）
+   * @param {Object} ctx
+   */
+  async previewImportFromRoutes(ctx) {
+    try {
+      const diff = await this._diffRoutesWithPermissions()
+      return Util.end({
+        data: {
+          total: diff.candidates.length,
+          exists_count: diff.exists.length,
+          missing_count: diff.missing.length,
+          missing: diff.missing,
+        },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        track: 'service_previewImportFromRoutes_1739012451430',
+      })
+    }
+  }
+
+  /**
+   * 从路由批量导入权限（仅导入缺失项），并分配给超级管理员
+   * @param {Object} ctx
+   */
+  async importFromRoutes(ctx) {
+    try {
+      const { missing } = await this._diffRoutesWithPermissions()
+      if (!missing.length) {
+        return Util.end({
+          msg: '无新增权限',
+          data: { created: 0 },
+        })
+      }
+
+      let created = 0
+      const createdPermissionIds = []
+
+      await Database.transaction(async (trx) => {
+        // 1) 插入缺失的权限
+        for (const perm of missing) {
+          const res = await permissionsTable.create(trx, perm)
+          if (res.status === 1 && res.data.new_id) {
+            created++
+            createdPermissionIds.push(res.data.new_id)
+          }
+        }
+
+        // 2) 为超级管理员分配新增的权限
+        for (const pid of createdPermissionIds) {
+          await rolePermissionsTable.create(trx, {
+            role_id: 1,
+            permission_id: pid,
+          })
+        }
+      })
+
+      return Util.end({
+        msg: `成功新增 ${created} 个权限`,
+        data: { created },
+      })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        track: 'service_importFromRoutes_1739012451430',
+      })
+    }
+  }
+
+  /**
+   * 计算路由与 permissions 的差异
+   * @private
+   */
+  async _diffRoutesWithPermissions() {
+    // 1) 提取候选路由
+    const candidates = this._extractRouteCandidates()
+
+    // 2) 查询已有权限 keys
+    const rows = await Database.table('permissions').select('key')
+    const existedSet = new Set(rows.map((x) => x.key))
+
+    // 3) 计算差集
+    const missing = candidates.filter((x) => !existedSet.has(x.key))
+    const exists = candidates.filter((x) => existedSet.has(x.key))
+    return { candidates, exists, missing }
+  }
+
+  /**
+   * 从框架路由中抽取候选权限
+   * @private
+   */
+  _extractRouteCandidates() {
+    const whitelist = new Set([
+      '/api/member/logout',
+      '/api/get-translation',
+      '/api/upload/image',
+      '/api/member/update-password',
+      '/api/member/sign-in',
+      '/api/member/sign-up',
+      '/admin/auth/sign-in',
+      '/admin/auth/sign-up',
+    ])
+
+    const routeObjs = Route.list() || []
+    const candidates = []
+
+    for (const r of routeObjs) {
+      // 兼容不同版本的 Route 实例结构
+      let pattern = ''
+      if (r && typeof r.toJSON === 'function') {
+        const json = r.toJSON()
+        pattern = json && (json.route || json.pattern || json.url) ? json.route || json.pattern || json.url : ''
+      }
+      if (!pattern && r && (r.route || r._route)) {
+        pattern = r.route || r._route
+      }
+      if (!pattern) continue
+
+      // 仅处理 /admin/** 与 /api/**
+      if (!pattern.startsWith('/admin') && !pattern.startsWith('/api')) continue
+      if (whitelist.has(pattern)) continue
+
+      // 规范化 /admin 为 /admin/
+      if (pattern === '/admin') pattern = '/admin/'
+
+      const type = pattern.startsWith('/admin') ? 'menu' : 'api'
+      candidates.push({
+        name: pattern,
+        type,
+        key: pattern,
+        description: `imported from route: ${pattern}`,
+      })
+    }
+
+    return candidates
   }
 }
 

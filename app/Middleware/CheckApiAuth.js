@@ -5,7 +5,14 @@ const Util = require('@Lib/Util')
 
 class CheckApiAuth {
   // API 白名单，这些接口不需要权限检查
-  static whiteList = ['/api/member/logout', '/api/get-translation', '/api/upload/image', '/api/member/update-password']
+  static whiteList = [
+    '/api/member/logout',
+    '/api/get-translation',
+    '/api/upload/image',
+    '/api/member/update-password',
+    '/api/member/sign-in',
+    '/api/member/sign-up',
+  ]
 
   async handle(ctx, next) {
     try {

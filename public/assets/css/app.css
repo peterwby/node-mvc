@@ -2747,6 +2747,11 @@ video {
   color: var(--tw-primary);
 }
 
+.btn-success {
+  color: #fff;
+  background-color: var(--tw-success);
+}
+
 .btn-success:hover, .btn-success:focus, .btn-success:active, .btn-success.active {
   background-color: var(--tw-success-active);
   box-shadow: var(--tw-success-box-shadow);
@@ -2788,6 +2793,16 @@ video {
 
 .btn-clear.btn-success:hover i, .btn-clear.btn-success:focus i, .btn-clear.btn-success:active i, .btn-clear.btn-success.active i {
   color: var(--tw-success-inverse);
+}
+
+.btn-subtle.btn-success {
+  border-color: transparent;
+  background-color: transparent;
+  color: var(--tw-success);
+}
+
+.btn-subtle.btn-success i {
+  color: var(--tw-success);
 }
 
 .btn-subtle.btn-success:hover, .btn-subtle.btn-success:focus, .btn-subtle.btn-success:active, .btn-subtle.btn-success.active {

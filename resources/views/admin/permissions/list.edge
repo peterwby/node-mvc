@@ -19,6 +19,10 @@
           {{ trans('create') }}
         </a>
         @endif
+        <button id="import_from_routes_btn" class="btn btn-sm btn-success">
+          <i class="ki-duotone ki-import fs-2"></i>
+          从路由导入
+        </button>
         @if(hasPermission('/admin/permissions/list@batch-remove'))
         <button id="batch_delete_btn" class="btn btn-sm btn-danger" disabled>
           {{ trans('batch delete') }}
@@ -271,5 +275,70 @@
       datatable.reload()
     }
   }, datatable)
+
+  // 6. 处理从路由导入权限
+  document.getElementById('import_from_routes_btn').addEventListener('click', async function() {
+    try {
+      // 显示加载状态
+      this.disabled = true
+      this.innerHTML = '<i class="ki-duotone ki-loading fs-2"></i> 检查中...'
+
+      // 1. 先预览差异
+      const previewResponse = await axios.get('/api/permissions/preview-import-from-routes', {
+        headers: {
+          'token': localStorage.getItem('token')
+        }
+      })
+
+      if (previewResponse.data.code !== 0) {
+        throw new Error(previewResponse.data.msg || '预览失败')
+      }
+
+      const { missing_count, missing, exists_count, total } = previewResponse.data.data
+
+      if (missing_count === 0) {
+        showInfo('所有路由权限已存在，无需导入')
+        return
+      }
+
+      // 2. 显示确认对话框
+      var confirmMessage = '发现 ' + missing_count + ' 个新路由权限需要导入：';
+      confirmMessage += ' ' + missing.slice(0, 5).map(function(p) { return '• ' + p.key + ' (' + p.type + ')'; }).join(' ');
+      if (missing.length > 5) {
+        confirmMessage += ' ... 还有 ' + (missing.length - 5) + ' 个';
+      }
+      confirmMessage += ' 是否确认导入这些权限？';
+
+      const confirmed = confirm(confirmMessage)
+      if (!confirmed) {
+        return
+      }
+
+      // 3. 执行导入
+      this.innerHTML = '<i class="ki-duotone ki-loading fs-2"></i> 导入中...'
+
+      const importResponse = await axios.post('/api/permissions/import-from-routes', {}, {
+        headers: {
+          'token': localStorage.getItem('token')
+        }
+      })
+
+      if (importResponse.data.code !== 0) {
+        throw new Error(importResponse.data.msg || '导入失败')
+      }
+
+      // 4. 成功提示并刷新表格
+      showSuccess('成功导入 ' + importResponse.data.data.created + ' 个权限')
+      datatable.reload()
+
+    } catch (error) {
+      console.error('导入权限失败:', error)
+      showError(error.message || '导入失败')
+    } finally {
+      // 恢复按钮状态
+      this.disabled = false
+      this.innerHTML = '<i class="ki-duotone ki-import fs-2"></i> 从路由导入'
+    }
+  })
 </script>
 @endsection

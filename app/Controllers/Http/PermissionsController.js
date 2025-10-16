@@ -233,6 +233,42 @@ class PermissionsController {
       })
     }
   }
+
+  /**
+   * 预览：从路由导入权限（只显示缺失项）
+   */
+  async previewImportFromRoutes(ctx) {
+    try {
+      const result = await permissionsService.previewImportFromRoutes(ctx)
+      return Util.end2front({
+        msg: 'success',
+        data: result.data,
+      })
+    } catch (err) {
+      return Util.error2front({
+        msg: err.message,
+        track: 'controller_previewImportFromRoutes_1739012451430',
+      })
+    }
+  }
+
+  /**
+   * 执行：从路由批量导入权限（仅导入缺失项）
+   */
+  async importFromRoutes(ctx) {
+    try {
+      const result = await permissionsService.importFromRoutes(ctx)
+      return Util.end2front({
+        msg: result.msg || 'success',
+        data: result.data,
+      })
+    } catch (err) {
+      return Util.error2front({
+        msg: err.message,
+        track: 'controller_importFromRoutes_1739012451430',
+      })
+    }
+  }
 }
 
 /**

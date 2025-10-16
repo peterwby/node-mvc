@@ -83,6 +83,9 @@ Route.group(() => {
     Route.post('permissions/create-info', 'PermissionsController.createInfo')
     Route.post('permissions/update-info', 'PermissionsController.updateInfo')
     Route.post('permissions/remove', 'PermissionsController.remove')
+    // permissions - import from routes
+    Route.get('permissions/preview-import-from-routes', 'PermissionsController.previewImportFromRoutes')
+    Route.post('permissions/import-from-routes', 'PermissionsController.importFromRoutes')
 
     // roles
     Route.post('roles/get-list', 'RolesController.getList')
