@@ -75,9 +75,10 @@ class MenuService extends BaseService {
   /**
    * 获取菜单树
    * @param {Object} permissions 权限对象
+   * @param {Array} roleIds 角色ID数组
    * @returns {Promise<{data: *}>}
    */
-  async getMenuTree(permissions = {}) {
+  async getMenuTree(permissions = {}, roleIds = []) {
     try {
       // 1. 尝试从 Redis 获取缓存
       const cacheKey = 'admin:menu:tree'
@@ -132,8 +133,9 @@ class MenuService extends BaseService {
         await Redis.set(cacheKey, JSON.stringify(tree), 'EX', 60)
       }
 
-      // 5. 根据权限过滤菜单树
-      const filteredTree = this.filterMenuTree(tree, permissions)
+      // 5. 根据权限过滤菜单树（超级管理员跳过过滤）
+      const isSuperAdmin = roleIds && roleIds.includes(1)
+      const filteredTree = isSuperAdmin ? tree : this.filterMenuTree(tree, permissions)
 
       return Util.end({
         data: filteredTree,

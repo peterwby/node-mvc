@@ -28,6 +28,7 @@ class CheckViewAuth {
 
       // 权限检查
       const permissions = session.get('permissions') || {}
+      const roleIds = session.get('role_ids') || []
       const url = ctx.request.url()
       // 去掉 query 参数
       let viewPath = url.split('?')[0]
@@ -40,15 +41,18 @@ class CheckViewAuth {
         return
       }
 
-      // 菜单权限检查
-      if (!Util.checkPermission(viewPath, permissions)) {
+      // 检查是否为超级管理员（role_id=1）
+      const isSuperAdmin = roleIds && roleIds.includes(1)
+
+      // 菜单权限检查（超级管理员跳过）
+      if (!isSuperAdmin && !Util.checkPermission(viewPath, permissions)) {
         console.log('已有权限：', permissions)
         console.log('没有该权限：', viewPath)
         return ctx.response.redirect('/admin/auth/sign-in')
       }
 
       //view注入公共函数和全局变量
-      const menuResult = await menuService.getMenuTree(permissions)
+      const menuResult = await menuService.getMenuTree(permissions, roleIds)
       ctx.view.share({
         trans: (source) => {
           return Util.trans(source)

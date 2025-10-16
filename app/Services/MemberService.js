@@ -46,6 +46,9 @@ class Service extends BaseService {
       })
       if (result.status === 1 && result.data.data.length > 0) {
         const roleIds = result.data.data.map((item) => item.role_id)
+        // 将角色ID存入session，用于超级管理员权限判断
+        ctx.session.put('role_ids', roleIds)
+
         // 2. 获取用户的角色权限
         result = await rolePermissionTable.fetchAll({
           where: [['role_id', 'in', roleIds]],
@@ -63,6 +66,9 @@ class Service extends BaseService {
             })
           }
         }
+      } else {
+        // 如果没有角色，也要存入空数组
+        ctx.session.put('role_ids', [])
       }
 
       // 5. 存入 session（无论是否获取成功，都存入 permissions 对象）

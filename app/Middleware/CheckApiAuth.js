@@ -32,6 +32,7 @@ class CheckApiAuth {
 
       // 权限检查
       const permissions = session.get('permissions') || {}
+      const roleIds = session.get('role_ids') || []
       const url = ctx.request.url()
 
       // 检查是否在白名单中
@@ -40,8 +41,13 @@ class CheckApiAuth {
         return
       }
 
-      // 检查权限
+      // 检查是否为超级管理员（role_id=1）
+      if (roleIds && roleIds.includes(1)) {
+        await next()
+        return
+      }
 
+      // 检查权限
       if (!Util.checkPermission(url, permissions)) {
         console.log('checkPermission:', url, permissions)
         return ctx.response.send(
