@@ -82,13 +82,15 @@ class Service extends BaseService {
         { expiresIn: 3600 * 24 * 30 }
       ) //token有效期一个月
 
-      //用于Views层的页面认证
+      // 用于Views层的页面认证
+      // 根据环境判断是否使用secure
+      const isHttps = ctx.request.secure()
       ctx.response.cookie('token', token, {
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30天后过期
         httpOnly: true,
-        secure: true,
+        secure: isHttps,
         path: '/',
-        sameSite: 'lax',
+        // sameSite: 'lax',
       })
       let data = {
         token,
@@ -221,13 +223,15 @@ class Service extends BaseService {
         { expiresIn: 3600 * 24 * 30 }
       ) //token有效期一个月
 
-      //用于Views层的页面认证
+      // 用于Views层的页面认证
+      // 根据环境判断是否使用secure
+      const isHttps = ctx.request.secure()
       ctx.response.cookie('token', token, {
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30天后过期
         httpOnly: true,
-        secure: true,
+        secure: isHttps,
         path: '/',
-        sameSite: 'lax',
+        // sameSite: 'lax',
       })
 
       let data = {

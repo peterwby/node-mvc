@@ -89,12 +89,15 @@ class Service extends BaseService {
       ) //token有效期一个月
 
       //用于Views层的页面认证
+      // 根据环境判断是否使用secure
+      // 注意：如果访问有问题，可以试一下把secure直接设为false
+      const isHttps = ctx.request.secure()
       ctx.response.cookie('token', token, {
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30天后过期
         httpOnly: true,
-        //secure: true,
+        secure: isHttps,
         path: '/',
-        //sameSite: 'lax',
+        // sameSite: 'lax',
       })
       let data = {
         token,
@@ -119,6 +122,16 @@ class Service extends BaseService {
   async logout(ctx) {
     try {
       ctx.session.clear()
+      // 根据环境判断是否使用secure
+      const isHttps = ctx.request.secure()
+      // 清除cookie
+      ctx.response.clearCookie('token', {
+        path: '/',
+        domain: ctx.request.hostname(),
+        secure: isHttps,
+        httpOnly: true,
+        // sameSite: 'lax',
+      })
       return Util.end({
         msg: '已退出系统',
       })
@@ -228,12 +241,14 @@ class Service extends BaseService {
       ) //token有效期一个月
 
       //用于Views层的页面认证
+      // 根据环境判断是否使用secure
+      const isHttps = ctx.request.secure()
       ctx.response.cookie('token', token, {
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30天后过期
         httpOnly: true,
-        secure: true,
+        secure: isHttps,
         path: '/',
-        sameSite: 'lax',
+        // sameSite: 'lax',
       })
 
       let data = {

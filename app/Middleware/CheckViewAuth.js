@@ -16,12 +16,14 @@ class CheckViewAuth {
         console.log('member session invalid')
         ctx.session.clear()
         // 显式清除 session cookie
+        // 根据环境判断是否使用secure
+        const isHttps = ctx.request.secure()
         ctx.response.clearCookie('token', {
           path: '/',
           domain: ctx.request.hostname(),
-          //secure: true,
+          secure: isHttps,
           httpOnly: true,
-          //sameSite: 'lax',
+          // sameSite: 'lax',
         })
         return ctx.response.redirect('/admin/auth/sign-in')
       }

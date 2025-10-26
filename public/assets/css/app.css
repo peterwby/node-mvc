@@ -4296,8 +4296,16 @@ label.rating-label {
   height: 250px;
 }
 
+.h-\[25px\] {
+  height: 25px;
+}
+
 .h-\[30px\] {
   height: 30px;
+}
+
+.h-\[32px\] {
+  height: 32px;
 }
 
 .h-\[35px\] {
@@ -4372,8 +4380,16 @@ label.rating-label {
   width: 20px;
 }
 
+.w-\[25px\] {
+  width: 25px;
+}
+
 .w-\[26px\] {
   width: 26px;
+}
+
+.w-\[32px\] {
+  width: 32px;
 }
 
 .w-\[35px\] {

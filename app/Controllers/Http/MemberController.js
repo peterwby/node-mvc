@@ -54,12 +54,14 @@ class MemberController {
       let result = await memberService.logout(ctx)
       //组装从Service返回的数据，返回给前端
       // 显式清除 session cookie
+      // 根据环境判断是否使用secure
+      const isHttps = ctx.request.secure()
       ctx.response.clearCookie('token', {
         path: '/',
         domain: ctx.request.hostname(),
-        secure: true,
+        secure: isHttps,
         httpOnly: true,
-        sameSite: 'lax',
+        // sameSite: 'lax',
       })
       return Util.end2front({
         msg: 'Logout success',
