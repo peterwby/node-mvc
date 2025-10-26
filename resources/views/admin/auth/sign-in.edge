@@ -25,6 +25,15 @@
         </div>
       </div>
 
+      <!-- 语言选择器 -->
+      <div class="flex flex-col gap-1">
+        <label class="form-label text-gray-900">{{ trans('language') }}</label>
+        <select id="language-selector" class="select" onchange="changeLanguage(this.value)">
+          <option value="21">{{ trans('chinese') }}</option>
+          <option value="2">{{ trans('english') }}</option>
+        </select>
+      </div>
+
       <div class="flex flex-col gap-1">
         <label class="form-label font-normal text-gray-900"> {{ trans('username') }} </label>
         <input name="username" class="input" placeholder="{{ trans('please enter username') }}" type="text" value=""
@@ -82,7 +91,44 @@
       form.querySelector('[name="password"]').value = password;
       form.querySelector('[name="check"]').checked = true;
     }
+
+    // 初始化语言选择器
+    initLanguageSelector();
   });
+
+  // 语言切换函数
+  async function changeLanguage(language) {
+    try {
+      const response = await axios.post('/api/set-language', { language });
+      if (response.data.code === 0) {
+        // 清除本地翻译缓存
+        localStorage.removeItem('translation');
+        localStorage.removeItem('translation_update_time');
+
+        // 重新加载页面以应用新语言
+        showSuccess(trans('language changed successfully'), {
+          autoClose: 1000,
+          onConfirm: () => {
+            window.location.reload();
+          }
+        });
+      } else {
+        showError(response.data.msg || trans('language change failed'));
+      }
+    } catch (error) {
+      showError(error.message || trans('language change failed'));
+    }
+  }
+
+  // 初始化语言选择器
+  function initLanguageSelector() {
+    // 从localStorage获取当前语言设置
+    const currentLanguage = localStorage.getItem('selectedLanguage') || '21';
+    const languageSelector = document.getElementById('language-selector');
+    if (languageSelector) {
+      languageSelector.value = currentLanguage;
+    }
+  }
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();

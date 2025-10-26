@@ -33,11 +33,11 @@ class CommonService extends BaseService {
       console.log('开始刷新翻译')
       //如果手工指定了语言
       const selectedLanguage = Cache.get('selectedLanguage')
-      // console.log('selectedLanguage', selectedLanguage)
+      console.log('selectedLanguage', selectedLanguage)
       let result = await dictLanguagesTable.fetchAll()
       let langList = result.data.data.map((item) => {
         if (selectedLanguage) {
-          if (selectedLanguage === item.lang_id) {
+          if (parseInt(selectedLanguage) === parseInt(item.lang_id)) {
             item.is_selected = 1
           }
         } else {
@@ -51,9 +51,8 @@ class CommonService extends BaseService {
       })
 
       let currentLangInfo = langList.find((item) => item.is_selected === 1)
-      // console.log('currentLangInfo', currentLangInfo)
       if (!currentLangInfo) {
-        throw new Error('No selected or default language found')
+        throw new Error('No selected language found')
       }
 
       const transResponse = await Request.get(currentLangInfo.url)
@@ -105,6 +104,33 @@ class CommonService extends BaseService {
         msg: err.message,
         stack: err.stack,
         track: 'service_getTranslation_1737515421',
+      })
+    }
+  }
+
+  async setLanguage(ctx) {
+    try {
+      const { body } = ctx
+      const { language } = body
+      // 简单检查language的合法性
+      if (!language) {
+        throw new Error('语言参数不能为空')
+      }
+      if (isNaN(language)) {
+        throw new Error('语言参数不合法')
+      }
+      // 设置选中的语言到缓存
+      Cache.set('selectedLanguage', language)
+
+      // 刷新翻译数据
+      await this.refreshCurrentLanguage()
+
+      return Util.end({ data: { message: '语言切换成功' } })
+    } catch (err) {
+      return Util.error({
+        msg: err.message,
+        stack: err.stack,
+        track: 'service_setLanguage_1737515421',
       })
     }
   }

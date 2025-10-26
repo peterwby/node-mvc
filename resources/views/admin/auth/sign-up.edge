@@ -10,6 +10,12 @@
   .dark .page-bg {
     background-image: url('assets/media/images/2600x1200/bg-10-dark.png');
   }
+
+  /* 禁用按钮样式 */
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 </style>
 <div class="flex items-center justify-center grow bg-center bg-no-repeat page-bg">
   <div class="card max-w-[370px] w-full">
@@ -19,36 +25,39 @@
 
       <div class="text-center mb-2.5">
         <h3 class="text-lg font-medium text-gray-900 leading-none mb-2.5">
-          Sign up
+          {{ trans("register") }}
         </h3>
         <div class="flex items-center justify-center">
           <span class="text-2sm text-gray-700 me-1.5">
-            Already have an Account ?
+            {{ trans("already have account") }}
           </span>
           <a class="text-2sm link" href="./admin/auth/sign-in">
-            Sign In
+            {{ trans("login") }}
           </a>
         </div>
       </div>
 
       <div class="flex flex-col gap-1">
         <label class="form-label text-gray-900">
-          Nickname
+          {{ trans("nickname") }}
         </label>
-        <input class="input" name="nickname" placeholder="Enter Nick Name" type="text" value="" tabindex="1">
+        <input class="input" name="nickname" placeholder="{{ trans('please enter nickname') }}" type="text" value=""
+          tabindex="1">
       </div>
       <div class="flex flex-col gap-1">
         <label class="form-label text-gray-900">
-          Username
+          {{ trans("username") }}
         </label>
-        <input class="input" name="username" placeholder="Enter Login Name" type="text" value="" tabindex="2">
+        <input class="input" name="username" placeholder="{{ trans('please enter username') }}" type="text" value=""
+          tabindex="2">
       </div>
       <div class="flex flex-col gap-1">
         <label class="form-label font-normal text-gray-900">
-          Password
+          {{ trans("password") }}
         </label>
         <div class="input" data-toggle-password="true">
-          <input name="password" placeholder="Enter Password" type="password" value="" tabindex="3">
+          <input name="password" placeholder="{{ trans('please enter password') }}" type="password" value=""
+            tabindex="3">
           <button class="btn btn-icon" data-toggle-password-trigger="true" type="button" tabindex="-1">
             <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
             </i>
@@ -60,10 +69,11 @@
       </div>
       <div class="flex flex-col gap-1">
         <label class="form-label font-normal text-gray-900">
-          Confirm Password
+          {{ trans("password confirm") }}
         </label>
         <div class="input" data-toggle-password="true">
-          <input name="re_pwd" placeholder="Re-enter Password" type="password" value="" tabindex="4">
+          <input name="re_pwd" placeholder="{{ trans('please enter password confirm') }}" type="password" value=""
+            tabindex="4">
           <button class="btn btn-icon" data-toggle-password-trigger="true" type="button" tabindex="-1">
             <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
             </i>
@@ -75,15 +85,15 @@
       <label class="checkbox-group">
         <input class="checkbox checkbox-sm" name="terms" type="checkbox" value="1" tabindex="5">
         <span class="checkbox-label">
-          I accept
+          {{ trans("i accept") }}
           <a class="text-2sm link" href="#">
-            Terms &amp; Conditions
+            {{ trans("terms and conditions") }}
           </a>
         </span>
       </label>
       <!-- Submit button with loading state -->
-      <button type="submit" id="submit_btn" class="btn btn-primary flex justify-center grow" tabindex="6">
-        <span class="indicator-label">Sign Up</span>
+      <button type="submit" id="submit_btn" class="btn btn-primary flex justify-center grow" tabindex="6" disabled>
+        <span class="indicator-label">{{ trans("register") }}</span>
         <span class="indicator-progress hidden">
           <span
             class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
@@ -104,6 +114,28 @@
   // 防止重复提交
   let isSubmitting = false;
 
+  // 页面加载完成后初始化
+  document.addEventListener('DOMContentLoaded', function() {
+    const termsCheckbox = document.querySelector('[name="terms"]');
+
+    // 初始化按钮状态
+    updateSubmitButtonState();
+
+    // 监听条款复选框变化
+    termsCheckbox.addEventListener('change', updateSubmitButtonState);
+
+    // 更新提交按钮状态
+    function updateSubmitButtonState() {
+      if (termsCheckbox.checked) {
+        submitButton.disabled = false;
+        submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+      } else {
+        submitButton.disabled = true;
+        submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    }
+  });
+
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -119,13 +151,16 @@
       const formData = new FormData(form);
       const response = await axios.post('/api/member/sign-up', Object.fromEntries(formData));
       if (response.data.code == 0) {
-        showSuccessModal('注册成功！');
-        window.location.href = '/admin/';
+        showSuccess(trans('register success'), {
+          onConfirm: () => {
+            window.location.href = '/admin/';
+          }
+        });
         return null;
       }
       throw new Error(response.data.msg);
     } catch (e) {
-      showErrorModal(e.message || '发生错误，请稍后重试');
+      showError(e.message || trans('operation failed'));
     } finally {
       // 恢复按钮状态
       submitButton.querySelector('.indicator-label').classList.remove('hidden');
@@ -144,32 +179,32 @@
     const terms = form.querySelector('[name="terms"]').checked;
 
     if (!nickname) {
-      showErrorModal('请输入昵称');
+      showError(trans('please enter nickname'));
       return false;
     }
 
     if (!username) {
-      showErrorModal('请输入邮箱');
+      showError(trans('please enter username'));
       return false;
     }
 
     if (!password) {
-      showErrorModal('请输入密码');
+      showError(trans('please enter password'));
       return false;
     }
 
     if (password.length < 6) {
-      showErrorModal('密码长度至少为6位');
+      showError(trans('password length at least 6'));
       return false;
     }
 
     if (password !== passwordConfirmation) {
-      showErrorModal('两次输入的密码不一致');
+      showError(trans('password not match'));
       return false;
     }
 
     if (!terms) {
-      showErrorModal('请同意服务条款');
+      showError(trans('please accept terms'));
       return false;
     }
 
@@ -181,14 +216,5 @@
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
-  // 显示成功提示
-  function showSuccessModal(message) {
-    alert(message);
-  }
-
-  // 显示错误提示
-  function showErrorModal(message) {
-    alert(message);
-  }
 </script>
 @endsection

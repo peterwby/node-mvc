@@ -46,6 +46,25 @@ class CommonController {
       })
     }
   }
+
+  async setLanguage(ctx) {
+    try {
+      let result = {}
+      //检查参数合法性
+      const resultValid = await setLanguageValid(ctx)
+      if (resultValid) return resultValid
+      //调用业务逻辑Service
+      result = await commonService.setLanguage(ctx)
+      //组装从Service返回的数据，返回给前端
+      return Util.end2front(result)
+    } catch (err) {
+      return Util.error2front({
+        //isShowMsg: true,
+        msg: err.message,
+        track: 'controller_setLanguage_1737515421',
+      })
+    }
+  }
 }
 
 async function uploadImageValid(ctx) {
@@ -119,6 +138,48 @@ async function getTranslationValid(ctx) {
       msg: err.message,
       code: 9000,
       track: 'valid_getTranslationValid_1737515404',
+    })
+  }
+}
+
+async function setLanguageValid(ctx) {
+  try {
+    //组装处理参数
+    await paramsHandle()
+    //校验请求参数合法性
+    await paramsValid()
+    //权限验证
+    await authValid()
+
+    return null
+
+    async function paramsHandle() {
+      const requestAll = ctx.request.all()
+      let body = {}
+      for (let k in requestAll) {
+        if (k === 'language') {
+          body[k] = requestAll[k]
+        }
+      }
+      ctx.body = Util.deepClone(body)
+    }
+
+    async function paramsValid() {
+      const { body } = ctx
+      if (!body.language) {
+        throw new Error('语言参数不能为空')
+      }
+    }
+
+    async function authValid() {
+      const session = ctx.session
+    }
+  } catch (err) {
+    return Util.error2front({
+      isShowMsg: true,
+      msg: err.message,
+      code: 9000,
+      track: 'valid_setLanguageValid_1737515421',
     })
   }
 }
