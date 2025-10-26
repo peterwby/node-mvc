@@ -134,6 +134,11 @@ class Tools {
             return true
           }
 
+          const objTrans = JSON.parse(translationData)
+          if (!objTrans['node#login']) {
+            return true
+          }
+
           // 检查是否过期（15分钟）
           const lastUpdate = dayjs(parseInt(lastUpdateTime))
           const now = dayjs()
