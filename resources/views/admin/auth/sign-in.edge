@@ -2,13 +2,13 @@
 
 @section('content')
 <!-- Page -->
-<style>
+  <style>
   .page-bg {
-    background-image: url('assets/media/images/2600x1200/bg-10.png');
+  background-image: url('assets/media/images/2600x1200/bg-10.png');
   }
 
   .dark .page-bg {
-    background-image: url('assets/media/images/2600x1200/bg-10-dark.png');
+  background-image: url('assets/media/images/2600x1200/bg-10-dark.png');
   }
 </style>
 <div class="flex items-center justify-center grow bg-center bg-no-repeat page-bg">
@@ -21,7 +21,7 @@
         <h3 class="text-lg font-medium text-gray-900 leading-none mb-2.5">{{ trans('login') }}</h3>
         <div class="flex items-center justify-center font-medium">
           <span class="text-2sm text-gray-700 me-1.5"> {{ trans('need an account') }} </span>
-          <a class="text-2sm link" href="./admin/auth/sign-up"> {{ trans('register') }} </a>
+        <a class="text-2sm link" href="./admin/auth/sign-up"> {{ trans('register') }} </a>
         </div>
       </div>
 
@@ -37,26 +37,26 @@
       <div class="flex flex-col gap-1">
         <label class="form-label font-normal text-gray-900"> {{ trans('username') }} </label>
         <input name="username" class="input" placeholder="{{ trans('please enter username') }}" type="text" value=""
-          tabindex="1">
+        tabindex="1">
       </div>
       <div class="flex flex-col gap-1">
         <div class="flex items-center justify-between gap-1">
           <label class="form-label font-normal text-gray-900"> {{ trans('password') }} </label>
           <a class="text-2sm link shrink-0" href="admin/authentication/classic/reset-password/enter-email"
-            tabindex="-1">
-            {{ trans('forgot password') }} </a>
-        </div>
-        <div class="input" data-toggle-password="true">
-          <input name="password" placeholder="{{ trans('please enter password') }}" type="password" value=""
-            tabindex="2">
-          <button class="btn btn-icon" data-toggle-password-trigger="true" type="button" tabindex="-1">
-            <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden"> </i>
-            <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block"> </i>
-          </button>
-        </div>
+          tabindex="-1">
+        {{ trans('forgot password') }} </a>
       </div>
-      <label class="checkbox-group">
-        <input class="checkbox checkbox-sm" name="check" type="checkbox" value="1" tabindex="3">
+      <div class="input" data-toggle-password="true">
+        <input name="password" placeholder="{{ trans('please enter password') }}" type="password" value=""
+        tabindex="2">
+        <button class="btn btn-icon" data-toggle-password-trigger="true" type="button" tabindex="-1">
+          <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden"> </i>
+          <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block"> </i>
+        </button>
+      </div>
+    </div>
+    <label class="checkbox-group">
+      <input class="checkbox checkbox-sm" name="check" type="checkbox" value="1" tabindex="3">
         <span class="checkbox-label"> {{ trans('remember me') }} </span>
       </label>
       <!-- Submit button with loading state -->
@@ -64,12 +64,12 @@
         <span class="indicator-label">{{ trans('login') }}</span>
         <span class="indicator-progress hidden">
           <span
-            class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
-            role="status" aria-label="loading"></span>
-        </span>
-      </button>
-    </form>
-  </div>
+          class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
+        role="status" aria-label="loading"></span>
+      </span>
+    </button>
+  </form>
+</div>
 </div>
 <!-- End of Page -->
 @endsection
@@ -210,7 +210,6 @@
 
     return true;
   }
-
 
 </script>
 @endsection

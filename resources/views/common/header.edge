@@ -1,78 +1,78 @@
 <header
-  class="header fixed top-0 z-10 start-0 end-0 flex items-stretch shrink-0 bg-[--tw-page-bg] dark:bg-[--tw-page-bg-dark]"
-  data-sticky="true" data-sticky-class="shadow-sm" data-sticky-name="header" id="header">
-  <!-- Container -->
-  <div class="container-fixed flex justify-between items-stretch lg:gap-4" id="header_container">
-    <!-- Mobile Logo -->
-    <div class="flex gap-1 lg:hidden items-center -ms-1">
-      <a class="shrink-0" href="admin/">
-        <img class="w-[25px] h-[25px]" src="assets/images/logo.png" />
-      </a>
-      <div class="flex items-center">
-        <button class="btn btn-icon btn-light btn-clear btn-sm" data-drawer-toggle="#sidebar">
-          <i class="ki-filled ki-menu"> </i>
-        </button>
-        <button class="btn btn-icon btn-light btn-clear btn-sm" data-drawer-toggle="#mega_menu_wrapper">
-          <i class="ki-filled ki-burger-menu-2"> </i>
-        </button>
-      </div>
+class="header fixed top-0 z-10 start-0 end-0 flex items-stretch shrink-0 bg-[--tw-page-bg] dark:bg-[--tw-page-bg-dark]"
+data-sticky="true" data-sticky-class="shadow-sm" data-sticky-name="header" id="header">
+<!-- Container -->
+<div class="container-fixed flex justify-between items-stretch lg:gap-4" id="header_container">
+  <!-- Mobile Logo -->
+  <div class="flex gap-1 lg:hidden items-center -ms-1">
+    <a class="shrink-0" href="admin/">
+      <img class="w-[25px] h-[25px]" src="assets/images/logo.png" />
+    </a>
+    <div class="flex items-center">
+      <button class="btn btn-icon btn-light btn-clear btn-sm" data-drawer-toggle="#sidebar">
+        <i class="ki-filled ki-menu"> </i>
+      </button>
+      <button class="btn btn-icon btn-light btn-clear btn-sm" data-drawer-toggle="#mega_menu_wrapper">
+        <i class="ki-filled ki-burger-menu-2"> </i>
+      </button>
     </div>
-    <!-- End of Mobile Logo -->
-    <!--Megamenu Contaoner-->
-    <div class="flex items-stretch" id="mega_menu_container">
-      <!--Megamenu Inner-->
-      <div class="flex items-stretch" data-reparent="true" data-reparent-mode="prepend|lg:prepend"
-        data-reparent-target="body|lg:#mega_menu_container">
-        <!--Megamenu Wrapper-->
+  </div>
+  <!-- End of Mobile Logo -->
+  <!--Megamenu Contaoner-->
+  <div class="flex items-stretch" id="mega_menu_container">
+    <!--Megamenu Inner-->
+    <div class="flex items-stretch" data-reparent="true" data-reparent-mode="prepend|lg:prepend"
+    data-reparent-target="body|lg:#mega_menu_container">
+    <!--Megamenu Wrapper-->
 
-        <!--End of Megamenu Wrapper-->
-      </div>
-      <!--End of Megamenu Inner-->
+    <!--End of Megamenu Wrapper-->
+  </div>
+  <!--End of Megamenu Inner-->
+</div>
+<!--End of Megamenu Contaoner-->
+<!-- Topbar -->
+<div class="flex items-center gap-2 lg:gap-3.5">
+  <div class="menu" data-menu="true">
+    <div class="menu-item" data-menu-item-offset="20px, 10px" data-menu-item-offset-rtl="-20px, 10px"
+    data-menu-item-placement="bottom-end" data-menu-item-placement-rtl="bottom-start"
+    data-menu-item-toggle="dropdown" data-menu-item-trigger="click|lg:click">
+    <div class="menu-toggle btn btn-icon rounded-full">
+      <img alt="" class="size-9 rounded-full border-2 border-success shrink-0"
+      src="assets/media/avatars/300-2.png" />
     </div>
-    <!--End of Megamenu Contaoner-->
-    <!-- Topbar -->
-    <div class="flex items-center gap-2 lg:gap-3.5">
-      <div class="menu" data-menu="true">
-        <div class="menu-item" data-menu-item-offset="20px, 10px" data-menu-item-offset-rtl="-20px, 10px"
-          data-menu-item-placement="bottom-end" data-menu-item-placement-rtl="bottom-start"
-          data-menu-item-toggle="dropdown" data-menu-item-trigger="click|lg:click">
-          <div class="menu-toggle btn btn-icon rounded-full">
-            <img alt="" class="size-9 rounded-full border-2 border-success shrink-0"
-              src="assets/media/avatars/300-2.png" />
-          </div>
-          <div class="menu-dropdown menu-default light:border-gray-300 w-screen max-w-[250px]">
-            <div class="flex items-center justify-between px-5 py-1.5 gap-1.5">
-              <div class="flex items-center gap-2">
-                <img alt="" class="size-9 rounded-full border-2 border-success" src="assets/media/avatars/300-2.png" />
-                <div class="flex flex-col gap-1.5">
-                  <span class="text-sm text-gray-800 font-semibold leading-none">{{ member_info.username }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="menu-separator"></div>
-            <div class="flex flex-col">
-              <div class="menu-item mb-0.5">
-                <div class="menu-link">
-                  <span class="menu-icon">
-                    <i class="ki-filled ki-moon"> </i>
-                  </span>
-                  <span class="menu-title"> Dark Mode </span>
-                  <label class="switch switch-sm">
-                    <input data-theme-state="dark" data-theme-toggle="true" name="check" type="checkbox" value="1"
-                      onchange="handleThemeChange(this)" />
-                  </label>
-                </div>
-              </div>
-              <div class="menu-item px-4 py-1.5">
-                <button class="btn btn-sm btn-light justify-center" onclick="handleLogout()">Log out</button>
-              </div>
-            </div>
+    <div class="menu-dropdown menu-default light:border-gray-300 w-screen max-w-[250px]">
+      <div class="flex items-center justify-between px-5 py-1.5 gap-1.5">
+        <div class="flex items-center gap-2">
+          <img alt="" class="size-9 rounded-full border-2 border-success" src="assets/media/avatars/300-2.png" />
+          <div class="flex flex-col gap-1.5">
+            <span class="text-sm text-gray-800 font-semibold leading-none">{{ member_info.username }}</span>
           </div>
         </div>
       </div>
+
+      <div class="menu-separator"></div>
+      <div class="flex flex-col">
+        <div class="menu-item mb-0.5">
+          <div class="menu-link">
+            <span class="menu-icon">
+              <i class="ki-filled ki-moon"> </i>
+            </span>
+            <span class="menu-title"> Dark Mode </span>
+            <label class="switch switch-sm">
+              <input data-theme-state="dark" data-theme-toggle="true" name="check" type="checkbox" value="1"
+              onchange="handleThemeChange(this)" />
+            </label>
+          </div>
+        </div>
+        <div class="menu-item px-4 py-1.5">
+          <button class="btn btn-sm btn-light justify-center" onclick="handleLogout()">Log out</button>
+        </div>
+      </div>
     </div>
-    <!-- End of Topbar -->
   </div>
-  <!-- End of Container -->
+</div>
+</div>
+<!-- End of Topbar -->
+</div>
+<!-- End of Container -->
 </header>

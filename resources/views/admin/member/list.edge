@@ -15,15 +15,15 @@
       </div>
       <div class="flex items-center gap-2.5">
         @if(hasPermission('/admin/member/list@create'))
-        <a href="/admin/member/create" class="btn btn-sm btn-primary">
-          <i class="ki-duotone ki-plus fs-2"></i>
-          {{ trans('create') }}
-        </a>
+          <a href="/admin/member/create" class="btn btn-sm btn-primary">
+            <i class="ki-duotone ki-plus fs-2"></i>
+            {{ trans('create') }}
+          </a>
         @endif
         @if(hasPermission('/admin/member/list@batch-remove'))
-        <button id="batch_delete_btn" class="btn btn-sm btn-danger" disabled>
-          {{ trans('batch delete') }}
-        </button>
+          <button id="batch_delete_btn" class="btn btn-sm btn-danger" disabled>
+            {{ trans('batch delete') }}
+          </button>
         @endif
       </div>
     </div>
@@ -41,103 +41,103 @@
                   <i class="ki-filled ki-magnifier">
                   </i>
                   <input placeholder="{{ trans('search') }}" name="search" type="text"
-                    value="{{ request.input('search') || '' }}">
+                  value="{{ request.input('search') || '' }}">
                 </label>
               </div>
               <div class="flex flex-wrap gap-2.5">
                 <select class="select select-sm w-28" name="member_status_id">
                   <option value="">{{ trans('status') }}</option>
                   @each(status in status_list)
-                  <option value="{{ status.member_status_id }}"
+                    <option value="{{ status.member_status_id }}"
                     {{ request.input('member_status_id') + '' === status.member_status_id + '' ? 'selected' : '' }}>
                     {{ status.member_status_name }}
                   </option>
-                  @endeach
-                </select>
-                <button type="submit" class="btn btn-sm btn-outline btn-primary">
-                  <i class="ki-filled ki-setting-4">
-                  </i>
-                  {{ trans('search') }}
-                </button>
-                <button type="button" id="reset_filter_btn" class="btn btn-sm btn-outline btn-secondary">
-                  <i class="ki-filled ki-arrows-circle"></i>
-                  {{ trans('reset') }}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-        <div class="card-body">
-          <div data-datatable="false" id="primary_table">
-            <div class="scrollable-x-auto">
-              <table class="table table-auto table-border " data-datatable-table="true">
-                <thead>
-                  <tr>
-                    <th class="w-[44px] text-center">
-                      <input class="checkbox checkbox-sm" data-datatable-check="true" type="checkbox" />
-                    </th>
-                    <th class="min-w-[200px]">
-                      <span class="sort asc">
-                        <span class="sort-label font-normal text-gray-700">
-                          {{ trans('nickname') }}
-                        </span>
-                        <span class="sort-icon">
-                        </span>
-                      </span>
-                    </th>
-                    <th class="min-w-[200px]">
-                      <span class="sort asc">
-                        <span class="sort-label font-normal text-gray-700">
-                          {{ trans('email') }}
-                        </span>
-                        <span class="sort-icon">
-                        </span>
-                      </span>
-                    </th>
-                    <th class="min-w-[200px]">
-                      <span class="sort asc">
-                        <span class="sort-label font-normal text-gray-700">
-                          {{ trans('created date') }}
-                        </span>
-                        <span class="sort-icon">
-                        </span>
-                      </span>
-                    </th>
-                    <th class="min-w-[100px]">
-                      <span class="sort asc">
-                        <span class="sort-label font-normal text-gray-700">
-                          {{ trans('status') }}
-                        </span>
-                        <span class="sort-icon">
-                        </span>
-                      </span>
-                    </th>
-                    <th class="w-[60px]">
-                    </th>
-                  </tr>
-                </thead>
-              </table>
+                @endeach
+              </select>
+              <button type="submit" class="btn btn-sm btn-outline btn-primary">
+                <i class="ki-filled ki-setting-4">
+                </i>
+                {{ trans('search') }}
+              </button>
+              <button type="button" id="reset_filter_btn" class="btn btn-sm btn-outline btn-secondary">
+                <i class="ki-filled ki-arrows-circle"></i>
+                {{ trans('reset') }}
+              </button>
             </div>
-            <div
-              class="card-footer justify-center md:justify-between flex-col md:flex-row gap-5 text-gray-600 text-2sm font-medium">
-              <div class="flex items-center gap-2 order-2 md:order-1">
-                {{ trans('per page') }}
-                <select class="select select-sm w-16" data-datatable-size="true" name="perpage">
-                </select>
-                {{ trans('item') }}
-              </div>
-              <div class="flex items-center gap-4 order-1 md:order-2">
-                <span data-datatable-info="true"></span>
-                <div class="pagination" data-datatable-pagination="true">
-                </div>
-              </div>
+          </form>
+        </div>
+      </div>
+      <div class="card-body">
+        <div data-datatable="false" id="primary_table">
+          <div class="scrollable-x-auto">
+            <table class="table table-auto table-border " data-datatable-table="true">
+              <thead>
+                <tr>
+                  <th class="w-[44px] text-center">
+                    <input class="checkbox checkbox-sm" data-datatable-check="true" type="checkbox" />
+                  </th>
+                  <th class="min-w-[200px]">
+                    <span class="sort asc">
+                      <span class="sort-label font-normal text-gray-700">
+                        {{ trans('nickname') }}
+                      </span>
+                      <span class="sort-icon">
+                      </span>
+                    </span>
+                  </th>
+                  <th class="min-w-[200px]">
+                    <span class="sort asc">
+                      <span class="sort-label font-normal text-gray-700">
+                        {{ trans('email') }}
+                      </span>
+                      <span class="sort-icon">
+                      </span>
+                    </span>
+                  </th>
+                  <th class="min-w-[200px]">
+                    <span class="sort asc">
+                      <span class="sort-label font-normal text-gray-700">
+                        {{ trans('created date') }}
+                      </span>
+                      <span class="sort-icon">
+                      </span>
+                    </span>
+                  </th>
+                  <th class="min-w-[100px]">
+                    <span class="sort asc">
+                      <span class="sort-label font-normal text-gray-700">
+                        {{ trans('status') }}
+                      </span>
+                      <span class="sort-icon">
+                      </span>
+                    </span>
+                  </th>
+                  <th class="w-[60px]">
+                  </th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+          <div
+          class="card-footer justify-center md:justify-between flex-col md:flex-row gap-5 text-gray-600 text-2sm font-medium">
+          <div class="flex items-center gap-2 order-2 md:order-1">
+            {{ trans('per page') }}
+            <select class="select select-sm w-16" data-datatable-size="true" name="perpage">
+            </select>
+            {{ trans('item') }}
+          </div>
+          <div class="flex items-center gap-4 order-1 md:order-2">
+            <span data-datatable-info="true"></span>
+            <div class="pagination" data-datatable-pagination="true">
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <!-- End of Container -->
+</div>
+</div>
+<!-- End of Container -->
 </main>
 
 <script type="application/json" id="server_data">
@@ -165,11 +165,11 @@
       nickname: {
         render: (item) => {
           return '<div class="flex items-center gap-3">' +
-            '<div class="symbol symbol-35px">' +
-            '<img src="/assets/media/avatars/300-2.png" alt="avatar" class="w-[35px] h-[35px] rounded-full">' +
-            '</div>' +
-            '<div class="font-semibold">' + item + '</div>' +
-            '</div>'
+          '<div class="symbol symbol-35px">' +
+          '<img src="/assets/media/avatars/300-2.png" alt="avatar" class="w-[35px] h-[35px] rounded-full">' +
+          '</div>' +
+          '<div class="font-semibold">' + item + '</div>' +
+          '</div>'
         },
       },
       email: {
@@ -187,45 +187,45 @@
       action: {
         render: (item, data) => {
           return '<div class="menu flex-inline" data-menu="true">' +
-            '<div class="menu-item" data-menu-item-offset="0, 10px" data-menu-item-placement="bottom-end" data-menu-item-placement-rtl="bottom-start" data-menu-item-toggle="dropdown" data-menu-item-trigger="click|lg:click">' +
-            '<button class="menu-toggle btn btn-sm btn-icon btn-light btn-clear">' +
-            '<i class="ki-filled ki-dots-vertical">' +
-            '</i>' +
-            '</button>' +
-            '<div class="menu-dropdown menu-default w-full max-w-[120px]" data-menu-dismiss="true">' +
+          '<div class="menu-item" data-menu-item-offset="0, 10px" data-menu-item-placement="bottom-end" data-menu-item-placement-rtl="bottom-start" data-menu-item-toggle="dropdown" data-menu-item-trigger="click|lg:click">' +
+          '<button class="menu-toggle btn btn-sm btn-icon btn-light btn-clear">' +
+          '<i class="ki-filled ki-dots-vertical">' +
+          '</i>' +
+          '</button>' +
+          '<div class="menu-dropdown menu-default w-full max-w-[120px]" data-menu-dismiss="true">' +
 
-            '<div class="menu-item">' +
-            '<a class="menu-link" href="/admin/member/view/' + data.member_id + '">' +
-            '<span class="menu-title">' +
-            trans('view') +
-            '</span>' +
-            '</a>' +
-            '</div>' +
+          '<div class="menu-item">' +
+          '<a class="menu-link" href="/admin/member/view/' + data.member_id + '">' +
+          '<span class="menu-title">' +
+          trans('view') +
+          '</span>' +
+          '</a>' +
+          '</div>' +
 
-            (hasPermission('/admin/member/list@edit') ?
-            '<div class="menu-item">' +
-            '<a class="menu-link" href="/admin/member/edit/' + data.member_id + '">' +
-            '<span class="menu-title">' +
-            trans('edit') +
-            '</span>' +
-            '</a>' +
-            '</div>' : '') +
+          (hasPermission('/admin/member/list@edit') ?
+          '<div class="menu-item">' +
+          '<a class="menu-link" href="/admin/member/edit/' + data.member_id + '">' +
+          '<span class="menu-title">' +
+          trans('edit') +
+          '</span>' +
+          '</a>' +
+          '</div>' : '') +
 
-            '<div class="menu-separator">' +
-            '</div>' +
+          '<div class="menu-separator">' +
+          '</div>' +
 
-            (hasPermission('/admin/member/list@remove') ?
-            '<div class="menu-item">' +
-            '<button type="button" class="menu-link remove-btn" data-id="' + data.member_id + '">' +
-            '<span class="menu-title">' +
-            trans('delete') +
-            '</span>' +
-            '</button>' +
-            '</div>' : '') +
+          (hasPermission('/admin/member/list@remove') ?
+          '<div class="menu-item">' +
+          '<button type="button" class="menu-link remove-btn" data-id="' + data.member_id + '">' +
+          '<span class="menu-title">' +
+          trans('delete') +
+          '</span>' +
+          '</button>' +
+          '</div>' : '') +
 
-            '</div>' +
-            '</div>' +
-            '</div>'
+          '</div>' +
+          '</div>' +
+          '</div>'
         },
       },
     }

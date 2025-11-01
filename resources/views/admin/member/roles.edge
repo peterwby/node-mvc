@@ -21,60 +21,60 @@
           <span class="indicator-label">{{ trans('submit') }}</span>
           <span class="indicator-progress hidden">
             <span
-              class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
-              role="status" aria-label="loading"></span>
-          </span>
-        </button>
-      </div>
+            class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
+          role="status" aria-label="loading"></span>
+        </span>
+      </button>
     </div>
   </div>
-  <div class="container-fixed">
-    <div class="grid gap-5 lg:gap-7.5">
-      <div class="card min-w-full">
-        <div class="card-body">
-          <div class="grid gap-5" id="roles_container">
-            <!-- 角色列表将通过 JavaScript 动态加载 -->
-          </div>
+</div>
+<div class="container-fixed">
+  <div class="grid gap-5 lg:gap-7.5">
+    <div class="card min-w-full">
+      <div class="card-body">
+        <div class="grid gap-5" id="roles_container">
+          <!-- 角色列表将通过 JavaScript 动态加载 -->
         </div>
       </div>
     </div>
   </div>
+</div>
 </main>
 @endsection
 
 @section('styles')
-<style>
+  <style>
   .role-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
   }
 
   .role-item:hover {
-    background-color: #f9fafb;
+  background-color: #f9fafb;
   }
 
   .role-item .checkbox {
-    margin-top: 0.25rem;
+  margin-top: 0.25rem;
   }
 
   .role-item .role-info {
-    flex: 1;
+  flex: 1;
   }
 
   .role-item .role-name {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #111827;
-    margin-bottom: 0.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 0.25rem;
   }
 
   .role-item .role-description {
-    font-size: 0.875rem;
-    color: #6b7280;
+  font-size: 0.875rem;
+  color: #6b7280;
   }
 </style>
 @endsection
@@ -104,13 +104,13 @@
     // 渲染角色列表
     function renderRoles(roles) {
       roles_container.innerHTML = roles.map(role =>
-        '<div class="role-item">' +
-          '<input type="checkbox" class="checkbox" data-role-id="' + role.role_id + '"' + (role.checked ? ' checked' : '') + '>' +
-          '<div class="role-info">' +
-            '<div class="role-name">' + role.name + '</div>' +
-            '<div class="role-description">' + (role.description || '') + '</div>' +
-          '</div>' +
-        '</div>'
+      '<div class="role-item">' +
+      '<input type="checkbox" class="checkbox" data-role-id="' + role.role_id + '"' + (role.checked ? ' checked' : '') + '>' +
+      '<div class="role-info">' +
+      '<div class="role-name">' + role.name + '</div>' +
+      '<div class="role-description">' + (role.description || '') + '</div>' +
+      '</div>' +
+      '</div>'
       ).join('')
     }
 
@@ -119,9 +119,9 @@
       try {
         const checkboxes = document.querySelectorAll('.checkbox')
         const role_ids = Array.from(checkboxes)
-          .filter(cb => cb.checked)
-          .map(cb => parseInt(cb.dataset.roleId))
-          .filter(id => !isNaN(id)) // 过滤掉无效的ID
+        .filter(cb => cb.checked)
+        .map(cb => parseInt(cb.dataset.roleId))
+        .filter(id => !isNaN(id)) // 过滤掉无效的ID
 
         const response = await axios.post('/api/member/save-roles/' + member_id, {
           role_ids

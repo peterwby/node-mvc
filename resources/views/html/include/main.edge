@@ -1,44 +1,44 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-  @section('meta')
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta charset="utf-8" />
-  <title>千秀</title>
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
-  <link rel="stylesheet" href="{{ assetsUrl('layui/css/layui.css') }}" media="all" />
-  <meta name="renderer" content="webkit" />
-  <link rel="shortcut icon" href="{{ assetsUrl('favicon.ico') }}" />
-  @endsection
+  <head>
+@section('meta')
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta charset="utf-8" />
+<title>千秀</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<meta name="author" content="" />
+<link rel="stylesheet" href="{{ assetsUrl('layui/css/layui.css') }}" media="all" />
+<meta name="renderer" content="webkit" />
+<link rel="shortcut icon" href="{{ assetsUrl('favicon.ico') }}" />
+@endsection
 </head>
 
 <body>
   <header>
-    @section('header')
-    <h1>LOGO</h1>
-    @endsection
-  </header>
+@section('header')
+<h1>LOGO</h1>
+@endsection
+</header>
 
-  @!section('content')
+@!section('content')
 
-  @section('script_link')
+@section('script_link')
 
-  <script type="text/javascript" src="{{ assetsUrl('layui/layui.all.js?v='+version) }}"></script>
-  <script type="text/javascript" src="{{ assetsUrl('js/config.js?v='+version) }}"></script>
-  <script type="text/javascript" src="{{ assetsUrl('js/request.js?v='+version) }}"></script>
-  <script type="text/javascript" src="{{ assetsUrl('js/Util.js?v='+version) }}"></script>
+<script type="text/javascript" src="{{ assetsUrl('layui/layui.all.js?v='+version) }}"></script>
+<script type="text/javascript" src="{{ assetsUrl('js/config.js?v='+version) }}"></script>
+<script type="text/javascript" src="{{ assetsUrl('js/request.js?v='+version) }}"></script>
+<script type="text/javascript" src="{{ assetsUrl('js/Util.js?v='+version) }}"></script>
 
-  <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
-  <!--[if lt IE 9]>
-      <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
-      <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-  @endsection
-  <!---->
-  @!section('script')
+<!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+<!--[if lt IE 9]>
+<script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+<script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+@endsection
+<!---->
+@!section('script')
 </body>
 
 </html>

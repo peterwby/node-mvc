@@ -4592,12 +4592,12 @@ label.rating-label {
   animation: spin 1s linear infinite;
 }
 
-.cursor-pointer {
-  cursor: pointer;
-}
-
 .cursor-not-allowed {
   cursor: not-allowed;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 .resize {
@@ -5372,12 +5372,12 @@ label.rating-label {
   opacity: 0.25;
 }
 
-.opacity-75 {
-  opacity: 0.75;
-}
-
 .opacity-50 {
   opacity: 0.5;
+}
+
+.opacity-75 {
+  opacity: 0.75;
 }
 
 .shadow-card {

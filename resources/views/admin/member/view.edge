@@ -16,9 +16,9 @@
           {{ trans('back') }}
         </button>
         @if(hasPermission('/admin/member/edit/:id'))
-        <a class="btn btn-sm btn-primary" href="/admin/member/edit/{{ member_info.member_id }}">
-          {{ trans('edit') }}
-        </a>
+          <a class="btn btn-sm btn-primary" href="/admin/member/edit/{{ member_info.member_id }}">
+            {{ trans('edit') }}
+          </a>
         @endif
       </div>
     </div>

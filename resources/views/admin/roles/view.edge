@@ -15,9 +15,9 @@
           {{ trans('back') }}
         </button>
         @if(hasPermission('/admin/roles/edit/:id'))
-        <a class="btn btn-sm btn-primary" href="/admin/roles/edit/{{ info.id }}">
-          {{ trans('edit') }}
-        </a>
+          <a class="btn btn-sm btn-primary" href="/admin/roles/edit/{{ info.id }}">
+            {{ trans('edit') }}
+          </a>
         @endif
       </div>
     </div>
@@ -82,7 +82,6 @@
 
               </td>
             </tr>
-
 
           </table>
         </div>

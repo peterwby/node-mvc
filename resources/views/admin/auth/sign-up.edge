@@ -2,19 +2,19 @@
 
 @section('content')
 <!-- Page -->
-<style>
+  <style>
   .page-bg {
-    background-image: url('assets/media/images/2600x1200/bg-10.png');
+  background-image: url('assets/media/images/2600x1200/bg-10.png');
   }
 
   .dark .page-bg {
-    background-image: url('assets/media/images/2600x1200/bg-10-dark.png');
+  background-image: url('assets/media/images/2600x1200/bg-10-dark.png');
   }
 
   /* 禁用按钮样式 */
   .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
   }
 </style>
 <div class="flex items-center justify-center grow bg-center bg-no-repeat page-bg">
@@ -42,14 +42,14 @@
           {{ trans("nickname") }}
         </label>
         <input class="input" name="nickname" placeholder="{{ trans('please enter nickname') }}" type="text" value=""
-          tabindex="1">
+        tabindex="1">
       </div>
       <div class="flex flex-col gap-1">
         <label class="form-label text-gray-900">
           {{ trans("username") }}
         </label>
         <input class="input" name="username" placeholder="{{ trans('please enter username') }}" type="text" value=""
-          tabindex="2">
+        tabindex="2">
       </div>
       <div class="flex flex-col gap-1">
         <label class="form-label font-normal text-gray-900">
@@ -57,7 +57,7 @@
         </label>
         <div class="input" data-toggle-password="true">
           <input name="password" placeholder="{{ trans('please enter password') }}" type="password" value=""
-            tabindex="3">
+          tabindex="3">
           <button class="btn btn-icon" data-toggle-password-trigger="true" type="button" tabindex="-1">
             <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
             </i>
@@ -73,7 +73,7 @@
         </label>
         <div class="input" data-toggle-password="true">
           <input name="re_pwd" placeholder="{{ trans('please enter password confirm') }}" type="password" value=""
-            tabindex="4">
+          tabindex="4">
           <button class="btn btn-icon" data-toggle-password-trigger="true" type="button" tabindex="-1">
             <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
             </i>
@@ -84,20 +84,20 @@
       </div>
       <label class="checkbox-group">
         <input class="checkbox checkbox-sm" name="terms" type="checkbox" value="1" tabindex="5">
-        <span class="checkbox-label">
-          {{ trans("i accept") }}
-          <a class="text-2sm link" href="#">
-            {{ trans("terms and conditions") }}
-          </a>
-        </span>
-      </label>
-      <!-- Submit button with loading state -->
-      <button type="submit" id="submit_btn" class="btn btn-primary flex justify-center grow" tabindex="6" disabled>
-        <span class="indicator-label">{{ trans("register") }}</span>
-        <span class="indicator-progress hidden">
-          <span
+          <span class="checkbox-label">
+            {{ trans("i accept") }}
+            <a class="text-2sm link" href="#">
+              {{ trans("terms and conditions") }}
+            </a>
+          </span>
+        </label>
+        <!-- Submit button with loading state -->
+        <button type="submit" id="submit_btn" class="btn btn-primary flex justify-center grow" tabindex="6" disabled>
+          <span class="indicator-label">{{ trans("register") }}</span>
+          <span class="indicator-progress hidden">
+            <span
             class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
-            role="status" aria-label="loading"></span>
+          role="status" aria-label="loading"></span>
         </span>
       </button>
     </form>

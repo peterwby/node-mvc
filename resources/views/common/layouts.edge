@@ -1,172 +1,171 @@
 <!DOCTYPE html>
 <html class="h-full" data-theme="true" data-theme-mode="light" dir="ltr" lang="en">
 
-<head>
-  <base href="/" />
-  <title>Chanson Management</title>
-  <meta charset="utf-8" />
-  <meta content="follow, index" name="robots" />
-  <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport" />
-  <meta content="Chanson Management" name="description" />
-  <link href="assets/media/app/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180" />
-  <link href="assets/media/app/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png" />
-  <link href="assets/media/app/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png" />
-  <link href="assets/media/app/favicon.ico" rel="shortcut icon" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
-  {{--  <link href="assets/vendors/apexcharts/apexcharts.css" rel="stylesheet" />  --}}
-  <link href="assets/vendors/keenicons/styles.bundle.css" rel="stylesheet" />
-  <link href="assets/css/app.css" rel="stylesheet" />
-  <link href="assets/js/rich_editor/quill.snow.css" rel="stylesheet">
-  <link href="assets/css/datepicker.material.css" rel="stylesheet">
-  @!section('styles')
+  <head>
+    <base href="/" />
+    <title>Chanson Management</title>
+    <meta charset="utf-8" />
+    <meta content="follow, index" name="robots" />
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport" />
+    <meta content="Chanson Management" name="description" />
+    <link href="assets/media/app/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180" />
+    <link href="assets/media/app/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png" />
+    <link href="assets/media/app/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png" />
+    <link href="assets/media/app/favicon.ico" rel="shortcut icon" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+    {{--  <link href="assets/vendors/apexcharts/apexcharts.css" rel="stylesheet" />  --}}
+    <link href="assets/vendors/keenicons/styles.bundle.css" rel="stylesheet" />
+    <link href="assets/css/app.css" rel="stylesheet" />
+    <link href="assets/js/rich_editor/quill.snow.css" rel="stylesheet">
+      <link href="assets/css/datepicker.material.css" rel="stylesheet">
+        @!section('styles')
 
-  <!-- 在 content 之前引入 axios -->
-  <script src="assets/vendors/axios/axios.min.js"></script>
-  <!-- 添加 axios 拦截器配置 -->
-  <script>
-    // 添加请求拦截器
-    axios.interceptors.request.use(function (config) {
-      // 从 localStorage 获取 token
-      const token = localStorage.getItem('token')
-      // 如果存在token，则添加到请求头中
-      if (token) {
-        config.headers.token = token
-      }
-      return config
-    }, function (error) {
-      return Promise.reject(error)
-    })
+        <!-- 在 content 之前引入 axios -->
+      <script src="assets/vendors/axios/axios.min.js"></script>
+        <!-- 添加 axios 拦截器配置 -->
+        <script>
+          // 添加请求拦截器
+          axios.interceptors.request.use(function (config) {
+            // 从 localStorage 获取 token
+            const token = localStorage.getItem('token')
+            // 如果存在token，则添加到请求头中
+            if (token) {
+              config.headers.token = token
+            }
+            return config
+          }, function (error) {
+            return Promise.reject(error)
+          })
 
-    // 注入全局变量
-    window.globalData = {{{ toJSON(globalData) }}}
-  </script>
-</head>
+          // 注入全局变量
+          window.globalData = {{{ toJSON(globalData) }}}
+        </script>
+      </head>
 
-<body
-  class="antialiased flex h-full text-base text-gray-700 [--tw-page-bg:#fefefe] [--tw-page-bg-dark:var(--tw-coal-500)] demo1 sidebar-fixed header-fixed bg-[--tw-page-bg] dark:bg-[--tw-page-bg-dark]">
-  <!-- Theme Mode -->
-  <script>
-    const defaultThemeMode = 'light' // light|dark|system
-    let themeMode
+      <body
+      class="antialiased flex h-full text-base text-gray-700 [--tw-page-bg:#fefefe] [--tw-page-bg-dark:var(--tw-coal-500)] demo1 sidebar-fixed header-fixed bg-[--tw-page-bg] dark:bg-[--tw-page-bg-dark]">
+      <!-- Theme Mode -->
+      <script>
+        const defaultThemeMode = 'light' // light|dark|system
+        let themeMode
 
-    if (document.documentElement) {
-      if (localStorage.getItem('theme')) {
-        themeMode = localStorage.getItem('theme')
-      } else if (document.documentElement.hasAttribute('data-theme-mode')) {
-        themeMode = document.documentElement.getAttribute('data-theme-mode')
-      } else {
-        themeMode = defaultThemeMode
-      }
+        if (document.documentElement) {
+          if (localStorage.getItem('theme')) {
+            themeMode = localStorage.getItem('theme')
+          } else if (document.documentElement.hasAttribute('data-theme-mode')) {
+            themeMode = document.documentElement.getAttribute('data-theme-mode')
+          } else {
+            themeMode = defaultThemeMode
+          }
 
-      if (themeMode === 'system') {
-        themeMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-      }
+          if (themeMode === 'system') {
+            themeMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+          }
 
-      document.documentElement.classList.add(themeMode)
-    }
-  </script>
-  <!-- End of Theme Mode -->
-  <!-- Page -->
-  <!-- Main -->
-  <div class="flex grow">
-    <!-- Sidebar -->
-    @include('common/sidebar')
-    <!-- End of Sidebar -->
-    <!-- Wrapper -->
-    <div class="wrapper flex grow flex-col">
-      <!-- Header -->
-      @include('common/header')
-      <!-- End of Header -->
-      <!-- Content -->
-
-      @!section('content')
-
-      <!-- End of Content -->
-      <!-- Footer -->
-      @include('common/footer')
-      <!-- End of Footer -->
-    </div>
-    <!-- End of Wrapper -->
-  </div>
-  <!-- End of Main -->
-
-
-  <!-- End of Page -->
-  <!-- Scripts -->
-  <script src="assets/js/core.bundle.js"></script>
-  <!-- <script src="assets/vendors/apexcharts/apexcharts.min.js"></script> -->
-  <script src="assets/js/widgets/general.js"></script>
-  <script src="assets/js/layouts/demo1.js"></script>
-  <script src="assets/js/dayjs.min.js"></script>
-  <script src="assets/js/js.cookie.min.js"></script>
-  <script src="assets/js/tools.js"></script>
-  <script src="assets/js/rich_editor/quill.js"></script>
-  <script src="assets/js/rich_editor/plugins/image_handler.js"></script>
-  <script src="assets/js/message.js"></script>
-  {{--  https://github.com/wwilsman/Datepicker.js  --}}
-  <script src="assets/js/datepicker.js"></script>
-
-  <!-- End of Scripts -->
-
-  <script>
-    // 局部声明需要使用的工具
-    const { Util, dayjs, cookie, trans, hasPermission } = window.Tools;
-
-    // 在页面加载时
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        // 检查翻译是否需要更新
-        const needUpdate = await Util.checkTranslationUpdate()
-        if (needUpdate) {
-          // 需要更新翻译
-          await Util.updateTranslation()
-        } else {
-          // 不需要更新，直接设置翻译就绪状态
-          Util.setTranslation()
+          document.documentElement.classList.add(themeMode)
         }
+      </script>
+      <!-- End of Theme Mode -->
+      <!-- Page -->
+      <!-- Main -->
+      <div class="flex grow">
+        <!-- Sidebar -->
+        @include('common/sidebar')
+        <!-- End of Sidebar -->
+        <!-- Wrapper -->
+        <div class="wrapper flex grow flex-col">
+          <!-- Header -->
+          @include('common/header')
+          <!-- End of Header -->
+          <!-- Content -->
 
-        // 初始化菜单激活状态
-        Util.initMenuActive()
-      } catch (error) {
-        console.error('Failed to load translations:', error)
-        // 处理错误情况
-      }
-    })
+          @!section('content')
 
-    async function handleLogout() {
-      const response = await axios.post('/api/member/logout');
-      if (response.data.code == 401) {
-        localStorage.removeItem('token')
-        showSuccess(trans('logout success'), {
-          autoClose: 1000,
-          onConfirm: () => {
-            window.location.href = '/admin/auth/sign-in';
+          <!-- End of Content -->
+          <!-- Footer -->
+          @include('common/footer')
+          <!-- End of Footer -->
+        </div>
+        <!-- End of Wrapper -->
+      </div>
+      <!-- End of Main -->
+
+      <!-- End of Page -->
+      <!-- Scripts -->
+    <script src="assets/js/core.bundle.js"></script>
+    <!-- <script src="assets/vendors/apexcharts/apexcharts.min.js"></script> -->
+    <script src="assets/js/widgets/general.js"></script>
+    <script src="assets/js/layouts/demo1.js"></script>
+    <script src="assets/js/dayjs.min.js"></script>
+    <script src="assets/js/js.cookie.min.js"></script>
+    <script src="assets/js/tools.js"></script>
+    <script src="assets/js/rich_editor/quill.js"></script>
+    <script src="assets/js/rich_editor/plugins/image_handler.js"></script>
+    <script src="assets/js/message.js"></script>
+      {{--  https://github.com/wwilsman/Datepicker.js  --}}
+    <script src="assets/js/datepicker.js"></script>
+
+      <!-- End of Scripts -->
+
+      <script>
+        // 局部声明需要使用的工具
+        const { Util, dayjs, cookie, trans, hasPermission } = window.Tools;
+
+        // 在页面加载时
+        document.addEventListener('DOMContentLoaded', async () => {
+          try {
+            // 检查翻译是否需要更新
+            const needUpdate = await Util.checkTranslationUpdate()
+            if (needUpdate) {
+              // 需要更新翻译
+              await Util.updateTranslation()
+            } else {
+              // 不需要更新，直接设置翻译就绪状态
+              Util.setTranslation()
+            }
+
+            // 初始化菜单激活状态
+            Util.initMenuActive()
+          } catch (error) {
+            console.error('Failed to load translations:', error)
+            // 处理错误情况
           }
         })
-        return null
-      }
-    }
 
-    // 初始化主题设置
-    document.addEventListener('DOMContentLoaded', function() {
-        const themeToggle = document.querySelector('[data-theme-toggle="true"]');
-        const currentTheme = localStorage.getItem('theme') || 'light';
-
-        // 根据存储的主题设置复选框状态
-        if (themeToggle) {
-            themeToggle.checked = currentTheme === 'dark';
+        async function handleLogout() {
+          const response = await axios.post('/api/member/logout');
+          if (response.data.code == 401) {
+            localStorage.removeItem('token')
+            showSuccess(trans('logout success'), {
+              autoClose: 1000,
+              onConfirm: () => {
+                window.location.href = '/admin/auth/sign-in';
+              }
+            })
+            return null
+          }
         }
-    });
 
-    // 处理主题切换
-    function handleThemeChange(checkbox) {
-        const theme = checkbox.checked ? 'dark' : 'light';
-        localStorage.setItem('theme', theme);
-    }
-  </script>
+        // 初始化主题设置
+        document.addEventListener('DOMContentLoaded', function() {
+          const themeToggle = document.querySelector('[data-theme-toggle="true"]');
+          const currentTheme = localStorage.getItem('theme') || 'light';
 
-  @!section('scripts')
+          // 根据存储的主题设置复选框状态
+          if (themeToggle) {
+            themeToggle.checked = currentTheme === 'dark';
+          }
+        });
 
-</body>
+        // 处理主题切换
+        function handleThemeChange(checkbox) {
+          const theme = checkbox.checked ? 'dark' : 'light';
+          localStorage.setItem('theme', theme);
+        }
+      </script>
 
-</html>
+      @!section('scripts')
+
+    </body>
+
+  </html>

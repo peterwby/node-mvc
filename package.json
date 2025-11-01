@@ -22,7 +22,8 @@
     "test:generator": "nyc node app/Generator/tests/run.js",
     "test:generator:tmp": "nyc node app/Generator/tests/run.js tmp",
     "coverage:generator": "nyc report --reporter=html",
-    "build": "npm run css:prod"
+    "build": "npm run css:prod",
+    "format-edge": "node format-edge.js"
   },
   "keywords": [
     "chanshon"

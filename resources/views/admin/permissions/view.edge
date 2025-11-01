@@ -15,9 +15,9 @@
           {{ trans('back') }}
         </button>
         @if(hasPermission('/admin/permissions/edit/:id'))
-        <a class="btn btn-sm btn-primary" href="/admin/permissions/edit/{{ info.id }}">
-          {{ trans('edit') }}
-        </a>
+          <a class="btn btn-sm btn-primary" href="/admin/permissions/edit/{{ info.id }}">
+            {{ trans('edit') }}
+          </a>
         @endif
       </div>
     </div>
@@ -50,7 +50,6 @@
               </td>
             </tr>
 
-
             <tr>
               <td class="py-2 text-gray-600 font-normal">
                 {{ trans('key') }}
@@ -61,7 +60,6 @@
 
               </td>
             </tr>
-
 
             <tr>
               <td class="py-2 text-gray-600 font-normal">
@@ -85,8 +83,6 @@
               </td>
             </tr>
 
-
-
             <tr>
               <td class="py-2 text-gray-600 font-normal">
                 {{ trans('description') }}
@@ -97,7 +93,6 @@
 
               </td>
             </tr>
-
 
           </table>
         </div>
