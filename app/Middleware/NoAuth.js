@@ -1,6 +1,7 @@
 'use strict'
 const Redis = use('Redis')
 const Util = require('@Lib/Util')
+const Cache = require('@Lib/Cache')
 
 class NoAuth {
   async handle(ctx, next) {
@@ -11,6 +12,17 @@ class NoAuth {
         await Redis.set(url, 0, 'EX', 3600 * 24)
       }
       await Redis.incr(url)
+
+      // 检查翻译缓存，如果为空则异步触发重新加载
+      let transObj = Cache.get('translation')
+      if (!transObj) {
+        // 异步重新加载翻译（不阻塞请求）
+        const CommonService = require('@Services/CommonService')
+        const commonService = new CommonService()
+        commonService.refreshCurrentLanguage().catch((err) => {
+          console.error('中间件触发翻译重新加载失败:', err.message)
+        })
+      }
 
       //view注入公共函数
       ctx.view.share({

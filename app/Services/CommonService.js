@@ -25,7 +25,7 @@ class CommonService extends BaseService {
         const localTransData = JSON.parse(localTransContent)
 
         // 将本地翻译数据存入缓存
-        Cache.set('translation', localTransData)
+        Cache.set('translation', localTransData, 'EX', 3600)
       } catch (err) {
         console.error('加载本地翻译文件失败:', err.message)
       }

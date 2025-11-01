@@ -4,6 +4,7 @@ const Redis = use('Redis')
 const Util = require('@Lib/Util')
 const MenuService = require('@Services/MenuService')
 const menuService = new MenuService()
+const Cache = require('@Lib/Cache')
 
 class CheckViewAuth {
   // 视图白名单，这些页面不需要权限检查
@@ -16,14 +17,12 @@ class CheckViewAuth {
         console.log('member session invalid')
         ctx.session.clear()
         // 显式清除 session cookie
-        // 根据环境判断是否使用secure
-        const isHttps = ctx.request.secure()
         ctx.response.clearCookie('token', {
           path: '/',
           domain: ctx.request.hostname(),
-          secure: isHttps,
+          //secure: true,
           httpOnly: true,
-          // sameSite: 'lax',
+          //sameSite: 'lax',
         })
         return ctx.response.redirect('/admin/auth/sign-in')
       }
@@ -53,8 +52,20 @@ class CheckViewAuth {
         return ctx.response.redirect('/admin/auth/sign-in')
       }
 
+      // 检查翻译缓存，如果为空则异步触发重新加载
+      let transObj = Cache.get('translation')
+      if (!transObj) {
+        // 异步重新加载翻译（不阻塞请求）
+        const CommonService = require('@Services/CommonService')
+        const commonService = new CommonService()
+        commonService.refreshCurrentLanguage().catch((err) => {
+          console.error('中间件触发翻译重新加载失败:', err.message)
+        })
+      }
+
       //view注入公共函数和全局变量
       const menuResult = await menuService.getMenuTree(permissions, roleIds)
+      const member_info = session.get('member')
       ctx.view.share({
         trans: (source) => {
           return Util.trans(source)
@@ -63,6 +74,7 @@ class CheckViewAuth {
           return !!permissions[key]
         },
         menus: menuResult.data,
+        member_info: member_info,
         globalData: {
           permissions,
         },
