@@ -55,12 +55,23 @@ class CheckViewAuth {
       // 检查翻译缓存，如果为空则异步触发重新加载
       let transObj = Cache.get('translation')
       if (!transObj) {
-        // 异步重新加载翻译（不阻塞请求）
-        const CommonService = require('@Services/CommonService')
-        const commonService = new CommonService()
-        commonService.refreshCurrentLanguage().catch((err) => {
-          console.error('中间件触发翻译重新加载失败:', err.message)
-        })
+        // 使用锁机制防止并发时多次触发刷新
+        const refreshLock = Cache.get('translation_refreshing')
+        if (!refreshLock) {
+          Cache.set('translation_refreshing', true, 'EX', 60) // 锁60秒
+          try {
+            // 等待翻译加载完成（主要等待本地文件加载，很快）
+            const CommonService = require('@Services/CommonService')
+            const commonService = new CommonService()
+            await commonService.refreshCurrentLanguage()
+            // 刷新完成后移除锁
+            Cache.del('translation_refreshing')
+          } catch (err) {
+            console.error('中间件触发翻译重新加载失败:', err.message)
+            // 即使失败也要移除锁，允许下次重试
+            Cache.del('translation_refreshing')
+          }
+        }
       }
 
       //view注入公共函数和全局变量

@@ -11,6 +11,7 @@ const crypto = require('crypto')
 const moment = require('dayjs') //日期格式化插件
 const xss = require('xss')
 const Cache = require('@Lib/Cache')
+const Helpers = use('Helpers')
 
 const Util = {
   /************************************************************************
@@ -23,7 +24,22 @@ const Util = {
     try {
       let transObj = Cache.get('translation')
       if (!transObj) {
-        console.log('缓存中没有translation，等待刷新翻译数据')
+        // 快速后备：同步加载本地翻译文件，避免大量请求时都返回原文
+        // 暂时注释掉：中间件已使用 await 确保缓存加载完成
+        // try {
+        //   const fs = require('fs')
+        //   const localTransPath = Helpers.appRoot('trans.json')
+        //   const localTransContent = fs.readFileSync(localTransPath, 'utf8')
+        //   const localTransData = JSON.parse(localTransContent)
+        //   // 立即设置到缓存，设置较短的过期时间（5分钟），等待异步刷新完成
+        //   Cache.set('translation', localTransData, 'EX', 300)
+        //   transObj = localTransData
+        //   console.log('trans:已从本地文件快速加载翻译数据')
+        // } catch (err) {
+        //   console.error('trans:加载本地翻译文件失败:', err.message)
+        //   return source
+        // }
+        console.log('trans:缓存中没有translation，等待刷新翻译数据')
         return source
       }
       let result = transObj[`node#${source}`]

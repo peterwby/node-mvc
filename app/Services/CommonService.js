@@ -33,7 +33,7 @@ class CommonService extends BaseService {
       console.log('开始刷新翻译')
       //如果手工指定了语言
       const selectedLanguage = Cache.get('selectedLanguage')
-      console.log('selectedLanguage', selectedLanguage)
+      console.log('manual selectedLanguage', selectedLanguage)
       let result = await dictLanguagesTable.fetchAll()
       let langList = result.data.data.map((item) => {
         if (selectedLanguage) {
@@ -72,8 +72,14 @@ class CommonService extends BaseService {
       // 将翻译数据存储到缓存
       Cache.set('translation', filterTransData, 'EX', 3600)
       console.log('刷新翻译完成')
+
+      // 刷新完成后移除锁（如果存在）
+      Cache.del('translation_refreshing')
+
       return Util.end({})
     } catch (err) {
+      // 即使失败也要移除锁
+      Cache.del('translation_refreshing')
       return Util.error({
         msg: err.message,
         stack: err.stack,
@@ -88,7 +94,7 @@ class CommonService extends BaseService {
       const { body } = ctx
       let transObject = Cache.get('translation')
       if (!transObject) {
-        console.log('缓存中没有translation，正在刷新翻译数据')
+        console.log('getTranslation:缓存中没有translation，正在刷新翻译数据')
         await this.refreshCurrentLanguage()
         transObject = Cache.get('translation')
         if (!transObject) {
