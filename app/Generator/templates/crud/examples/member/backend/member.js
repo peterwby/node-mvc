@@ -112,7 +112,6 @@ class MemberTable extends BaseTable {
         'a.nickname',
         'a.email',
         'a.cellphone',
-        'a.gender_id',
         'a.ctime',
         'a.member_status_id',
         'b.member_status_name',
@@ -130,7 +129,7 @@ class MemberTable extends BaseTable {
         msg: err.message,
         stack: err.stack,
         data: { table: this.tableName },
-        track: 'table_fetchDetailById_1586339053',
+        track: 'table_fetchDetailById_1586339055',
       })
     }
   }

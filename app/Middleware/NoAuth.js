@@ -35,11 +35,18 @@ class NoAuth {
         }
       }
 
+      // 加载系统配置（用于登录页等）
+      const SystemConfigService = require('@Services/SystemConfigService')
+      const systemConfigService = new SystemConfigService()
+      const configResult = await systemConfigService.getAllConfigs()
+      const systemConfig = configResult.status > 0 ? configResult.data : {}
+
       //view注入公共函数
       ctx.view.share({
         trans: (source) => {
           return Util.trans(source)
         },
+        systemConfig: systemConfig,
       })
 
       await next()

@@ -3,11 +3,11 @@
 
   <head>
     <base href="/" />
-    <title>Chanson Management</title>
+    <title>{{ systemConfig.system_name || 'Chanson Management' }}</title>
     <meta charset="utf-8" />
     <meta content="follow, index" name="robots" />
     <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport" />
-    <meta content="Chanson Management" name="description" />
+    <meta content="{{ systemConfig.system_description || 'Chanson Management' }}" name="description" />
     <link href="assets/media/app/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180" />
     <link href="assets/media/app/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png" />
     <link href="assets/media/app/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png" />
@@ -19,6 +19,27 @@
     <link href="assets/js/rich_editor/quill.snow.css" rel="stylesheet">
       <link href="assets/css/datepicker.material.css" rel="stylesheet">
         @!section('styles')
+
+        @if(systemConfig && (systemConfig.theme_primary_color || systemConfig.theme_secondary_color))
+        <style>
+          :root, .light {
+            @if(systemConfig.theme_primary_color)
+            --tw-primary: {{ systemConfig.theme_primary_color }};
+            @endif
+            @if(systemConfig.theme_secondary_color)
+            --tw-info: {{ systemConfig.theme_secondary_color }};
+            @endif
+          }
+          .dark {
+            @if(systemConfig.theme_primary_color)
+            --tw-primary: {{ systemConfig.theme_primary_color }};
+            @endif
+            @if(systemConfig.theme_secondary_color)
+            --tw-info: {{ systemConfig.theme_secondary_color }};
+            @endif
+          }
+        </style>
+        @endif
 
         <!-- 在 content 之前引入 axios -->
       <script src="assets/vendors/axios/axios.min.js"></script>

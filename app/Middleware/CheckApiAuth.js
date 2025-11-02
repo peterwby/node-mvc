@@ -16,6 +16,30 @@ class CheckApiAuth {
 
   async handle(ctx, next) {
     try {
+      // 维护模式检查（超级管理员可继续访问）
+      try {
+        const SystemConfigService = require('@Services/SystemConfigService')
+        const systemConfigService = new SystemConfigService()
+        const modeResult = await systemConfigService.getConfig('maintenance_mode')
+        if (modeResult.status > 0 && modeResult.data && modeResult.data.config_value === '1') {
+          const session = ctx.session
+          const roleIds = session.get('role_ids') || []
+          const isSuperAdmin = roleIds && roleIds.includes(1)
+          if (!isSuperAdmin) {
+            const messageResult = await systemConfigService.getConfig('maintenance_message')
+            const message = messageResult.status > 0 && messageResult.data ? messageResult.data.config_value : '系统维护中，请稍后再试'
+            return ctx.response.send(
+              Util.end2front({
+                msg: message,
+                code: 503,
+              })
+            )
+          }
+        }
+      } catch (e) {
+        // 忽略维护模式检查异常，不影响主流程
+      }
+
       const session = ctx.session
       if (!session.get('member')) {
         //session无效

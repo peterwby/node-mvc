@@ -1,0 +1,174 @@
+@layout('common/layouts')
+
+@section('content')
+<!-- Container -->
+<main class="grow content pt-5" role="content">
+  <div class="container-fixed">
+    <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
+      <div class="flex flex-col justify-center gap-2">
+        <h1 class="text-xl font-medium leading-none text-gray-900">
+          {{ trans('edit') }} {{ trans('notice') }}
+        </h1>
+      </div>
+      <div class="flex items-center gap-2.5">
+        <button type="button" class="btn btn-sm btn-light" onclick="window.history.back()">
+          {{ trans('back') }}
+        </button>
+        <button type="submit" class="btn btn-sm btn-primary" form="edit_form" id="submit_btn">
+          <span class="indicator-label">{{ trans('submit') }}</span>
+          <span class="indicator-progress hidden">
+            <span class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full" role="status"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="container-fixed">
+    <div class="grid gap-5 lg:gap-7.5">
+      <div class="card min-w-full">
+        <div class="card-body">
+          <form id="edit_form" class="grid gap-5">
+            <input type="hidden" id="notice_id" name="notice_id" value="{{ notice.notice_id || notice.id }}">
+            
+            <!-- 标题 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('title') }}
+              </label>
+              <input id="title" name="title" class="input max-w-[500px]" 
+              placeholder="{{ trans('please enter title') }}" type="text" 
+              value="{{ notice.title || '' }}" required />
+            </div>
+
+            <!-- 类型 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('type') }}
+              </label>
+              <select id="type" name="type" class="select max-w-[300px]" required>
+                <option value="info" {{ notice.type === 'info' ? 'selected' : '' }}>{{ trans('info') }}</option>
+                <option value="warning" {{ notice.type === 'warning' ? 'selected' : '' }}>{{ trans('warning') }}</option>
+                <option value="success" {{ notice.type === 'success' ? 'selected' : '' }}>{{ trans('success') }}</option>
+                <option value="error" {{ notice.type === 'error' ? 'selected' : '' }}>{{ trans('error') }}</option>
+              </select>
+            </div>
+
+            <!-- 内容 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('content') }}
+              </label>
+              <textarea id="content" name="content" class="textarea max-w-[600px] h-[300px]" 
+              placeholder="{{ trans('please enter content') }}" required>{{ notice.content || '' }}</textarea>
+            </div>
+
+            <!-- 状态 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('status') }}
+              </label>
+              <select id="status" name="status" class="select max-w-[300px]">
+                <option value="1" {{ notice.status == 1 ? 'selected' : '' }}>{{ trans('published') }}</option>
+                <option value="0" {{ notice.status == 0 ? 'selected' : '' }}>{{ trans('unpublished') }}</option>
+              </select>
+            </div>
+
+            <!-- 置顶 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('is_top') }}
+              </label>
+              <select id="is_top" name="is_top" class="select max-w-[300px]">
+                <option value="0" {{ notice.is_top == 0 ? 'selected' : '' }}>{{ trans('no') }}</option>
+                <option value="1" {{ notice.is_top == 1 ? 'selected' : '' }}>{{ trans('yes') }}</option>
+              </select>
+            </div>
+
+            <!-- 发布时间 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('publish_time') }}
+              </label>
+              <input id="publish_time" name="publish_time" class="input max-w-[300px]" 
+              type="datetime-local" value="{{ notice.publish_time ? notice.publish_time.replace(' ', 'T').slice(0, 16) : '' }}" />
+            </div>
+
+            <!-- 过期时间 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('expire_time') }}
+              </label>
+              <input id="expire_time" name="expire_time" class="input max-w-[300px]" 
+              type="datetime-local" value="{{ notice.expire_time ? notice.expire_time.replace(' ', 'T').slice(0, 16) : '' }}" />
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+@endsection
+
+@section('scripts')
+<script>
+  let isSubmitting = false;
+
+  // 表单提交
+  document.getElementById('edit_form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    if (isSubmitting) return;
+
+    const submitBtn = document.getElementById('submit_btn');
+    const indicatorLabel = submitBtn.querySelector('.indicator-label');
+    const indicatorProgress = submitBtn.querySelector('.indicator-progress');
+
+    try {
+      indicatorLabel.classList.add('hidden');
+      indicatorProgress.classList.remove('hidden');
+      submitBtn.disabled = true;
+      isSubmitting = true;
+
+      const formData = {
+        notice_id: document.getElementById('notice_id').value,
+        title: document.getElementById('title').value,
+        content: document.getElementById('content').value,
+        type: document.getElementById('type').value,
+        status: document.getElementById('status').value,
+        is_top: document.getElementById('is_top').value,
+        publish_time: document.getElementById('publish_time').value || null,
+        expire_time: document.getElementById('expire_time').value || null,
+      };
+
+      // 格式化日期时间
+      if (formData.publish_time) {
+        formData.publish_time = formData.publish_time.replace('T', ' ') + ':00';
+      }
+      if (formData.expire_time) {
+        formData.expire_time = formData.expire_time.replace('T', ' ') + ':00';
+      }
+
+      const response = await axios.post('/api/notices/update-info', formData);
+
+      if (response.data.code === 0) {
+        showSuccess(trans('operation success'), {
+          autoClose: 1500,
+          onConfirm: () => {
+            window.location.href = '/admin/notices/list';
+          }
+        });
+      } else {
+        throw new Error(response.data.msg || trans('operation failed'));
+      }
+    } catch (error) {
+      showError(error.message || trans('operation failed'));
+    } finally {
+      indicatorLabel.classList.remove('hidden');
+      indicatorProgress.classList.add('hidden');
+      submitBtn.disabled = false;
+      isSubmitting = false;
+    }
+  });
+</script>
+@endsection
+

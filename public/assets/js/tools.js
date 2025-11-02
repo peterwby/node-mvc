@@ -1306,7 +1306,7 @@ class Tools {
         const urlParams = new URLSearchParams(window.location.search)
         const form = document.querySelector(formSelector)
 
-        if (!form) return { page: 1, pageSize: 5 }
+        if (!form) return { page: 1, pageSize: 10 }
 
         // 设置表单值
         form.querySelectorAll('input, select').forEach((element) => {
@@ -1318,7 +1318,7 @@ class Tools {
 
         return {
           page: parseInt(urlParams.get('page')) || 1,
-          pageSize: parseInt(urlParams.get('size')) || 5,
+          pageSize: parseInt(urlParams.get('size')) || 10,
         }
       },
 

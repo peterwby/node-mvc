@@ -3,9 +3,6 @@
 @section('content')
 <!-- Container -->
 <main class="grow content pt-5" id="content" role="content">
-  <div class="container-fixed" id="content_container"></div>
-  <!-- End of Container -->
-  <!-- Container -->
   <div class="container-fixed">
     <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
       <div class="flex flex-col justify-center gap-2">
@@ -14,24 +11,265 @@
       </div>
     </div>
   </div>
-</main>
+  <!-- End of Container -->
+  
+  <!-- Container -->
+  <div class="container-fixed">
+    <div class="grid gap-5 lg:gap-7.5">
+      <!-- 统计卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-7.5">
+        <!-- 会员统计 -->
+        <div class="card">
+          <div class="card-body flex flex-col gap-4 p-5">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col gap-1">
+                <span class="text-sm font-normal text-gray-700">{{ trans('total_members') }}</span>
+                <span class="text-3xl font-semibold text-gray-900" id="stat_member_total">-</span>
+              </div>
+              <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-primary bg-opacity-10">
+                <i class="ki-filled ki-profile-user text-primary text-2xl"></i>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-gray-600">{{ trans('today_new') }}:</span>
+              <span class="font-medium text-gray-900" id="stat_member_today">-</span>
+            </div>
+          </div>
+        </div>
 
+        <!-- 文件统计 -->
+        <div class="card">
+          <div class="card-body flex flex-col gap-4 p-5">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col gap-1">
+                <span class="text-sm font-normal text-gray-700">{{ trans('total_files') }}</span>
+                <span class="text-3xl font-semibold text-gray-900" id="stat_file_total">-</span>
+              </div>
+              <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-success bg-opacity-10">
+                <i class="ki-filled ki-file text-success text-2xl"></i>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-gray-600">{{ trans('today_new') }}:</span>
+              <span class="font-medium text-gray-900" id="stat_file_today">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 公告统计 -->
+        <div class="card">
+          <div class="card-body flex flex-col gap-4 p-5">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col gap-1">
+                <span class="text-sm font-normal text-gray-700">{{ trans('total_notices') }}</span>
+                <span class="text-3xl font-semibold text-gray-900" id="stat_notice_total">-</span>
+              </div>
+              <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-warning bg-opacity-10">
+                <i class="ki-filled ki-notification text-warning text-2xl"></i>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-gray-600">{{ trans('published') }}:</span>
+              <span class="font-medium text-gray-900" id="stat_notice_published">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 角色统计 -->
+        <div class="card">
+          <div class="card-body flex flex-col gap-4 p-5">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col gap-1">
+                <span class="text-sm font-normal text-gray-700">{{ trans('total_roles') }}</span>
+                <span class="text-3xl font-semibold text-gray-900" id="stat_role_total">-</span>
+              </div>
+              <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-info bg-opacity-10">
+                <i class="ki-filled ki-people text-info text-2xl"></i>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-gray-600">{{ trans('permissions') }}:</span>
+              <span class="font-medium text-gray-900" id="stat_permission_total">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 详细统计和最近活动 -->
+      <div class="grid lg:grid-cols-3 gap-5 lg:gap-7.5">
+        <!-- 文件分类统计 -->
+        <div class="lg:col-span-2 card">
+          <div class="card-header">
+            <h3 class="card-title">{{ trans('file_statistics') }}</h3>
+          </div>
+          <div class="card-body">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-5">
+              <div class="flex flex-col gap-2 text-center">
+                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary bg-opacity-10 mx-auto">
+                  <i class="ki-filled ki-picture text-primary"></i>
+                </div>
+                <span class="text-2xl font-semibold text-gray-900" id="stat_file_image">-</span>
+                <span class="text-sm text-gray-600">{{ trans('image') }}</span>
+              </div>
+              <div class="flex flex-col gap-2 text-center">
+                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-success bg-opacity-10 mx-auto">
+                  <i class="ki-filled ki-file-added text-success"></i>
+                </div>
+                <span class="text-2xl font-semibold text-gray-900" id="stat_file_document">-</span>
+                <span class="text-sm text-gray-600">{{ trans('document') }}</span>
+              </div>
+              <div class="flex flex-col gap-2 text-center">
+                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-danger bg-opacity-10 mx-auto">
+                  <i class="ki-filled ki-video text-danger"></i>
+                </div>
+                <span class="text-2xl font-semibold text-gray-900" id="stat_file_video">-</span>
+                <span class="text-sm text-gray-600">{{ trans('video') }}</span>
+              </div>
+              <div class="flex flex-col gap-2 text-center">
+                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-warning bg-opacity-10 mx-auto">
+                  <i class="ki-filled ki-headphones text-warning"></i>
+                </div>
+                <span class="text-2xl font-semibold text-gray-900" id="stat_file_audio">-</span>
+                <span class="text-sm text-gray-600">{{ trans('audio') }}</span>
+              </div>
+              <div class="flex flex-col gap-2 text-center">
+                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-400 bg-opacity-10 mx-auto">
+                  <i class="ki-filled ki-file text-gray-600"></i>
+                </div>
+                <span class="text-2xl font-semibold text-gray-900" id="stat_file_other">-</span>
+                <span class="text-sm text-gray-600">{{ trans('other') }}</span>
+              </div>
+            </div>
+            <div class="mt-5 pt-5 border-t border-gray-200">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600">{{ trans('total_storage') }}:</span>
+                <span class="text-lg font-semibold text-gray-900" id="stat_file_storage">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 最近活动 -->
+        <div class="lg:col-span-1 card">
+          <div class="card-header">
+            <h3 class="card-title">{{ trans('recent_activities') }}</h3>
+          </div>
+          <div class="card-body">
+            <div class="flex flex-col gap-4" id="recent_activities_list">
+              <div class="text-center text-gray-500 py-4">{{ trans('loading') }}...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End of Container -->
+</main>
 <!-- End of Container -->
 @endsection
 <!-- 脚本 -->
 @section('scripts')
 <script>
-  // // 设置 cookie
-  // cookie.set('name', 'value', {
-    //   path: '/',           // cookie 路径
-    //   expires: 7,          // 过期天数
-    //   secure: true,        // 仅通过 https 传输
-    //   sameSite: 'strict'   // Cookie 的 SameSite 属性
-    // });
+  // 格式化文件大小
+  function formatFileSize(bytes) {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  }
 
-  // // 获取 cookie
-  // console.log(cookie.get('name'))
-  // cookie.remove('name', { path: '/' });
+  // 获取活动图标
+  function getActivityIcon(type) {
+    const icons = {
+      'member': 'ki-filled ki-profile-user',
+      'file': 'ki-filled ki-file',
+      'notice': 'ki-filled ki-notification'
+    };
+    return icons[type] || 'ki-filled ki-information-5';
+  }
 
+  // 获取活动颜色
+  function getActivityColor(type) {
+    const colors = {
+      'member': 'primary',
+      'file': 'success',
+      'notice': 'warning'
+    };
+    return colors[type] || 'gray';
+  }
+
+  // 加载统计数据
+  async function loadStatistics() {
+    try {
+      const response = await axios.post('/api/dashboard/get-statistics');
+      if (response.data.code === 0) {
+        const data = response.data.data;
+        
+        // 会员统计
+        document.getElementById('stat_member_total').textContent = data.member.total || 0;
+        document.getElementById('stat_member_today').textContent = data.member.today_new || 0;
+        
+        // 文件统计
+        document.getElementById('stat_file_total').textContent = data.file.total || 0;
+        document.getElementById('stat_file_today').textContent = data.file.today_new || 0;
+        document.getElementById('stat_file_image').textContent = data.file.by_category.image || 0;
+        document.getElementById('stat_file_document').textContent = data.file.by_category.document || 0;
+        document.getElementById('stat_file_video').textContent = data.file.by_category.video || 0;
+        document.getElementById('stat_file_audio').textContent = data.file.by_category.audio || 0;
+        document.getElementById('stat_file_other').textContent = data.file.by_category.other || 0;
+        document.getElementById('stat_file_storage').textContent = formatFileSize(data.file.total_size || 0);
+        
+        // 公告统计
+        document.getElementById('stat_notice_total').textContent = data.notice.total || 0;
+        document.getElementById('stat_notice_published').textContent = data.notice.published || 0;
+        
+        // 角色统计
+        document.getElementById('stat_role_total').textContent = data.role.role_total || 0;
+        document.getElementById('stat_permission_total').textContent = data.role.permission_total || 0;
+        
+        // 最近活动
+        renderRecentActivities(data.recent_activities || []);
+      } else {
+        throw new Error(response.data.msg || trans('load failed'));
+      }
+    } catch (error) {
+      console.error('加载统计数据失败:', error);
+      showError(error.message || trans('load failed'));
+    }
+  }
+
+  // 渲染最近活动
+  function renderRecentActivities(activities) {
+    const container = document.getElementById('recent_activities_list');
+    
+    if (!activities || activities.length === 0) {
+      container.innerHTML = '<div class="text-center text-gray-500 py-4">' + trans('no_data') + '</div>';
+      return;
+    }
+    
+    let html = '';
+    activities.forEach(function(activity) {
+      const icon = getActivityIcon(activity.type);
+      const color = getActivityColor(activity.type);
+      html += '<div class="flex items-start gap-3">' +
+        '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-' + color + ' bg-opacity-10 shrink-0">' +
+        '<i class="' + icon + ' text-' + color + ' text-sm"></i>' +
+        '</div>' +
+        '<div class="flex flex-col gap-1 flex-1 min-w-0">' +
+        '<span class="text-sm font-medium text-gray-900">' + (activity.title || '') + '</span>' +
+        '<span class="text-xs text-gray-600 truncate">' + (activity.content || '') + '</span>' +
+        '<span class="text-xs text-gray-500">' + (activity.time || '') + '</span>' +
+        '</div>' +
+        '</div>';
+    });
+    
+    container.innerHTML = html;
+  }
+
+  // 页面加载时获取统计数据
+  document.addEventListener('DOMContentLoaded', function() {
+    loadStatistics();
+  });
 </script>
 @endsection

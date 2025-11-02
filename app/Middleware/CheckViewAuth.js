@@ -5,6 +5,7 @@ const Util = require('@Lib/Util')
 const MenuService = require('@Services/MenuService')
 const menuService = new MenuService()
 const Cache = require('@Lib/Cache')
+const SystemConfigService = require('@Services/SystemConfigService')
 
 class CheckViewAuth {
   // 视图白名单，这些页面不需要权限检查
@@ -12,6 +13,30 @@ class CheckViewAuth {
 
   async handle(ctx, next) {
     try {
+      // 初始化系统配置服务（复用同一个实例）
+      const systemConfigService = new SystemConfigService()
+
+      // 检查维护模式（在认证之前检查）
+      const configResult = await systemConfigService.getConfig('maintenance_mode')
+
+      if (configResult.status > 0 && configResult.data && configResult.data.config_value === '1') {
+        // 系统处于维护模式
+        const session = ctx.session
+        const roleIds = session.get('role_ids') || []
+
+        // 超级管理员（role_id=1）可以跳过维护模式
+        if (!roleIds || !roleIds.includes(1)) {
+          // 获取维护提示信息
+          const messageResult = await systemConfigService.getConfig('maintenance_message')
+          const message = messageResult.status > 0 && messageResult.data ? messageResult.data.config_value : '系统维护中，请稍后再试'
+
+          // 返回维护页面
+          return ctx.view.render('error.maintenance', {
+            message: message,
+          })
+        }
+      }
+
       const session = ctx.session
       if (!session.get('member')) {
         console.log('member session invalid')
@@ -77,6 +102,11 @@ class CheckViewAuth {
       //view注入公共函数和全局变量
       const menuResult = await menuService.getMenuTree(permissions, roleIds)
       const member_info = session.get('member')
+
+      // 加载系统配置（复用已创建的systemConfigService实例）
+      const allConfigsResult = await systemConfigService.getAllConfigs()
+      const systemConfig = allConfigsResult.status > 0 ? allConfigsResult.data : {}
+
       ctx.view.share({
         trans: (source) => {
           return Util.trans(source)
@@ -86,6 +116,7 @@ class CheckViewAuth {
         },
         menus: menuResult.data,
         member_info: member_info,
+        systemConfig: systemConfig,
         globalData: {
           permissions,
         },

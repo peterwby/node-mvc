@@ -1,0 +1,351 @@
+@layout('common/layouts')
+
+@section('content')
+<!-- Container -->
+<main class="grow content pt-5" role="content">
+  <div class="container-fixed">
+    <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
+      <div class="flex flex-col justify-center gap-2">
+        <h1 class="text-xl font-medium leading-none text-gray-900">
+          {{ trans('profile') }}
+        </h1>
+      </div>
+    </div>
+  </div>
+  <div class="container-fixed">
+    <div class="grid gap-5 lg:gap-7.5">
+      <!-- 个人信息卡片 -->
+      <div class="card min-w-full">
+        <div class="card-header">
+          <h3 class="card-title">{{ trans('personal_info') }}</h3>
+        </div>
+        <div class="card-body">
+          <form id="profile_form" class="grid gap-5">
+            <!-- 头像上传 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('avatar') }}
+              </label>
+              <div class="flex flex-col gap-2.5 max-w-[400px]">
+                <div class="flex items-center gap-2.5">
+                  <img id="avatar_preview" src="{{ member_info.avatar || '/assets/media/avatars/300-2.png' }}" 
+                  alt="Avatar" class="w-20 h-20 rounded-full object-cover border-2 border-gray-200" 
+                  onerror="this.src='/assets/media/avatars/300-2.png'">
+                  <div class="flex flex-col gap-1.5">
+                    <input type="file" id="avatar_file" name="avatar_file" accept="image/*" class="hidden" onchange="handleAvatarUpload(this)">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('avatar_file').click()">
+                      {{ trans('upload') }} {{ trans('avatar') }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 用户名（只读） -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('username') }}
+              </label>
+              <input id="username" name="username" class="input max-w-[300px]" 
+              type="text" value="{{ member_info.username || '' }}" disabled />
+              <span class="text-sm text-gray-500">（{{ trans('cannot_change') }}）</span>
+            </div>
+
+            <!-- 昵称 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('nickname') }}
+              </label>
+              <input id="nickname" name="nickname" class="input max-w-[300px]" 
+              placeholder="{{ trans('please enter nickname') }}" type="text" value="{{ member_info.nickname || '' }}" />
+            </div>
+
+            <!-- 邮箱 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('email') }}
+              </label>
+              <input id="email" name="email" class="input max-w-[300px]" 
+              placeholder="{{ trans('email') }}" type="email" value="{{ member_info.email || '' }}" />
+            </div>
+
+            <!-- 备注 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('remark') }}
+              </label>
+              <textarea id="remark" name="remark" class="textarea max-w-[400px] h-[100px]" 
+              placeholder="{{ trans('remark') }}">{{ member_info.remark || '' }}</textarea>
+            </div>
+
+            <div class="flex justify-start gap-2.5">
+              <button type="button" class="btn btn-sm btn-primary" onclick="saveProfile()" id="profile_submit_btn">
+                <span class="indicator-label">{{ trans('save') }}</span>
+                <span class="indicator-progress hidden">
+                  <span class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full" role="status"></span>
+                </span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 修改密码卡片 -->
+      <div class="card min-w-full">
+        <div class="card-header">
+          <h3 class="card-title">{{ trans('change_password') }}</h3>
+        </div>
+        <div class="card-body">
+          <form id="password_form" class="grid gap-5">
+            <!-- 旧密码 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('old_password') }}
+              </label>
+              <div class="input max-w-[300px]" data-toggle-password="true">
+                <input id="old_password" name="old_password" type="password" 
+                placeholder="{{ trans('please enter password') }}" />
+                <button class="btn btn-icon" data-toggle-password-trigger="true" type="button">
+                  <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden"></i>
+                  <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 新密码 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('new_password') }}
+              </label>
+              <div class="input max-w-[300px]" data-toggle-password="true">
+                <input id="new_password" name="new_password" type="password" 
+                placeholder="{{ trans('please enter password') }}" />
+                <button class="btn btn-icon" data-toggle-password-trigger="true" type="button">
+                  <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden"></i>
+                  <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 确认新密码 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('password_confirm') }}
+              </label>
+              <div class="input max-w-[300px]" data-toggle-password="true">
+                <input id="new_password_confirm" name="new_password_confirm" type="password" 
+                placeholder="{{ trans('please enter password confirm') }}" />
+                <button class="btn btn-icon" data-toggle-password-trigger="true" type="button">
+                  <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden"></i>
+                  <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex justify-start gap-2.5">
+              <button type="button" class="btn btn-sm btn-primary" onclick="savePassword()" id="password_submit_btn">
+                <span class="indicator-label">{{ trans('save') }}</span>
+                <span class="indicator-progress hidden">
+                  <span class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full" role="status"></span>
+                </span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 个人设置卡片 -->
+      <div class="card min-w-full">
+        <div class="card-header">
+          <h3 class="card-title">{{ trans('personal_settings') }}</h3>
+        </div>
+        <div class="card-body">
+          <div class="grid gap-5">
+            <!-- 语言设置 -->
+            <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+              <label class="form-label max-w-56">
+                {{ trans('language') }}
+              </label>
+              <select id="language-selector" class="select max-w-[300px]" onchange="changeLanguage(this.value)">
+                <option value="21">{{ trans('chinese') }}</option>
+                <option value="2">{{ trans('english') }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<!-- End of Container -->
+@endsection
+
+@section('scripts')
+<script>
+  let isSubmittingProfile = false;
+  let isSubmittingPassword = false;
+
+  // 页面加载时初始化
+  document.addEventListener('DOMContentLoaded', function() {
+    // 初始化语言选择器
+    const currentLanguage = localStorage.getItem('selectedLanguage') || '21';
+    const languageSelector = document.getElementById('language-selector');
+    if (languageSelector) {
+      languageSelector.value = currentLanguage;
+    }
+  });
+
+  /**
+   * 处理头像上传
+   */
+  async function handleAvatarUpload(input) {
+    if (!input.files || !input.files[0]) return;
+
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post('/api/profile/update-avatar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.code === 0) {
+        const avatarUrl = response.data.data.avatar;
+        document.getElementById('avatar_preview').src = avatarUrl;
+        showSuccess(trans('operation success'));
+        // 更新header中的头像
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        throw new Error(response.data.msg || trans('operation failed'));
+      }
+    } catch (error) {
+      showError(error.message || trans('operation failed'));
+      input.value = '';
+    }
+  }
+
+  /**
+   * 保存个人信息
+   */
+  async function saveProfile() {
+    if (isSubmittingProfile) return;
+
+    const submitBtn = document.getElementById('profile_submit_btn');
+    const indicatorLabel = submitBtn.querySelector('.indicator-label');
+    const indicatorProgress = submitBtn.querySelector('.indicator-progress');
+
+    try {
+      indicatorLabel.classList.add('hidden');
+      indicatorProgress.classList.remove('hidden');
+      submitBtn.disabled = true;
+      isSubmittingProfile = true;
+
+      const formData = {
+        nickname: document.getElementById('nickname').value,
+        email: document.getElementById('email').value,
+        remark: document.getElementById('remark').value,
+      };
+
+      const response = await axios.post('/api/profile/update-profile', formData);
+
+      if (response.data.code === 0) {
+        showSuccess(trans('operation success'), {
+          autoClose: 1500,
+        });
+      } else {
+        throw new Error(response.data.msg || trans('operation failed'));
+      }
+    } catch (error) {
+      showError(error.message || trans('operation failed'));
+    } finally {
+      indicatorLabel.classList.remove('hidden');
+      indicatorProgress.classList.add('hidden');
+      submitBtn.disabled = false;
+      isSubmittingProfile = false;
+    }
+  }
+
+  /**
+   * 保存密码
+   */
+  async function savePassword() {
+    if (isSubmittingPassword) return;
+
+    const submitBtn = document.getElementById('password_submit_btn');
+    const indicatorLabel = submitBtn.querySelector('.indicator-label');
+    const indicatorProgress = submitBtn.querySelector('.indicator-progress');
+
+    // 验证新密码确认
+    const newPassword = document.getElementById('new_password').value;
+    const newPasswordConfirm = document.getElementById('new_password_confirm').value;
+
+    if (newPassword !== newPasswordConfirm) {
+      showError(trans('password not match'));
+      return;
+    }
+
+    try {
+      indicatorLabel.classList.add('hidden');
+      indicatorProgress.classList.remove('hidden');
+      submitBtn.disabled = true;
+      isSubmittingPassword = true;
+
+      const formData = {
+        old_password: document.getElementById('old_password').value,
+        new_password: newPassword,
+      };
+
+      const response = await axios.post('/api/profile/update-password', formData);
+
+      if (response.data.code === 0) {
+        showSuccess(trans('operation success'), {
+          autoClose: 1500,
+          onConfirm: () => {
+            // 清空密码表单
+            document.getElementById('password_form').reset();
+          }
+        });
+      } else {
+        throw new Error(response.data.msg || trans('operation failed'));
+      }
+    } catch (error) {
+      showError(error.message || trans('operation failed'));
+    } finally {
+      indicatorLabel.classList.remove('hidden');
+      indicatorProgress.classList.add('hidden');
+      submitBtn.disabled = false;
+      isSubmittingPassword = false;
+    }
+  }
+
+  /**
+   * 切换语言
+   */
+  async function changeLanguage(language) {
+    try {
+      const response = await axios.post('/api/set-language', { language });
+      if (response.data.code === 0) {
+        localStorage.removeItem('translation');
+        localStorage.removeItem('translation_update_time');
+        localStorage.setItem('selectedLanguage', language);
+        showSuccess(trans('language changed successfully'), {
+          autoClose: 1000,
+          onConfirm: () => {
+            window.location.reload();
+          }
+        });
+      } else {
+        showError(response.data.msg || trans('language change failed'));
+      }
+    } catch (error) {
+      showError(error.message || trans('language change failed'));
+    }
+  }
+</script>
+@endsection
+

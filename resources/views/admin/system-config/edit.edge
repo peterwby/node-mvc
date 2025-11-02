@@ -1,0 +1,365 @@
+@layout('common/layouts')
+
+@section('content')
+<!-- Container -->
+<main class="grow content pt-5" role="content">
+  <div class="container-fixed">
+    <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
+      <div class="flex flex-col justify-center gap-2">
+        <h1 class="text-xl font-medium leading-none text-gray-900">
+          {{ trans('system_config') }}
+        </h1>
+      </div>
+      <div class="flex items-center gap-2.5">
+        <button type="button" class="btn btn-sm btn-light" onclick="window.history.back()">
+          {{ trans('back') }}
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="saveAllConfigs()" id="submit_btn">
+          <span class="indicator-label">{{ trans('save') }}</span>
+          <span class="indicator-progress hidden">
+            <span
+            class="animate-spin inline-block w-4 h-4 border-[2px] border-current border-t-transparent text-white rounded-full"
+          role="status" aria-label="loading"></span>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="container-fixed">
+  <div class="grid gap-5 lg:gap-7.5">
+    <div class="card min-w-full">
+      <div class="card-body">
+        <!-- Tabs -->
+        <div class="tabs mb-5" data-tabs="true" id="config_tabs">
+          <div class="flex items-center gap-5">
+            <button class="tab active" data-tab-toggle="#config_tab_basic">
+              {{ trans('basic_info') }}
+            </button>
+            <button class="tab" data-tab-toggle="#config_tab_appearance">
+              {{ trans('appearance') }}
+            </button>
+            <button class="tab" data-tab-toggle="#config_tab_upload">
+              {{ trans('upload_settings') }}
+            </button>
+            <button class="tab" data-tab-toggle="#config_tab_system">
+              {{ trans('system_settings') }}
+            </button>
+          </div>
+        </div>
+
+        <form id="config_form" class="grid gap-5">
+          <!-- 基本信息 Tab -->
+          <div id="config_tab_basic" class="tab-pane active">
+            <div class="grid gap-5">
+              <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+                <label class="form-label max-w-56">
+                  {{ trans('system_name') }}
+                </label>
+                <input id="system_name" name="system_name" class="input max-w-[400px]"
+                placeholder="{{ trans('system_name') }}" type="text" value="{{ configs.system_name || '' }}" />
+              </div>
+
+              <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+                <label class="form-label max-w-56">
+                  {{ trans('system_description') }}
+                </label>
+                <input id="system_description" name="system_description" class="input max-w-[400px]"
+                placeholder="{{ trans('system_description') }}" type="text" value="{{ configs.system_description || '' }}" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 外观设置 Tab -->
+          <div id="config_tab_appearance" class="tab-pane hidden">
+            <div class="grid gap-5">
+              <!-- Logo上传 -->
+              <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+                <label class="form-label max-w-56">
+                  {{ trans('logo') }}
+                </label>
+                <div class="flex flex-col gap-2.5 max-w-[400px]">
+                  <div class="flex items-center gap-2.5">
+                    <img id="logo_preview" src="{{ configs.logo_url || '/assets/images/logo.png' }}" 
+                    alt="Logo" class="w-20 h-20 object-contain border border-gray-200 rounded" 
+                    onerror="this.src='/assets/images/logo.png'">
+                    <div class="flex flex-col gap-1.5">
+                      <input type="file" id="logo_file" name="logo_file" accept="image/*" class="hidden" onchange="handleLogoUpload(this)">
+                      <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('logo_file').click()">
+                        {{ trans('upload') }} {{ trans('logo') }}
+                      </button>
+                      <input type="hidden" id="logo_url" name="logo_url" value="{{ configs.logo_url || '' }}">
+                    </div>
+                  </div>
+                  <div class="text-2sm text-gray-500">
+                    {{ trans('logo_tip') }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- 版权年份 -->
+              <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+                <label class="form-label max-w-56">
+                  {{ trans('footer_year') }}
+                </label>
+                <input id="footer_year" name="footer_year" class="input max-w-[400px]"
+                placeholder="{{ trans('footer_year') }}" type="text" value="{{ configs.footer_year || '' }}" />
+              </div>
+
+              <!-- 版权公司名称 -->
+              <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+                <label class="form-label max-w-56">
+                  {{ trans('footer_company_name') }}
+                </label>
+                <input id="footer_company_name" name="footer_company_name" class="input max-w-[400px]"
+                placeholder="{{ trans('footer_company_name') }}" type="text" value="{{ configs.footer_company_name || '' }}" />
+              </div>
+
+              <!-- 版权公司链接 -->
+              <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+                <label class="form-label max-w-56">
+                  {{ trans('footer_company_url') }}
+                </label>
+                <input id="footer_company_url" name="footer_company_url" class="input max-w-[400px]"
+                placeholder="{{ trans('footer_company_url') }}" type="url" value="{{ configs.footer_company_url || '' }}" />
+              </div>
+
+              <!-- 登录页背景图（浅色模式） -->
+              <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+                <label class="form-label max-w-56">
+                  {{ trans('login_bg_light') }}
+                </label>
+                <div class="flex flex-col gap-2.5 max-w-[400px]">
+                  <div class="flex items-center gap-2.5">
+                    <img id="login_bg_light_preview" src="{{ configs.login_bg_image || '/assets/media/images/2600x1200/bg-10.png' }}" 
+                    alt="Login BG Light" class="w-32 h-20 object-cover border border-gray-200 rounded" 
+                    onerror="this.src='/assets/media/images/2600x1200/bg-10.png'">
+                    <div class="flex flex-col gap-1.5">
+                      <input type="file" id="login_bg_light_file" name="login_bg_light_file" accept="image/*" class="hidden" onchange="handleLoginBgUpload(this, 'light')">
+                      <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('login_bg_light_file').click()">
+                        {{ trans('upload') }}
+                      </button>
+                      <input type="hidden" id="login_bg_image" name="login_bg_image" value="{{ configs.login_bg_image || '' }}">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 登录页背景图（深色模式） -->
+              <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+                <label class="form-label max-w-56">
+                  {{ trans('login_bg_dark') }}
+                </label>
+                <div class="flex flex-col gap-2.5 max-w-[400px]">
+                  <div class="flex items-center gap-2.5">
+                    <img id="login_bg_dark_preview" src="{{ configs.login_bg_image_dark || '/assets/media/images/2600x1200/bg-10-dark.png' }}" 
+                    alt="Login BG Dark" class="w-32 h-20 object-cover border border-gray-200 rounded" 
+                    onerror="this.src='/assets/media/images/2600x1200/bg-10-dark.png'">
+                    <div class="flex flex-col gap-1.5">
+                      <input type="file" id="login_bg_dark_file" name="login_bg_dark_file" accept="image/*" class="hidden" onchange="handleLoginBgUpload(this, 'dark')">
+                      <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('login_bg_dark_file').click()">
+                        {{ trans('upload') }}
+                      </button>
+                      <input type="hidden" id="login_bg_image_dark" name="login_bg_image_dark" value="{{ configs.login_bg_image_dark || '' }}">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 上传设置 Tab -->
+          <div id="config_tab_upload" class="tab-pane hidden">
+            <div class="grid gap-5">
+              <!-- 上传文件大小限制 -->
+              <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+                <label class="form-label max-w-56">
+                  {{ trans('upload_max_size') }}
+                </label>
+                <div class="flex items-center gap-2.5 max-w-[400px]">
+                  <input id="upload_max_size" name="upload_max_size" class="input max-w-[200px]"
+                  placeholder="{{ trans('upload_max_size') }}" type="number" value="{{ configs.upload_max_size || '10485760' }}" />
+                  <span class="text-sm text-gray-500">字节 ({{ trans('default') }}: 10MB)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 系统设置 Tab -->
+          <div id="config_tab_system" class="tab-pane hidden">
+            <div class="grid gap-5">
+              <!-- 维护模式开关 -->
+              <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+                <label class="form-label max-w-56">
+                  {{ trans('maintenance_mode') }}
+                </label>
+                <div class="flex items-center gap-2.5 max-w-[400px]">
+                  <label class="switch">
+                    <input id="maintenance_mode" name="maintenance_mode" type="checkbox" value="1" 
+                    {{ configs.maintenance_mode === '1' ? 'checked' : '' }}>
+                    <span class="slider"></span>
+                  </label>
+                  <span class="text-sm text-gray-500" id="maintenance_mode_status">
+                    {{ configs.maintenance_mode === '1' ? trans('enabled') : trans('disabled') }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- 维护模式提示信息 -->
+              <div class="flex items-baseline flex-wrap lg:flex-nowrap gap-2.5">
+                <label class="form-label max-w-56">
+                  {{ trans('maintenance_message') }}
+                </label>
+                <textarea id="maintenance_message" name="maintenance_message" class="textarea max-w-[400px] h-[100px]"
+                placeholder="{{ trans('maintenance_message') }}">{{ configs.maintenance_message || '' }}</textarea>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+<!-- End of Container -->
+@endsection
+
+@section('scripts')
+<script>
+  let isSubmitting = false;
+
+  // 初始化标签页切换
+  document.addEventListener('DOMContentLoaded', function() {
+    // 维护模式开关状态更新
+    const maintenanceModeSwitch = document.getElementById('maintenance_mode');
+    const maintenanceModeStatus = document.getElementById('maintenance_mode_status');
+    
+    if (maintenanceModeSwitch) {
+      maintenanceModeSwitch.addEventListener('change', function() {
+        maintenanceModeStatus.textContent = this.checked ? trans('enabled') : trans('disabled');
+      });
+    }
+  });
+
+  /**
+   * 处理Logo上传
+   */
+  async function handleLogoUpload(input) {
+    if (!input.files || !input.files[0]) return;
+
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post('/api/system-config/upload-logo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.code === 0) {
+        const logoUrl = response.data.data.url;
+        document.getElementById('logo_url').value = logoUrl;
+        document.getElementById('logo_preview').src = logoUrl;
+        showSuccess(trans('upload') + ' ' + trans('success'));
+      } else {
+        throw new Error(response.data.msg || trans('upload') + ' ' + trans('failed'));
+      }
+    } catch (error) {
+      showError(error.message || trans('upload') + ' ' + trans('failed'));
+      input.value = '';
+    }
+  }
+
+  /**
+   * 处理登录页背景图上传
+   */
+  async function handleLoginBgUpload(input, mode) {
+    if (!input.files || !input.files[0]) return;
+
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('mode', mode);
+
+    try {
+      const response = await axios.post('/api/system-config/upload-login-bg', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.code === 0) {
+        const bgUrl = response.data.data.url;
+        const configKey = mode === 'dark' ? 'login_bg_image_dark' : 'login_bg_image';
+        document.getElementById(configKey).value = bgUrl;
+        document.getElementById(mode === 'dark' ? 'login_bg_dark_preview' : 'login_bg_light_preview').src = bgUrl;
+        showSuccess(trans('upload') + ' ' + trans('success'));
+      } else {
+        throw new Error(response.data.msg || trans('upload') + ' ' + trans('failed'));
+      }
+    } catch (error) {
+      showError(error.message || trans('upload') + ' ' + trans('failed'));
+      input.value = '';
+    }
+  }
+
+  /**
+   * 保存所有配置
+   */
+  async function saveAllConfigs() {
+    if (isSubmitting) return;
+
+    const submitBtn = document.getElementById('submit_btn');
+    const indicatorLabel = submitBtn.querySelector('.indicator-label');
+    const indicatorProgress = submitBtn.querySelector('.indicator-progress');
+
+    try {
+      // 显示加载状态
+      indicatorLabel.classList.add('hidden');
+      indicatorProgress.classList.remove('hidden');
+      submitBtn.disabled = true;
+      isSubmitting = true;
+
+      // 收集表单数据
+      const configs = {
+        system_name: document.getElementById('system_name').value,
+        system_description: document.getElementById('system_description').value,
+        logo_url: document.getElementById('logo_url').value,
+        footer_year: document.getElementById('footer_year').value,
+        footer_company_name: document.getElementById('footer_company_name').value,
+        footer_company_url: document.getElementById('footer_company_url').value,
+        login_bg_image: document.getElementById('login_bg_image').value,
+        login_bg_image_dark: document.getElementById('login_bg_image_dark').value,
+        upload_max_size: document.getElementById('upload_max_size').value,
+        maintenance_mode: document.getElementById('maintenance_mode').checked ? '1' : '0',
+        maintenance_message: document.getElementById('maintenance_message').value,
+      };
+
+      const response = await axios.post('/api/system-config/batch-update', {
+        configs: configs,
+      });
+
+      if (response.data.code === 0) {
+        showSuccess(trans('operation success'), {
+          autoClose: 1500,
+          onConfirm: () => {
+            window.location.reload();
+          }
+        });
+      } else {
+        throw new Error(response.data.msg || trans('operation failed'));
+      }
+    } catch (error) {
+      showError(error.message || trans('operation failed'));
+    } finally {
+      // 恢复按钮状态
+      indicatorLabel.classList.remove('hidden');
+      indicatorProgress.classList.add('hidden');
+      submitBtn.disabled = false;
+      isSubmitting = false;
+    }
+  }
+</script>
+@endsection
+

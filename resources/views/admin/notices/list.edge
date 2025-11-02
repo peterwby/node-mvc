@@ -1,0 +1,264 @@
+@layout('common/layouts')
+
+@section('content')
+<!-- Container -->
+<main class="grow content pt-5" id="content" role="content">
+  <div class="container-fixed">
+    <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
+      <div class="flex flex-col justify-center gap-2">
+        <h1 class="text-xl font-medium leading-none text-gray-900">
+          {{ trans('notice_management') }}
+        </h1>
+      </div>
+      <div class="flex items-center gap-2.5">
+        @if(hasPermission('/admin/notices/list@create'))
+          <a href="/admin/notices/create" class="btn btn-sm btn-primary">
+            <i class="ki-duotone ki-plus fs-2"></i>
+            {{ trans('create') }}
+          </a>
+        @endif
+        @if(hasPermission('/admin/notices/list@remove'))
+          <button id="batch_delete_btn" class="btn btn-sm btn-danger" disabled>
+            {{ trans('batch delete') }}
+          </button>
+        @endif
+      </div>
+    </div>
+  </div>
+  <!-- End of Container -->
+  <div class="container-fixed">
+    <div class="grid gap-5 lg:gap-7.5">
+      <div class="card card-grid min-w-full">
+        <div class="card-header flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2 lg:gap-5">
+            <form id="filter_form" class="flex flex-wrap gap-2 lg:gap-5" method="GET">
+              <div class="flex">
+                <label class="input input-sm">
+                  <i class="ki-filled ki-magnifier"></i>
+                  <input placeholder="{{ trans('search') }}" name="search" type="text" id="search_input" />
+                </label>
+              </div>
+              <div class="flex flex-wrap gap-2.5">
+                <select class="select select-sm w-32" name="status" id="status_select">
+                  <option value="">{{ trans('all_status') }}</option>
+                  <option value="1">{{ trans('published') }}</option>
+                  <option value="0">{{ trans('unpublished') }}</option>
+                </select>
+                <select class="select select-sm w-32" name="is_top" id="is_top_select">
+                  <option value="">{{ trans('all') }}</option>
+                  <option value="1">{{ trans('pinned') }}</option>
+                  <option value="0">{{ trans('not_pinned') }}</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-outline btn-primary" onclick="loadNoticeList()">
+                  <i class="ki-filled ki-setting-4"></i>
+                  {{ trans('search') }}
+                </button>
+                <button type="button" id="reset_filter_btn" class="btn btn-sm btn-outline btn-secondary" onclick="resetFilter()">
+                  <i class="ki-filled ki-arrows-circle"></i>
+                  {{ trans('reset') }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="card-body">
+          <div data-datatable="false" id="primary_table">
+            <div class="scrollable-x-auto">
+              <table class="table table-auto table-border" data-datatable-table="true">
+                <thead>
+                  <tr>
+                    <th class="w-[44px] text-center">
+                      <input class="checkbox checkbox-sm" data-datatable-check="true" type="checkbox" />
+                    </th>
+                    <th class="min-w-[200px]">{{ trans('title') }}</th>
+                    <th class="min-w-[100px]">{{ trans('type') }}</th>
+                    <th class="min-w-[80px]">{{ trans('status') }}</th>
+                    <th class="min-w-[80px]">{{ trans('is_top') }}</th>
+                    <th class="min-w-[150px]">{{ trans('publisher') }}</th>
+                    <th class="min-w-[150px]">{{ trans('publish_time') }}</th>
+                    <th class="min-w-[150px]">{{ trans('expire_time') }}</th>
+                    <th class="w-[120px]">{{ trans('operation') }}</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div class="card-footer justify-center md:justify-between flex-col md:flex-row gap-5 text-gray-600 text-2sm font-medium">
+              <div class="flex items-center gap-2 order-2 md:order-1">
+                {{ trans('per page') }}
+                <select class="select select-sm w-16" data-datatable-size="true" name="perpage">
+                </select>
+                {{ trans('item') }}
+              </div>
+              <div class="flex items-center gap-4 order-1 md:order-2">
+                <div data-datatable-pagination="true"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End of Container -->
+</main>
+@endsection
+
+@section('scripts')
+<script>
+  let datatable;
+
+  // 初始化数据表格
+  datatable = Util.initDataTable('#primary_table', {
+    apiEndpoint: '/api/notices/get-list',
+    pageSize: 20,
+    initialPage: 1,
+    columns: {
+      id: {
+        render: (item) => {
+          return '<input class="checkbox checkbox-sm" data-datatable-row-check="true" type="checkbox" value="' + item + '">'
+        },
+      },
+      title: {
+        render: (item) => {
+          return '<div class="font-medium">' + (item || trans('no data')) + '</div>'
+        },
+      },
+      type: {
+        render: (item) => {
+          const typeMap = {
+            'info': '<span class="badge badge-light-primary">' + trans('info') + '</span>',
+            'warning': '<span class="badge badge-light-warning">' + trans('warning') + '</span>',
+            'success': '<span class="badge badge-light-success">' + trans('success') + '</span>',
+            'error': '<span class="badge badge-light-danger">' + trans('error') + '</span>',
+          }
+          return typeMap[item] || '<span class="badge">' + (item || trans('no data')) + '</span>'
+        },
+      },
+      status: {
+        render: (item) => {
+          return item == 1 
+            ? '<span class="badge badge-light-success">' + trans('published') + '</span>'
+            : '<span class="badge badge-light-secondary">' + trans('unpublished') + '</span>'
+        },
+      },
+      is_top: {
+        render: (item) => {
+          return item == 1 
+            ? '<span class="badge badge-light-primary">' + trans('yes') + '</span>'
+            : '<span class="badge">' + trans('no') + '</span>'
+        },
+      },
+      publisher_name: {
+        render: (item) => {
+          return '<div>' + (item || trans('no data')) + '</div>'
+        },
+      },
+      publish_time: {
+        render: (item) => {
+          return '<div>' + (item || trans('no data')) + '</div>'
+        },
+      },
+      expire_time: {
+        render: (item) => {
+          return '<div>' + (item || trans('no data')) + '</div>'
+        },
+      },
+      action: {
+        render: (item, data) => {
+          return '<div class="menu flex-inline" data-menu="true">' +
+            '<div class="menu-item" data-menu-item-offset="0, 10px" data-menu-item-placement="bottom-end">' +
+            '<button class="menu-toggle btn btn-sm btn-icon btn-light btn-clear">' +
+            '<i class="ki-filled ki-dots-vertical"></i>' +
+            '</button>' +
+            '<div class="menu-dropdown menu-default w-full max-w-[120px]" data-menu-dismiss="true">' +
+            (hasPermission('/admin/notices/list@edit') ?
+            '<div class="menu-item">' +
+            '<a class="menu-link" href="/admin/notices/edit/' + data.id + '">' +
+            '<span class="menu-title">' + trans('edit') + '</span>' +
+            '</a>' +
+            '</div>' : '') +
+            '<div class="menu-separator"></div>' +
+            (hasPermission('/admin/notices/list@remove') ?
+            '<div class="menu-item">' +
+            '<button type="button" class="menu-link remove-btn" data-id="' + data.id + '">' +
+            '<span class="menu-title">' + trans('delete') + '</span>' +
+            '</button>' +
+            '</div>' : '') +
+            '</div>' +
+            '</div>' +
+            '</div>'
+        },
+      },
+    }
+  })
+
+  // 处理单行删除
+  Util.handleRowDelete({
+    tableId: '#primary_table',
+    deleteApi: '/api/notices/remove',
+    onSuccess: () => {
+      datatable.reload()
+    }
+  })
+
+  // 批量删除
+  document.getElementById('batch_delete_btn').addEventListener('click', async function() {
+    const checked = document.querySelectorAll('#primary_table input[type="checkbox"]:checked:not([data-datatable-check="true"])');
+    if (checked.length === 0) {
+      showError(trans('please select items'));
+      return;
+    }
+    
+    const ids = Array.from(checked).map(cb => parseInt(cb.value));
+    const count = ids.length;
+    
+    if (!confirm(trans('confirm delete these items').replace('[[0]]', count))) return;
+    
+    try {
+      const response = await axios.post('/api/notices/remove', { ids: ids });
+      if (response.data.code === 0) {
+        showSuccess(trans('operation success'));
+        datatable.reload();
+        this.disabled = true;
+      } else {
+        throw new Error(response.data.msg || trans('operation failed'));
+      }
+    } catch (error) {
+      showError(error.message || trans('operation failed'));
+    }
+  });
+
+  // 监听复选框变化
+  document.addEventListener('change', function(e) {
+    if (e.target.type === 'checkbox' && e.target.closest('#primary_table')) {
+      const checked = document.querySelectorAll('#primary_table input[type="checkbox"]:checked:not([data-datatable-check="true"])');
+      document.getElementById('batch_delete_btn').disabled = checked.length === 0;
+    }
+  });
+
+  // 加载列表
+  function loadNoticeList() {
+    const search = document.getElementById('search_input').value;
+    const status = document.getElementById('status_select').value;
+    const is_top = document.getElementById('is_top_select').value;
+    
+    datatable.setParams({
+      search: search,
+      status: status,
+      is_top: is_top,
+    });
+    datatable.reload();
+  }
+
+  // 重置筛选
+  function resetFilter() {
+    document.getElementById('search_input').value = '';
+    document.getElementById('status_select').value = '';
+    document.getElementById('is_top_select').value = '';
+    loadNoticeList();
+  }
+
+  // 初始化筛选
+  loadNoticeList();
+</script>
+@endsection
+

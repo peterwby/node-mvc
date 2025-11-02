@@ -112,11 +112,11 @@ class MemberTable extends BaseTable {
         'a.nickname',
         'a.email',
         'a.cellphone',
-        'a.gender_id',
-        'a.ctime',
+        'a.created_at',
         'a.member_status_id',
         'b.member_status_name',
-        'a.remark'
+        'a.remark',
+        'a.avatar'
       )
         .from('member as a')
         .innerJoin('dict_member_status as b', 'a.member_status_id', 'b.member_status_id')

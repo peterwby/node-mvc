@@ -1,0 +1,345 @@
+@layout('common/layouts')
+
+@section('content')
+<!-- Container -->
+<main class="grow content pt-5" id="content" role="content">
+  <div class="container-fixed">
+    <div class="flex flex-wrap items-center lg:items-end justify-between gap-5 pb-7.5">
+      <div class="flex flex-col justify-center gap-2">
+        <h1 class="text-xl font-medium leading-none text-gray-900">
+          {{ trans('file_management') }}
+        </h1>
+      </div>
+      <div class="flex items-center gap-2.5">
+        @if(hasPermission('/admin/files/list@upload'))
+          <button type="button" class="btn btn-sm btn-primary" onclick="openUploadModal()">
+            <i class="ki-duotone ki-plus fs-2"></i>
+            {{ trans('upload_file') }}
+          </button>
+        @endif
+        @if(hasPermission('/admin/files/list@remove'))
+          <button id="batch_delete_btn" class="btn btn-sm btn-danger" disabled>
+            {{ trans('batch delete') }}
+          </button>
+        @endif
+      </div>
+    </div>
+  </div>
+  <!-- End of Container -->
+  <!-- Container -->
+  <div class="container-fixed">
+    <div class="grid gap-5 lg:gap-7.5">
+      <div class="card card-grid min-w-full">
+        <div class="card-header flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2 lg:gap-5">
+            <form id="filter_form" class="flex flex-wrap gap-2 lg:gap-5" method="GET">
+              <div class="flex">
+                <label class="input input-sm">
+                  <i class="ki-filled ki-magnifier"></i>
+                  <input placeholder="{{ trans('search') }}" name="search" type="text" id="search_input" />
+                </label>
+              </div>
+              <div class="flex flex-wrap gap-2.5">
+                <select class="select select-sm w-32" name="category" id="category_select">
+                  <option value="">{{ trans('all_categories') }}</option>
+                  <option value="image">{{ trans('image') }}</option>
+                  <option value="document">{{ trans('document') }}</option>
+                  <option value="video">{{ trans('video') }}</option>
+                  <option value="audio">{{ trans('audio') }}</option>
+                  <option value="other">{{ trans('other') }}</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-outline btn-primary" onclick="loadFileList()">
+                  <i class="ki-filled ki-setting-4"></i>
+                  {{ trans('search') }}
+                </button>
+                <button type="button" id="reset_filter_btn" class="btn btn-sm btn-outline btn-secondary" onclick="resetFilter()">
+                  <i class="ki-filled ki-arrows-circle"></i>
+                  {{ trans('reset') }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="card-body">
+          <div data-datatable="false" id="primary_table">
+            <div class="scrollable-x-auto">
+              <table class="table table-auto table-border" data-datatable-table="true">
+                <thead>
+                  <tr>
+                    <th class="w-[44px] text-center">
+                      <input class="checkbox checkbox-sm" data-datatable-check="true" type="checkbox" />
+                    </th>
+                    <th class="min-w-[120px]">{{ trans('preview') }}</th>
+                    <th class="min-w-[200px]">{{ trans('file_name') }}</th>
+                    <th class="min-w-[100px]">{{ trans('file_type') }}</th>
+                    <th class="min-w-[100px]">{{ trans('file_size') }}</th>
+                    <th class="min-w-[150px]">{{ trans('uploader') }}</th>
+                    <th class="min-w-[150px]">{{ trans('created date') }}</th>
+                    <th class="w-[120px]">{{ trans('operation') }}</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div class="card-footer justify-center md:justify-between flex-col md:flex-row gap-5 text-gray-600 text-2sm font-medium">
+              <div class="flex items-center gap-2 order-2 md:order-1">
+                {{ trans('per page') }}
+                <select class="select select-sm w-16" data-datatable-size="true" name="perpage">
+                </select>
+                {{ trans('item') }}
+              </div>
+              <div class="flex items-center gap-4 order-1 md:order-2">
+                <div data-datatable-pagination="true"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End of Container -->
+</main>
+
+<!-- 上传文件Modal -->
+<div class="modal" data-modal="true" id="upload_modal">
+  <div class="modal-content max-w-[600px]">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ trans('upload_file') }}</h3>
+      <button class="btn btn-sm btn-icon btn-light btn-clear shrink-0" data-modal-dismiss="true">
+        <i class="ki-filled ki-cross"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="flex flex-col gap-5">
+        <div class="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center" id="drop_zone">
+          <i class="ki-filled ki-cloud-upload text-5xl text-gray-400 mb-3"></i>
+          <p class="text-gray-600 mb-2">{{ trans('drag_drop_files') }}</p>
+          <p class="text-sm text-gray-500 mb-4">{{ trans('or') }}</p>
+          <button type="button" class="btn btn-primary" onclick="document.getElementById('file_input').click()">
+            {{ trans('select_files') }}
+          </button>
+          <input type="file" id="file_input" name="file" multiple class="hidden" onchange="handleFileSelect(this)">
+        </div>
+        <div id="upload_progress" class="hidden">
+          <div class="progress">
+            <div class="progress-bar" id="progress_bar" style="width: 0%"></div>
+          </div>
+          <p class="text-sm text-gray-600 mt-2 text-center" id="progress_text">0%</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End of Container -->
+@endsection
+
+@section('scripts')
+<script>
+  const datatable = Util.initDataTable('#primary_table', {
+    columns: {
+      id: {
+        render: function(data) {
+          return '<input class="checkbox checkbox-sm" type="checkbox" value="' + data + '" data-file-id="' + data + '" />';
+        }
+      },
+      file_path: {
+        render: function(item, data) {
+          if (data.category === 'image') {
+            return '<img src="' + item + '" alt="preview" class="w-16 h-16 object-cover rounded border border-gray-200" onerror="this.src=\'/assets/media/avatars/300-2.png\'">';
+          }
+          return '<i class="ki-filled ki-file text-3xl text-gray-400"></i>';
+        }
+      },
+      file_name: {
+        render: function(data) {
+          return '<span class="text-sm font-medium">' + (data || '') + '</span>';
+        }
+      },
+      category: {
+        render: function(data) {
+          const categoryNames = {
+            'image': trans('image'),
+            'document': trans('document'),
+            'video': trans('video'),
+            'audio': trans('audio'),
+            'other': trans('other')
+          };
+          return '<span class="badge badge-sm badge-light">' + (categoryNames[data] || data) + '</span>';
+        }
+      },
+      file_size_formatted: {
+        render: function(data) {
+          return '<span class="text-sm">' + (data || '-') + '</span>';
+        }
+      },
+      uploader_name: {
+        render: function(data) {
+          return '<span class="text-sm">' + (data || '-') + '</span>';
+        }
+      },
+      created_at: {
+        render: function(data) {
+          return '<span class="text-sm">' + (data || '-') + '</span>';
+        }
+      },
+      action: {
+        render: function(item, data) {
+          let actions = '';
+          if (data.category === 'image') {
+            actions += '<button type="button" class="btn btn-sm btn-icon btn-light" onclick="previewImage(\'' + data.file_path + '\')" title="' + trans('preview') + '">' +
+              '<i class="ki-filled ki-eye"></i>' +
+              '</button>';
+          }
+          actions += '<a href="' + data.file_path + '" target="_blank" class="btn btn-sm btn-icon btn-light" title="' + trans('download') + '">' +
+            '<i class="ki-filled ki-arrow-down"></i>' +
+            '</a>';
+          @if(hasPermission('/admin/files/list@remove'))
+          actions += '<button type="button" class="btn btn-sm btn-icon btn-light" onclick="deleteFile(' + data.id + ')" title="' + trans('delete') + '">' +
+            '<i class="ki-filled ki-trash"></i>' +
+            '</button>';
+          @endif
+          return '<div class="flex gap-1">' + actions + '</div>';
+        }
+      }
+    },
+    apiEndpoint: '/api/files/get-list',
+    pageSize: 20,
+    initialPage: 1
+  });
+
+  // 选择文件后上传
+  async function handleFileSelect(input) {
+    if (!input.files || input.files.length === 0) return;
+
+    const files = Array.from(input.files);
+    await uploadFiles(files);
+  }
+
+  // 上传文件
+  async function uploadFiles(files) {
+    const progressDiv = document.getElementById('upload_progress');
+    const progressBar = document.getElementById('progress_bar');
+    const progressText = document.getElementById('progress_text');
+
+    progressDiv.classList.remove('hidden');
+
+    let uploadedCount = 0;
+    const totalFiles = files.length;
+
+    for (const file of files) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        await axios.post('/api/files/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        uploadedCount++;
+        const progress = Math.round((uploadedCount / totalFiles) * 100);
+        progressBar.style.width = progress + '%';
+        progressText.textContent = uploadedCount + '/' + totalFiles + ' - ' + progress + '%';
+      } catch (error) {
+        showError(file.name + ': ' + (error.response?.data?.msg || error.message));
+      }
+    }
+
+    showSuccess(trans('upload') + ' ' + trans('success'));
+    setTimeout(() => {
+      progressDiv.classList.add('hidden');
+      document.getElementById('file_input').value = '';
+      loadFileList();
+    }, 1000);
+  }
+
+  // 打开上传Modal
+  function openUploadModal() {
+    const modal = document.querySelector('#upload_modal');
+    if (modal) {
+      modal.classList.add('show');
+    }
+  }
+
+  // 删除文件
+  async function deleteFile(fileId) {
+    if (!confirm(trans('confirm delete'))) return;
+
+    try {
+      const response = await axios.post('/api/files/remove', { file_id: fileId });
+      if (response.data.code === 0) {
+        showSuccess(trans('operation success'));
+        loadFileList();
+      } else {
+        throw new Error(response.data.msg || trans('operation failed'));
+      }
+    } catch (error) {
+      showError(error.message || trans('operation failed'));
+    }
+  }
+
+  // 预览图片
+  function previewImage(url) {
+    window.open(url, '_blank');
+  }
+
+  // 加载文件列表
+  function loadFileList() {
+    const search = document.getElementById('search_input').value;
+    const category = document.getElementById('category_select').value;
+
+    if (datatable) {
+      datatable.setParams({
+        search: search,
+        category: category
+      });
+      datatable.reload();
+    }
+  }
+
+  // 重置筛选
+  function resetFilter() {
+    document.getElementById('search_input').value = '';
+    document.getElementById('category_select').value = '';
+    loadFileList();
+  }
+
+  // 批量删除
+  document.getElementById('batch_delete_btn').addEventListener('click', async function() {
+    const checked = document.querySelectorAll('#primary_table input[type="checkbox"]:checked:not([data-datatable-check="true"])');
+    if (checked.length === 0) {
+      showError(trans('please select files'));
+      return;
+    }
+
+    const ids = Array.from(checked).map(function(cb) {
+      return parseInt(cb.value);
+    });
+    const count = ids.length;
+
+    if (!confirm(trans('confirm delete these items').replace('[[0]]', count))) return;
+
+    try {
+      const response = await axios.post('/api/files/batch-remove', { ids: ids });
+      if (response.data.code === 0) {
+        showSuccess(trans('operation success'));
+        loadFileList();
+        this.disabled = true;
+      } else {
+        throw new Error(response.data.msg || trans('operation failed'));
+      }
+    } catch (error) {
+      showError(error.message || trans('operation failed'));
+    }
+  });
+
+  // 监听复选框变化，控制批量删除按钮状态
+  document.addEventListener('change', function(e) {
+    if (e.target.type === 'checkbox' && e.target.closest('#primary_table')) {
+      const checked = document.querySelectorAll('#primary_table input[type="checkbox"]:checked:not([data-datatable-check="true"])');
+      document.getElementById('batch_delete_btn').disabled = checked.length === 0;
+    }
+  });
+</script>
+@endsection
+

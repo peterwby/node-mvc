@@ -3811,6 +3811,50 @@ label.rating-label {
   }
 }
 
+.progress {
+  width: 100%;
+  display: flex;
+  min-height: 4px;
+  overflow: hidden;
+  background-color: var(--tw-gray-100);
+  border-radius: 0.5rem;
+}
+
+.progress-bar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  text-align: center;
+  white-space: nowrap;
+  background-color: var(--tw-gray-300);
+  border-radius: 0.5rem;
+}
+
+.progress-primary .progress-bar {
+  background-color: var(--tw-primary);
+}
+
+.progress-success .progress-bar {
+  background-color: var(--tw-success);
+}
+
+.progress-danger .progress-bar {
+  background-color: var(--tw-danger);
+}
+
+.progress-warning .progress-bar {
+  background-color: var(--tw-warning);
+}
+
+.progress-info .progress-bar {
+  background-color: var(--tw-info);
+}
+
+.progress-dark .progress-bar {
+  background-color: var(--tw-dark);
+}
+
 .apexcharts-text, .apexcharts-title-text, .apexcharts-legend-text {
   font-family: inherit !important;
 }
@@ -4054,6 +4098,11 @@ label.rating-label {
   margin-right: 1.25rem;
 }
 
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .-ml-1 {
   margin-left: -0.25rem;
 }
@@ -4084,6 +4133,10 @@ label.rating-label {
 
 .mb-2\.5 {
   margin-bottom: 0.625rem;
+}
+
+.mb-3 {
+  margin-bottom: 0.75rem;
 }
 
 .mb-4 {
@@ -4148,6 +4201,10 @@ label.rating-label {
 
 .mt-4 {
   margin-top: 1rem;
+}
+
+.mt-5 {
+  margin-top: 1.25rem;
 }
 
 .block {
@@ -4256,8 +4313,20 @@ label.rating-label {
   height: 2.5rem;
 }
 
+.h-12 {
+  height: 3rem;
+}
+
+.h-16 {
+  height: 4rem;
+}
+
 .h-2 {
   height: 0.5rem;
+}
+
+.h-20 {
+  height: 5rem;
 }
 
 .h-24 {
@@ -4280,8 +4349,16 @@ label.rating-label {
   height: 1.5rem;
 }
 
+.h-8 {
+  height: 2rem;
+}
+
 .h-9 {
   height: 2.25rem;
+}
+
+.h-\[100px\] {
+  height: 100px;
 }
 
 .h-\[150px\] {
@@ -4298,6 +4375,10 @@ label.rating-label {
 
 .h-\[25px\] {
   height: 25px;
+}
+
+.h-\[300px\] {
+  height: 300px;
 }
 
 .h-\[30px\] {
@@ -4352,12 +4433,28 @@ label.rating-label {
   min-height: 80px;
 }
 
+.w-10 {
+  width: 2.5rem;
+}
+
+.w-12 {
+  width: 3rem;
+}
+
 .w-16 {
   width: 4rem;
 }
 
+.w-20 {
+  width: 5rem;
+}
+
 .w-28 {
   width: 7rem;
+}
+
+.w-32 {
+  width: 8rem;
 }
 
 .w-4 {
@@ -4374,6 +4471,14 @@ label.rating-label {
 
 .w-7 {
   width: 1.75rem;
+}
+
+.w-8 {
+  width: 2rem;
+}
+
+.w-\[120px\] {
+  width: 120px;
 }
 
 .w-\[20px\] {
@@ -4416,6 +4521,10 @@ label.rating-label {
   width: 100vw;
 }
 
+.min-w-0 {
+  min-width: 0px;
+}
+
 .min-w-\[100px\] {
   min-width: 100px;
 }
@@ -4428,12 +4537,20 @@ label.rating-label {
   min-width: 135px;
 }
 
+.min-w-\[150px\] {
+  min-width: 150px;
+}
+
 .min-w-\[200px\] {
   min-width: 200px;
 }
 
 .min-w-\[280px\] {
   min-width: 280px;
+}
+
+.min-w-\[80px\] {
+  min-width: 80px;
 }
 
 .min-w-full {
@@ -4530,6 +4647,10 @@ label.rating-label {
 
 .max-w-none {
   max-width: none;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
 }
 
 .shrink-0 {
@@ -4656,6 +4777,10 @@ label.rating-label {
   align-items: stretch;
 }
 
+.justify-start {
+  justify-content: flex-start;
+}
+
 .justify-end {
   justify-content: flex-end;
 }
@@ -4758,6 +4883,12 @@ label.rating-label {
   overflow: auto;
 }
 
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .text-nowrap {
   text-wrap: nowrap;
 }
@@ -4821,6 +4952,10 @@ label.rating-label {
 
 .border-t {
   border-top-width: 1px;
+}
+
+.border-dashed {
+  border-style: dashed;
 }
 
 .border-none {
@@ -4954,6 +5089,10 @@ label.rating-label {
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
 }
 
+.bg-opacity-10 {
+  --tw-bg-opacity: 0.1;
+}
+
 .bg-\[length\:80\%\] {
   background-size: 80%;
 }
@@ -4972,6 +5111,16 @@ label.rating-label {
 
 .bg-no-repeat {
   background-repeat: no-repeat;
+}
+
+.object-contain {
+  -o-object-fit: contain;
+     object-fit: contain;
+}
+
+.object-cover {
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 
 .p-0 {
@@ -5200,6 +5349,11 @@ label.rating-label {
   line-height: 1.125rem;
 }
 
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
 .text-2xs {
   font-size: 0.6875rem;
   line-height: 0.75rem;
@@ -5218,6 +5372,16 @@ label.rating-label {
 .text-4xs {
   font-size: 0.5625rem;
   line-height: 0.6875rem;
+}
+
+.text-5xl {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.text-6xl {
+  font-size: 3.75rem;
+  line-height: 1;
 }
 
 .text-base {
@@ -5330,6 +5494,10 @@ label.rating-label {
   color: var(--tw-gray-900);
 }
 
+.text-info {
+  color: var(--tw-info);
+}
+
 .text-info-inverse {
   color: var(--tw-info-inverse);
 }
@@ -5352,6 +5520,10 @@ label.rating-label {
 
 .text-success-inverse {
   color: var(--tw-success-inverse);
+}
+
+.text-warning {
+  color: var(--tw-warning);
 }
 
 .text-warning-inverse {
@@ -6413,6 +6585,10 @@ label.rating-label {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .md\:grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
   .md\:flex-row {
     flex-direction: row;
   }
@@ -6481,6 +6657,10 @@ label.rating-label {
 
   .lg\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lg\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .lg\:grid-cols-5 {

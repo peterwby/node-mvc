@@ -79,6 +79,9 @@ Route.group(() => {
   try {
     //通用
     Route.post('upload/image', 'CommonController.uploadImage')
+    
+    // dashboard
+    Route.post('dashboard/get-statistics', 'HomeController.getStatistics')
     // permissions
     Route.post('permissions/get-list', 'PermissionsController.getList')
     Route.post('permissions/create-info', 'PermissionsController.createInfo')
@@ -105,6 +108,31 @@ Route.group(() => {
     Route.post('member/remove', 'MemberController.remove')
     Route.get('member/get-roles/:id', 'MemberController.getRoles')
     Route.post('member/save-roles/:id', 'MemberController.saveRoles')
+
+    // system-config
+    Route.post('system-config/get-list', 'SystemConfigController.getList')
+    Route.post('system-config/update-config', 'SystemConfigController.updateConfig')
+    Route.post('system-config/batch-update', 'SystemConfigController.batchUpdate')
+    Route.post('system-config/upload-logo', 'SystemConfigController.uploadLogo')
+    Route.post('system-config/upload-login-bg', 'SystemConfigController.uploadLoginBg')
+
+    // profile
+    Route.post('profile/get-profile', 'ProfileController.getProfile')
+    Route.post('profile/update-profile', 'ProfileController.updateProfile')
+    Route.post('profile/update-avatar', 'ProfileController.updateAvatar')
+    Route.post('profile/update-password', 'ProfileController.updatePassword')
+
+    // files
+    Route.post('files/get-list', 'FileController.getList')
+    Route.post('files/upload', 'FileController.upload')
+    Route.post('files/remove', 'FileController.remove')
+    Route.post('files/batch-remove', 'FileController.batchRemove')
+
+    // notices
+    Route.post('notices/get-list', 'NoticeController.getList')
+    Route.post('notices/create-info', 'NoticeController.createInfo')
+    Route.post('notices/update-info', 'NoticeController.updateInfo')
+    Route.post('notices/remove', 'NoticeController.remove')
   } catch (err) {
     return Util.end2front({
       msg: 'Not found the API',

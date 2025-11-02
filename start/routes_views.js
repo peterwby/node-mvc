@@ -28,6 +28,20 @@ module.exports = () => {
       Route.post('member/edit-info', 'MemberController.editInfo')
       Route.get('member/create', 'MemberController.create')
       Route.get('member/roles/:id', 'MemberController.roles')
+
+      // system-config
+      Route.get('system-config/edit', 'SystemConfigController.edit')
+
+      // profile
+      Route.get('profile', 'ProfileController.index')
+
+      // files
+      Route.get('files/list', 'FileController.list')
+
+      // notices
+      Route.get('notices/list', 'NoticeController.list')
+      Route.get('notices/create', 'NoticeController.create')
+      Route.get('notices/edit/:id', 'NoticeController.edit')
     } catch (err) {
       return Util.end2front({
         msg: 'Not found the API',

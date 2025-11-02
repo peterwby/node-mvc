@@ -73,7 +73,7 @@ class PermissionsTable extends BaseTable {
         msg: err.message,
         stack: err.stack,
         data: { table: this.tableName },
-        track: 'table_fetchDetailById_1586339053',
+        track: 'table_fetchDetailById_1586339653',
       })
     }
   }
